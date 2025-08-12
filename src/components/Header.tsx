@@ -1,20 +1,43 @@
-import { Search, Bell, User, Menu, X } from "lucide-react";
+import { Search, Bell, User, Menu, X, LogOut, LogIn, Settings, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Erro ao sair",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso.",
+      });
+      navigate('/');
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-netflix-gray-dark">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center">
-          <h1 className="text-xl sm:text-2xl font-extrabold text-netflix-red tracking-tight">IACM</h1>
+          <Link to="/">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-netflix-red tracking-tight">IACM</h1>
+          </Link>
         </div>
 
         {/* Desktop Navigation */}
@@ -29,110 +52,146 @@ const Header = () => {
               Eventos
             </Button>
           </Link>
-          <Link to="/visualizations">
-            <Button variant="ghost" className="text-muted-foreground hover:text-netflix-red transition-colors font-medium">
-              Visualizações
-            </Button>
-          </Link>
+          {user && (
+            <Link to="/visualizations">
+              <Button variant="ghost" className="text-muted-foreground hover:text-netflix-red transition-colors font-medium">
+                Visualizações
+              </Button>
+            </Link>
+          )}
         </nav>
 
         {/* Right side */}
         <div className="flex items-center space-x-2">
-          {/* Desktop Icons */}
-          <div className="hidden sm:flex items-center space-x-2">
-            <Button variant="ghost" size="icon" className="hover:text-netflix-red transition-colors">
-              <Search className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="hover:text-netflix-red transition-colors">
-              <Bell className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* User Profile */}
-          <div className="flex items-center space-x-2">
-            <Link to="/login" className="text-sm text-muted-foreground hidden lg:block hover:text-netflix-red transition-colors">
-              Olá, Marcelo
-            </Link>
-            <Link to="/profile">
-              <Button variant="ghost" size="icon" className="hover:text-netflix-red transition-colors">
-                <User className="h-4 w-4 sm:h-5 sm:w-5" />
-              </Button>
-            </Link>
+          {/* Desktop Auth/Profile Section */}
+          <div className="hidden lg:flex items-center space-x-1">
+            {user ? (
+              <>
+                <Link to="/admin" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <Settings className="w-4 h-4" />
+                    Admin
+                  </Button>
+                </Link>
+                <Link to="/visualizations" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <BarChart3 className="w-4 h-4" />
+                    Dados
+                  </Button>
+                </Link>
+                <Link to="/profile" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <User className="w-4 h-4" />
+                    Perfil
+                  </Button>
+                </Link>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sair
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <LogIn className="w-4 h-4" />
+                    Entrar
+                  </Button>
+                </Link>
+                <Link to="/register" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <User className="w-4 h-4" />
+                    Criar Conta
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden hover:text-netflix-red transition-colors">
+              <Button variant="ghost" size="icon" className="lg:hidden hover:text-netflix-red transition-colors">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-80 bg-netflix-dark border-netflix-gray-dark">
-              <div className="flex flex-col h-full">
-                {/* Header */}
-                <div className="flex items-center justify-between pb-6 border-b border-netflix-gray-dark">
-                  <h2 className="text-lg font-semibold text-netflix-white">Menu</h2>
-                </div>
-
-                {/* Navigation Links */}
-                <nav className="flex flex-col space-y-4 py-6">
-                  <Link 
-                    to="/" 
-                    onClick={() => setIsOpen(false)}
-                    className="text-netflix-white hover:text-netflix-red transition-colors py-3 px-4 rounded-md hover:bg-netflix-gray-dark/50"
-                  >
-                    Início
-                  </Link>
-                  <Link 
-                    to="/events" 
-                    onClick={() => setIsOpen(false)}
-                    className="text-netflix-gray-light hover:text-netflix-red transition-colors py-3 px-4 rounded-md hover:bg-netflix-gray-dark/50"
-                  >
-                    Eventos
-                  </Link>
-                  <Link 
-                    to="/visualizations" 
-                    onClick={() => setIsOpen(false)}
-                    className="text-netflix-gray-light hover:text-netflix-red transition-colors py-3 px-4 rounded-md hover:bg-netflix-gray-dark/50"
-                  >
-                    Visualizações
-                  </Link>
-                  <Link 
-                    to="/admin" 
-                    onClick={() => setIsOpen(false)}
-                    className="text-netflix-gray-light hover:text-netflix-red transition-colors py-3 px-4 rounded-md hover:bg-netflix-gray-dark/50"
-                  >
-                    Admin
-                  </Link>
-                  <Link 
-                    to="/profile" 
-                    onClick={() => setIsOpen(false)}
-                    className="text-netflix-gray-light hover:text-netflix-red transition-colors py-3 px-4 rounded-md hover:bg-netflix-gray-dark/50"
-                  >
-                    Perfil
-                  </Link>
-                </nav>
-
-                {/* Mobile Actions */}
-                <div className="flex flex-col space-y-4 mt-auto pt-6 border-t border-netflix-gray-dark">
+            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <nav className="flex flex-col gap-4">
+                <Link 
+                  to="/events" 
+                  className="flex items-center gap-2 text-lg font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Bell className="w-5 h-5" />
+                  Eventos
+                </Link>
+                {user && (
+                  <>
+                    <Link 
+                      to="/visualizations" 
+                      className="flex items-center gap-2 text-lg font-medium"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <BarChart3 className="w-5 h-5" />
+                      Consultar Dados
+                    </Link>
+                    <Link 
+                      to="/admin" 
+                      className="flex items-center gap-2 text-lg font-medium"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Settings className="w-5 h-5" />
+                      Administração
+                    </Link>
+                    <Link 
+                      to="/profile" 
+                      className="flex items-center gap-2 text-lg font-medium"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <User className="w-5 h-5" />
+                      Perfil
+                    </Link>
+                  </>
+                )}
+                <hr className="my-4" />
+                {user ? (
                   <Button 
                     variant="ghost" 
-                    className="justify-start text-netflix-gray-light hover:text-netflix-red hover:bg-netflix-gray-dark/50"
-                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2 text-lg font-medium justify-start p-0 h-auto"
+                    onClick={() => {
+                      handleSignOut();
+                      setIsOpen(false);
+                    }}
                   >
-                    <Search className="h-5 w-5 mr-3" />
-                    Buscar
+                    <LogOut className="w-5 h-5" />
+                    Sair
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    className="justify-start text-netflix-gray-light hover:text-netflix-red hover:bg-netflix-gray-dark/50"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <Bell className="h-5 w-5 mr-3" />
-                    Notificações
-                  </Button>
-                </div>
-              </div>
+                ) : (
+                  <>
+                    <Link 
+                      to="/login" 
+                      className="flex items-center gap-2 text-lg font-medium"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <LogIn className="w-5 h-5" />
+                      Entrar
+                    </Link>
+                    <Link 
+                      to="/register" 
+                      className="flex items-center gap-2 text-lg font-medium"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <User className="w-5 h-5" />
+                      Criar Conta
+                    </Link>
+                  </>
+                )}
+              </nav>
             </SheetContent>
           </Sheet>
         </div>

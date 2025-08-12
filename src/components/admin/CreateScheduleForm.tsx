@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const scheduleSchema = z.object({
   scheduleType: z.string().min(1, "Tipo de escala é obrigatório"),
@@ -36,13 +37,53 @@ const CreateScheduleForm = () => {
     },
   });
 
-  const onSubmit = (data: ScheduleFormData) => {
-    console.log("Schedule data:", data);
-    toast({
-      title: "Escala criada com sucesso!",
-      description: `${data.personName} foi escalado(a) para ${data.scheduleType} no dia ${format(data.date, "dd/MM/yyyy")}.`,
-    });
-    form.reset();
+  const onSubmit = async (data: ScheduleFormData) => {
+    try {
+      // First, find the member by name (you might want to use a select instead)
+      const { data: members, error: memberError } = await supabase
+        .from('members')
+        .select('id')
+        .ilike('first_name', `%${data.personName.split(' ')[0]}%`)
+        .limit(1);
+
+      if (memberError || !members || members.length === 0) {
+        toast({
+          title: "Membro não encontrado",
+          description: "Certifique-se de que o membro está cadastrado no sistema.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('schedules')
+        .insert({
+          schedule_type: data.scheduleType as any,
+          date: data.date.toISOString().split('T')[0],
+          member_id: members[0].id,
+        });
+
+      if (error) {
+        toast({
+          title: "Erro ao criar escala",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Escala criada com sucesso!",
+        description: `${data.personName} foi escalado(a) para ${data.scheduleType} no dia ${format(data.date, "dd/MM/yyyy")}.`,
+      });
+      form.reset();
+    } catch (error) {
+      toast({
+        title: "Erro inesperado",
+        description: "Tente novamente mais tarde",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const memberSchema = z.object({
   firstName: z.string().min(1, "Nome é obrigatório"),
@@ -39,15 +40,40 @@ const RegisterMemberForm = () => {
     }
   };
 
-  const onSubmit = (data: MemberFormData) => {
-    console.log("Member data:", data);
-    console.log("Photo:", photo);
-    toast({
-      title: "Membro cadastrado com sucesso!",
-      description: `${data.firstName} ${data.lastName} foi adicionado à comunidade.`,
-    });
-    form.reset();
-    setPhoto(null);
+  const onSubmit = async (data: MemberFormData) => {
+    try {
+      const { error } = await supabase
+        .from('members')
+        .insert({
+          first_name: data.firstName,
+          last_name: data.lastName,
+          birth_date: data.birthDate.toISOString().split('T')[0],
+          whatsapp: data.whatsapp,
+          // TODO: Upload photo to storage if provided
+        });
+
+      if (error) {
+        toast({
+          title: "Erro ao cadastrar membro",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Membro cadastrado com sucesso!",
+        description: `${data.firstName} ${data.lastName} foi adicionado à comunidade.`,
+      });
+      form.reset();
+      setPhoto(null);
+    } catch (error) {
+      toast({
+        title: "Erro inesperado",
+        description: "Tente novamente mais tarde",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const eventSchema = z.object({
   title: z.string().min(1, "Título é obrigatório"),
@@ -45,15 +46,43 @@ const CreateEventForm = () => {
     }
   };
 
-  const onSubmit = (data: EventFormData) => {
-    console.log("Event data:", data);
-    console.log("Banner:", banner);
-    toast({
-      title: "Evento criado com sucesso!",
-      description: `O evento "${data.title}" foi cadastrado.`,
-    });
-    form.reset();
-    setBanner(null);
+  const onSubmit = async (data: EventFormData) => {
+    try {
+      const { error } = await supabase
+        .from('events')
+        .insert({
+          title: data.title,
+          description: data.description,
+          address: data.address,
+          start_date: data.startDate.toISOString().split('T')[0],
+          start_time: data.startTime,
+          end_date: data.endDate.toISOString().split('T')[0],
+          end_time: data.endTime,
+          // TODO: Upload banner to storage if provided
+        });
+
+      if (error) {
+        toast({
+          title: "Erro ao criar evento",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Evento criado com sucesso!",
+        description: `O evento "${data.title}" foi cadastrado.`,
+      });
+      form.reset();
+      setBanner(null);
+    } catch (error) {
+      toast({
+        title: "Erro inesperado",
+        description: "Tente novamente mais tarde",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
