@@ -1,0 +1,255 @@
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, Users, Music, UserPlus, Settings, Globe, Shield } from "lucide-react";
+import Header from "@/components/Header";
+import CreateEventForm from "@/components/admin/CreateEventForm";
+import RegisterStudentForm from "@/components/admin/RegisterStudentForm";
+import CreateScheduleForm from "@/components/admin/CreateScheduleForm";
+import RegisterMemberForm from "@/components/admin/RegisterMemberForm";
+import ManageRecords from "@/components/admin/ManageRecords";
+import BannerManager from "@/components/admin/BannerManager";
+
+const Admin = () => {
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      
+      <main className="pt-16 lg:pt-20 container mx-auto px-2 lg:px-4 py-4 lg:py-8">
+        <div className="max-w-7xl mx-auto space-y-4 lg:space-y-8">
+          {/* Header Section with Better Typography - Mobile Optimized */}
+          <div className="space-y-2 lg:space-y-3 animate-fade-in">
+            <div className="flex items-center gap-2 lg:gap-3">
+              <div className="p-1.5 lg:p-2 bg-primary/10 rounded-lg border border-primary/20">
+                <Shield className="w-5 h-5 lg:w-6 lg:h-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl lg:text-4xl font-bold text-foreground">Painel Administrativo</h1>
+                <p className="text-muted-foreground text-sm lg:text-lg hidden sm:block">Gerencie todos os aspectos da sua comunidade</p>
+              </div>
+            </div>
+          </div>
+          
+          <Tabs defaultValue="events" className="w-full animate-scale-in">
+            {/* Mobile-First Responsive Navigation */}
+            <div className="w-full overflow-hidden">
+              {/* Mobile: Horizontal scrolling menu */}
+              <div className="md:hidden">
+                <div className="overflow-x-auto scrollbar-hide">
+                  <TabsList className="flex h-16 w-max min-w-full p-1 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg">
+                    <TabsTrigger 
+                      value="events" 
+                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                    >
+                      <Calendar className="w-4 h-4 shrink-0" />
+                      <span className="text-xs font-medium whitespace-nowrap">Eventos</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="students" 
+                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                    >
+                      <Music className="w-4 h-4 shrink-0" />
+                      <span className="text-xs font-medium whitespace-nowrap">Ministério</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="schedule" 
+                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                    >
+                      <Users className="w-4 h-4 shrink-0" />
+                      <span className="text-xs font-medium whitespace-nowrap">Escalas</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="members" 
+                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                    >
+                      <UserPlus className="w-4 h-4 shrink-0" />
+                      <span className="text-xs font-medium whitespace-nowrap">Membros</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="site" 
+                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                    >
+                      <Globe className="w-4 h-4 shrink-0" />
+                      <span className="text-xs font-medium whitespace-nowrap">Site</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="manage" 
+                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                    >
+                      <Settings className="w-4 h-4 shrink-0" />
+                      <span className="text-xs font-medium whitespace-nowrap">Gerenciar</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+              </div>
+
+              {/* Desktop: Grid layout */}
+              <div className="hidden md:block">
+                <TabsList className="grid grid-cols-6 h-auto p-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg">
+                  <TabsTrigger 
+                    value="events" 
+                    className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  >
+                    <Calendar className="w-5 h-5" />
+                    <span className="text-sm font-medium">Eventos</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="students" 
+                    className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  >
+                    <Music className="w-5 h-5" />
+                    <span className="text-sm font-medium">Ministérios</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="schedule" 
+                    className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  >
+                    <Users className="w-5 h-5" />
+                    <span className="text-sm font-medium">Escalas</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="members" 
+                    className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  >
+                    <UserPlus className="w-5 h-5" />
+                    <span className="text-sm font-medium">Membros</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="site" 
+                    className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  >
+                    <Globe className="w-5 h-5" />
+                    <span className="text-sm font-medium">Site</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="manage" 
+                    className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  >
+                    <Settings className="w-5 h-5" />
+                    <span className="text-sm font-medium">Gerenciar</span>
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+            </div>
+            
+            <TabsContent value="events" className="mt-4 lg:mt-8 animate-fade-in">
+              <Card className="netflix-card border-border/50 bg-card/80 backdrop-blur-sm">
+                <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent p-4 lg:p-6">
+                  <div className="flex items-center gap-2 lg:gap-3">
+                    <div className="p-1.5 lg:p-2 bg-primary/10 rounded-lg">
+                      <Calendar className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg lg:text-xl font-semibold">Criar Novo Evento</CardTitle>
+                      <CardDescription className="text-muted-foreground text-sm lg:text-base">
+                        Adicione um novo evento para a comunidade
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 lg:p-6">
+                  <CreateEventForm />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="students" className="mt-4 lg:mt-8 animate-fade-in">
+              <Card className="netflix-card border-border/50 bg-card/80 backdrop-blur-sm">
+                <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent p-4 lg:p-6">
+                  <div className="flex items-center gap-2 lg:gap-3">
+                    <div className="p-1.5 lg:p-2 bg-primary/10 rounded-lg">
+                      <Music className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg lg:text-xl font-semibold">Cadastrar Aluno no Ministério</CardTitle>
+                      <CardDescription className="text-muted-foreground text-sm lg:text-base">
+                        Adicione um novo aluno a um ministério específico
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 lg:p-6">
+                  <RegisterStudentForm />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="schedule" className="mt-4 lg:mt-8 animate-fade-in">
+              <Card className="netflix-card border-border/50 bg-card/80 backdrop-blur-sm">
+                <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent p-4 lg:p-6">
+                  <div className="flex items-center gap-2 lg:gap-3">
+                    <div className="p-1.5 lg:p-2 bg-primary/10 rounded-lg">
+                      <Users className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg lg:text-xl font-semibold">Criar Escala</CardTitle>
+                      <CardDescription className="text-muted-foreground text-sm lg:text-base">
+                        Organize as escalas dos ministérios
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 lg:p-6">
+                  <CreateScheduleForm />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="members" className="mt-4 lg:mt-8 animate-fade-in">
+              <Card className="netflix-card border-border/50 bg-card/80 backdrop-blur-sm">
+                <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent p-4 lg:p-6">
+                  <div className="flex items-center gap-2 lg:gap-3">
+                    <div className="p-1.5 lg:p-2 bg-primary/10 rounded-lg">
+                      <UserPlus className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg lg:text-xl font-semibold">Cadastrar Membro</CardTitle>
+                      <CardDescription className="text-muted-foreground text-sm lg:text-base">
+                        Adicione um novo membro à comunidade
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 lg:p-6">
+                  <RegisterMemberForm />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="site" className="mt-4 lg:mt-8 animate-fade-in">
+              <div className="space-y-4 lg:space-y-6">
+                <div className="flex items-center gap-2 lg:gap-3 mb-4 lg:mb-6">
+                  <div className="p-1.5 lg:p-2 bg-primary/10 rounded-lg">
+                    <Globe className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg lg:text-xl font-semibold">Gerenciamento do Site</h2>
+                    <p className="text-muted-foreground text-sm lg:text-base">Configure banners e conteúdo público</p>
+                  </div>
+                </div>
+                <BannerManager />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="manage" className="mt-4 lg:mt-8 animate-fade-in">
+              <div className="space-y-4 lg:space-y-6">
+                <div className="flex items-center gap-2 lg:gap-3 mb-4 lg:mb-6">
+                  <div className="p-1.5 lg:p-2 bg-primary/10 rounded-lg">
+                    <Settings className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg lg:text-xl font-semibold">Gerenciar Registros</h2>
+                    <p className="text-muted-foreground text-sm lg:text-base">Visualize, edite e organize todos os dados</p>
+                  </div>
+                </div>
+                <ManageRecords />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default Admin;
