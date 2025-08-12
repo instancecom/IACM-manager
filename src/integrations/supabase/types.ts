@@ -14,7 +14,318 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      banners: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          display_order: number | null
+          id: string
+          image_url: string
+          is_active: boolean | null
+          link_url: string | null
+          subtitle: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+          link_url?: string | null
+          subtitle?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          subtitle?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      event_confirmations: {
+        Row: {
+          confirmed: boolean | null
+          confirmed_at: string | null
+          created_at: string | null
+          event_id: string
+          id: string
+          member_id: string
+        }
+        Insert: {
+          confirmed?: boolean | null
+          confirmed_at?: string | null
+          created_at?: string | null
+          event_id: string
+          id?: string
+          member_id: string
+        }
+        Update: {
+          confirmed?: boolean | null
+          confirmed_at?: string | null
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          member_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_confirmations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_confirmations_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          address: string
+          banner_url: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string
+          end_date: string
+          end_time: string
+          id: string
+          start_date: string
+          start_time: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          address: string
+          banner_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description: string
+          end_date: string
+          end_time: string
+          id?: string
+          start_date: string
+          start_time: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string
+          banner_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string
+          end_date?: string
+          end_time?: string
+          id?: string
+          start_date?: string
+          start_time?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      members: {
+        Row: {
+          birth_date: string
+          created_at: string | null
+          first_name: string
+          id: string
+          last_name: string
+          photo_url: string | null
+          updated_at: string | null
+          user_id: string | null
+          whatsapp: string
+        }
+        Insert: {
+          birth_date: string
+          created_at?: string | null
+          first_name: string
+          id?: string
+          last_name: string
+          photo_url?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          whatsapp: string
+        }
+        Update: {
+          birth_date?: string
+          created_at?: string | null
+          first_name?: string
+          id?: string
+          last_name?: string
+          photo_url?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          whatsapp?: string
+        }
+        Relationships: []
+      }
+      ministries: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      ministry_members: {
+        Row: {
+          id: string
+          joined_at: string | null
+          member_id: string
+          ministry_id: string
+          role: string | null
+        }
+        Insert: {
+          id?: string
+          joined_at?: string | null
+          member_id: string
+          ministry_id: string
+          role?: string | null
+        }
+        Update: {
+          id?: string
+          joined_at?: string | null
+          member_id?: string
+          ministry_id?: string
+          role?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ministry_members_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ministry_members_ministry_id_fkey"
+            columns: ["ministry_id"]
+            isOneToOne: false
+            referencedRelation: "ministries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          birth_date: string | null
+          created_at: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          birth_date?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          birth_date?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      schedules: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          date: string
+          event_id: string | null
+          id: string
+          member_id: string
+          notes: string | null
+          schedule_type: Database["public"]["Enums"]["schedule_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          date: string
+          event_id?: string | null
+          id?: string
+          member_id: string
+          notes?: string | null
+          schedule_type: Database["public"]["Enums"]["schedule_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          date?: string
+          event_id?: string | null
+          id?: string
+          member_id?: string
+          notes?: string | null
+          schedule_type?: Database["public"]["Enums"]["schedule_type"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedules_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +334,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      schedule_type: "louvor" | "marketing" | "recepcao" | "obreiros"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +461,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      schedule_type: ["louvor", "marketing", "recepcao", "obreiros"],
+    },
   },
 } as const
