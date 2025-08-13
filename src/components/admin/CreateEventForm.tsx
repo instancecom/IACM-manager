@@ -26,7 +26,11 @@ const eventSchema = z.object({
 
 type EventFormData = z.infer<typeof eventSchema>;
 
-const CreateEventForm = () => {
+interface CreateEventFormProps {
+  onEventCreated?: () => void;
+}
+
+const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
   const [banner, setBanner] = useState<File | null>(null);
 
   const form = useForm<EventFormData>({
@@ -76,6 +80,7 @@ const CreateEventForm = () => {
       });
       form.reset();
       setBanner(null);
+      onEventCreated?.(); // Notifica o componente pai
     } catch (error) {
       toast({
         title: "Erro inesperado",

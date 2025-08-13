@@ -9,79 +9,61 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { toast } from "@/hooks/use-toast";
-
-// Mock data - será substituído pela integração com o banco de dados
-const mockEvents = [
-  {
-    id: 1,
-    title: "Culto de Domingo",
-    address: "Rua das Flores, 123",
-    startDate: new Date("2025-08-24T19:00:00"),
-    endDate: new Date("2025-08-24T21:00:00"),
-    description: "Culto especial de domingo com adoração e palavra.",
-    banner: "banner1.jpg"
-  },
-  {
-    id: 2,
-    title: "Encontro de Jovens",
-    address: "Sala de Jovens",
-    startDate: new Date("2025-08-27T15:00:00"),
-    endDate: new Date("2025-08-27T17:00:00"),
-    description: "Encontro especial para os jovens da comunidade.",
-    banner: "banner2.jpg"
-  }
-];
+import { useEvents, type Event } from "@/hooks/useEvents";
 
 const EventsList = () => {
-  const [events, setEvents] = useState(mockEvents);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [editingEvent, setEditingEvent] = useState<any>(null);
+  const { events, loading, fetchEvents, deleteEvent, updateEvent } = useEvents();
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  const handleDelete = (id: number) => {
-    setEvents(events.filter(event => event.id !== id));
-    toast({
-      title: "Evento excluído",
-      description: "O evento foi removido com sucesso.",
-    });
+  const handleDelete = async (id: string) => {
+    await deleteEvent(id);
   };
 
-  const handleEdit = (event: any) => {
+  const handleEdit = (event: Event) => {
     setEditingEvent({ ...event });
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingEvent) return;
     
-    setEvents(events.map(event => 
-      event.id === editingEvent.id ? editingEvent : event
-    ));
-    
-    setIsEditDialogOpen(false);
-    setEditingEvent(null);
-    
-    toast({
-      title: "Evento atualizado",
-      description: "As informações do evento foram atualizadas com sucesso.",
+    const success = await updateEvent(editingEvent.id, {
+      title: editingEvent.title,
+      address: editingEvent.address,
+      start_date: editingEvent.start_date,
+      start_time: editingEvent.start_time,
+      end_date: editingEvent.end_date,
+      end_time: editingEvent.end_time,
+      description: editingEvent.description,
     });
+
+    if (success) {
+      setIsEditDialogOpen(false);
+      setEditingEvent(null);
+    }
   };
 
-  const formatDateTimeForInput = (date: Date) => {
-    return format(date, "yyyy-MM-dd'T'HH:mm");
-  };
-
-  const getStatusBadge = (startDate: Date) => {
+  const getStatusBadge = (startDate: string) => {
     const now = new Date();
-    if (startDate > now) {
+    const eventDate = new Date(startDate);
+    if (eventDate > now) {
       return <Badge variant="secondary">Próximo</Badge>;
-    } else if (startDate.toDateString() === now.toDateString()) {
+    } else if (eventDate.toDateString() === now.toDateString()) {
       return <Badge variant="default">Hoje</Badge>;
     } else {
       return <Badge variant="outline">Finalizado</Badge>;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <p>Carregando eventos...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -100,10 +82,10 @@ const EventsList = () => {
             <TableRow key={event.id}>
               <TableCell className="font-medium">{event.title}</TableCell>
               <TableCell>
-                {format(event.startDate, "dd/MM/yyyy 'às' HH:mm")}
+                {format(new Date(`${event.start_date}T${event.start_time}`), "dd/MM/yyyy 'às' HH:mm")}
               </TableCell>
               <TableCell>{event.address}</TableCell>
-              <TableCell>{getStatusBadge(event.startDate)}</TableCell>
+              <TableCell>{getStatusBadge(event.start_date)}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Dialog>
@@ -129,10 +111,10 @@ const EventsList = () => {
                             <strong>Endereço:</strong> {selectedEvent.address}
                           </div>
                           <div>
-                            <strong>Data/Hora Início:</strong> {format(selectedEvent.startDate, "dd/MM/yyyy 'às' HH:mm")}
+                            <strong>Data/Hora Início:</strong> {format(new Date(`${selectedEvent.start_date}T${selectedEvent.start_time}`), "dd/MM/yyyy 'às' HH:mm")}
                           </div>
                           <div>
-                            <strong>Data/Hora Fim:</strong> {format(selectedEvent.endDate, "dd/MM/yyyy 'às' HH:mm")}
+                            <strong>Data/Hora Fim:</strong> {format(new Date(`${selectedEvent.end_date}T${selectedEvent.end_time}`), "dd/MM/yyyy 'às' HH:mm")}
                           </div>
                           <div>
                             <strong>Descrição:</strong> {selectedEvent.description}
@@ -214,25 +196,45 @@ const EventsList = () => {
               </div>
               
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="edit-start">Data/Hora Início</Label>
-                  <Input
-                    id="edit-start"
-                    type="datetime-local"
-                    value={formatDateTimeForInput(editingEvent.startDate)}
-                    onChange={(e) => setEditingEvent({...editingEvent, startDate: new Date(e.target.value)})}
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="edit-end">Data/Hora Fim</Label>
-                  <Input
-                    id="edit-end"
-                    type="datetime-local"
-                    value={formatDateTimeForInput(editingEvent.endDate)}
-                    onChange={(e) => setEditingEvent({...editingEvent, endDate: new Date(e.target.value)})}
-                  />
-                </div>
+              <div>
+                <Label htmlFor="edit-start-date">Data de Início</Label>
+                <Input
+                  id="edit-start-date"
+                  type="date"
+                  value={editingEvent.start_date}
+                  onChange={(e) => setEditingEvent({...editingEvent, start_date: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-start-time">Hora de Início</Label>
+                <Input
+                  id="edit-start-time"
+                  type="time"
+                  value={editingEvent.start_time}
+                  onChange={(e) => setEditingEvent({...editingEvent, start_time: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-end-date">Data de Fim</Label>
+                <Input
+                  id="edit-end-date"
+                  type="date"
+                  value={editingEvent.end_date}
+                  onChange={(e) => setEditingEvent({...editingEvent, end_date: e.target.value})}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-end-time">Hora de Fim</Label>
+                <Input
+                  id="edit-end-time"
+                  type="time"
+                  value={editingEvent.end_time}
+                  onChange={(e) => setEditingEvent({...editingEvent, end_time: e.target.value})}
+                />
+              </div>
               </div>
               
               <div>
