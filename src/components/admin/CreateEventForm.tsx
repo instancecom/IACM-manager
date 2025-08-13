@@ -52,6 +52,8 @@ const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
 
   const onSubmit = async (data: EventFormData) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { error } = await supabase
         .from('events')
         .insert({
@@ -62,6 +64,7 @@ const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
           start_time: data.startTime,
           end_date: data.endDate.toISOString().split('T')[0],
           end_time: data.endTime,
+          created_by: user?.id,
           // TODO: Upload banner to storage if provided
         });
 
