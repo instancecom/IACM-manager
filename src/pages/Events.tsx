@@ -40,7 +40,7 @@ const Events = () => {
       time: event.start_time,
       location: event.address,
       attendees: Math.floor(Math.random() * 200) + 20, // Mock para agora
-      image: Math.random() > 0.5 ? musicImage : youthImage, // Mock para agora
+      image: event.banner_url || musicImage, // Usar banner real ou fallback
       description: event.description,
       organizer: "Igreja", // Mock para agora
       status,
