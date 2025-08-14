@@ -54,6 +54,34 @@ const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
+      let bannerUrl = null;
+      
+      // Upload banner if provided
+      if (banner) {
+        const fileExt = banner.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('event-banners')
+          .upload(fileName, banner);
+          
+        if (uploadError) {
+          toast({
+            title: "Erro ao fazer upload do banner",
+            description: uploadError.message,
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Get public URL for the uploaded image
+        const { data: { publicUrl } } = supabase.storage
+          .from('event-banners')
+          .getPublicUrl(fileName);
+          
+        bannerUrl = publicUrl;
+      }
+      
       const { error } = await supabase
         .from('events')
         .insert({
@@ -65,7 +93,7 @@ const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
           end_date: data.endDate.toISOString().split('T')[0],
           end_time: data.endTime,
           created_by: user?.id,
-          // TODO: Upload banner to storage if provided
+          banner_url: bannerUrl,
         });
 
       if (error) {

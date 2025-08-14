@@ -21,7 +21,7 @@ const EventCard = ({ title, date, location, attendees, image, onClick }: EventCa
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-          style={{ backgroundImage: `url(${image})` }}
+          style={{ backgroundImage: `url(${image || '/src/assets/hero-church.jpg'})` }}
         >
           <div className="absolute inset-0 card-content-enhanced"></div>
         </div>
