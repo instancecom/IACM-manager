@@ -7,12 +7,16 @@ import ScheduleCard from "@/components/ScheduleCard";
 import EventCard from "@/components/EventCard";
 import ActionCard from "@/components/ActionCard";
 import EventPreview from "@/components/EventPreview";
+import { useEvents } from "@/hooks/useEvents";
+import { format, parseISO, isAfter, isBefore, subDays, addDays } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import musicImage from "@/assets/music-ministry.jpg";
 import youthImage from "@/assets/youth-ministry.jpg";
 
 const Dashboard = () => {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [isEventPreviewOpen, setIsEventPreviewOpen] = useState(false);
+  const { events, loading } = useEvents();
   const mySchedules = [
     {
       title: "Escala de Música",
@@ -37,82 +41,51 @@ const Dashboard = () => {
     }
   ];
 
-  const allEvents = [
-    {
-      title: "Culto de Domingo",
-      date: "24 de Agosto, 2025",
-      time: "19:00",
-      location: "Auditório Principal",
-      attendees: 150,
-      image: musicImage,
-      description: "Junte-se a nós para um culto especial de domingo com adoração, palavra e comunhão. Uma experiência transformadora de fé.",
-      organizer: "Pastor João Silva",
-      status: "active",
-      dateTime: new Date("2025-08-24T19:00:00")
-    },
-    {
-      title: "Encontro de Jovens",
-      date: "27 de Agosto, 2025", 
-      time: "15:00",
-      location: "Sala de Jovens",
-      attendees: 45,
-      image: youthImage,
-      description: "Um encontro especial para os jovens da nossa comunidade. Momento de adoração, ensino e muita diversão!",
-      organizer: "Líder Ana Paula",
-      status: "upcoming",
-      dateTime: new Date("2025-08-27T15:00:00")
-    },
-    {
-      title: "Estudo Bíblico",
-      date: "30 de Agosto, 2025",
-      time: "20:00",
-      location: "Sala de Estudos",
-      attendees: 30,
-      image: musicImage,
-      description: "Estudo profundo da Palavra de Deus em um ambiente acolhedor. Venha crescer na fé conosco.",
-      organizer: "Pastor Marcos",
-      status: "upcoming",
-      dateTime: new Date("2025-08-30T20:00:00")
-    },
-    {
-      title: "Conferência de Oração",
-      date: "15 de Agosto, 2025",
-      time: "18:00",
-      location: "Auditório Principal",
-      attendees: 200,
-      image: musicImage,
-      description: "Uma noite especial de oração e adoração que transformou nossa comunidade.",
-      organizer: "Pastor João Silva",
-      status: "finished",
-      dateTime: new Date("2025-08-15T18:00:00")
-    },
-    {
-      title: "Retiro de Casais",
-      date: "10 de Agosto, 2025",
-      time: "16:00",
-      location: "Chácara Bethel",
-      attendees: 80,
-      image: youthImage,
-      description: "Um final de semana abençoado de fortalecimento dos vínculos matrimoniais.",
-      organizer: "Pastor Marcos",
-      status: "finished",
-      dateTime: new Date("2025-08-10T16:00:00")
+  // Transform database events to dashboard format
+  const allEvents = events.map(event => {
+    const startDateTime = new Date(`${event.start_date}T${event.start_time}`);
+    const endDateTime = new Date(`${event.end_date}T${event.end_time}`);
+    const now = new Date();
+    
+    let status = 'upcoming';
+    if (endDateTime < now) {
+      status = 'finished';
+    } else if (startDateTime <= now && endDateTime >= now) {
+      status = 'active';
     }
-  ];
+
+    return {
+      id: event.id,
+      title: event.title,
+      date: format(parseISO(event.start_date), "dd 'de' MMMM, yyyy", { locale: ptBR }),
+      time: format(parseISO(`1970-01-01T${event.start_time}`), "HH:mm"),
+      location: event.address,
+      attendees: Math.floor(Math.random() * 200) + 20, // Placeholder até ter confirmações reais
+      image: event.banner_url || musicImage,
+      description: event.description,
+      organizer: "Organização", // Placeholder até ter dados do criador
+      status,
+      dateTime: startDateTime,
+      event // Original event data for modal
+    };
+  });
 
   // Filter events by categories
   const now = new Date();
-  const sevenDaysFromNow = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
-  const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+  const sevenDaysFromNow = addDays(now, 7);
+  const thirtyDaysAgo = subDays(now, 30);
   
-  // Recently registered and active events (last 30 days)
-  const recentActiveEvents = allEvents.filter(event => 
-    event.status === 'active' && event.dateTime >= thirtyDaysAgo
-  );
+  // Recently registered events (last 30 days, regardless of status)
+  const recentEvents = allEvents.filter(event => {
+    const createdAt = parseISO(event.event?.created_at || event.event?.start_date);
+    return isAfter(createdAt, thirtyDaysAgo);
+  }).slice(0, 6); // Limit to 6 most recent
   
-  // Upcoming active events (next 7 days)
-  const upcomingActiveEvents = allEvents.filter(event => 
-    event.status === 'active' && event.dateTime >= now && event.dateTime <= sevenDaysFromNow
+  // Upcoming events (next 7 days)
+  const upcomingEvents = allEvents.filter(event => 
+    event.status === 'upcoming' && 
+    isAfter(event.dateTime, now) && 
+    isBefore(event.dateTime, sevenDaysFromNow)
   );
   
   // Finished events
@@ -149,12 +122,19 @@ const Dashboard = () => {
       <main className="pt-16 sm:pt-20">
         <HeroSection />
         
-        {/* Recent Active Events */}
-        {recentActiveEvents.length > 0 && (
+        {/* Loading state */}
+        {loading && (
+          <div className="container mx-auto px-4 py-8 text-center">
+            <p className="text-muted-foreground">Carregando eventos...</p>
+          </div>
+        )}
+
+        {/* Recent Events */}
+        {!loading && recentEvents.length > 0 && (
           <ContentShelf title="Eventos Recém-Cadastrados">
-            {recentActiveEvents.map((event, index) => (
+            {recentEvents.map((event, index) => (
               <EventCard
-                key={index}
+                key={event.id || index}
                 title={event.title}
                 date={event.date}
                 location={event.location}
@@ -169,12 +149,12 @@ const Dashboard = () => {
           </ContentShelf>
         )}
 
-        {/* Upcoming Active Events */}
-        {upcomingActiveEvents.length > 0 && (
-          <ContentShelf title="Próximos Eventos Ativos">
-            {upcomingActiveEvents.map((event, index) => (
+        {/* Upcoming Events */}
+        {!loading && upcomingEvents.length > 0 && (
+          <ContentShelf title="Próximos Eventos">
+            {upcomingEvents.map((event, index) => (
               <EventCard
-                key={index}
+                key={event.id || index}
                 title={event.title}
                 date={event.date}
                 location={event.location}
@@ -190,11 +170,11 @@ const Dashboard = () => {
         )}
 
         {/* Finished Events */}
-        {finishedEvents.length > 0 && (
+        {!loading && finishedEvents.length > 0 && (
           <ContentShelf title="Eventos Finalizados">
             {finishedEvents.map((event, index) => (
               <EventCard
-                key={index}
+                key={event.id || index}
                 title={event.title}
                 date={event.date}
                 location={event.location}
@@ -207,6 +187,17 @@ const Dashboard = () => {
               />
             ))}
           </ContentShelf>
+        )}
+
+        {/* No events message */}
+        {!loading && events.length === 0 && (
+          <div className="container mx-auto px-4 py-16 text-center">
+            <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Nenhum evento cadastrado</h3>
+            <p className="text-muted-foreground">
+              Cadastre eventos na área administrativa para que apareçam aqui.
+            </p>
+          </div>
         )}
       </main>
 
