@@ -7,6 +7,7 @@ import EventsListPage from "@/components/admin/EventsListPage";
 import RegisterStudentForm from "@/components/admin/RegisterStudentForm";
 import CreateScheduleForm from "@/components/admin/CreateScheduleForm";
 import RegisterMemberForm from "@/components/admin/RegisterMemberForm";
+import RegisterMinistryForm from "@/components/admin/RegisterMinistryForm";
 import ManageRecords from "@/components/admin/ManageRecords";
 import BannerManager from "@/components/admin/BannerManager";
 
@@ -66,6 +67,13 @@ const Admin = () => {
                       <span className="text-xs font-medium whitespace-nowrap">Membros</span>
                     </TabsTrigger>
                     <TabsTrigger 
+                      value="ministries" 
+                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                    >
+                      <Shield className="w-4 h-4 shrink-0" />
+                      <span className="text-xs font-medium whitespace-nowrap">Ministérios</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
                       value="site" 
                       className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
                     >
@@ -85,7 +93,7 @@ const Admin = () => {
 
               {/* Desktop: Grid layout */}
               <div className="hidden md:block">
-                <TabsList className="grid grid-cols-6 h-auto p-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg">
+                <TabsList className="grid grid-cols-7 h-auto p-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg">
                   <TabsTrigger 
                     value="events" 
                     className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
@@ -113,6 +121,13 @@ const Admin = () => {
                   >
                     <UserPlus className="w-5 h-5" />
                     <span className="text-sm font-medium">Membros</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="ministries" 
+                    className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  >
+                    <Shield className="w-5 h-5" />
+                    <span className="text-sm font-medium">Ministérios</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="site" 
@@ -195,6 +210,27 @@ const Admin = () => {
                 </CardHeader>
                 <CardContent className="p-4 lg:p-6">
                   <RegisterMemberForm />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="ministries" className="mt-4 lg:mt-8 animate-fade-in">
+              <Card className="netflix-card border-border/50 bg-card/80 backdrop-blur-sm">
+                <CardHeader className="border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent p-4 lg:p-6">
+                  <div className="flex items-center gap-2 lg:gap-3">
+                    <div className="p-1.5 lg:p-2 bg-primary/10 rounded-lg">
+                      <Shield className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg lg:text-xl font-semibold">Cadastrar Ministério</CardTitle>
+                      <CardDescription className="text-muted-foreground text-sm lg:text-base">
+                        Crie novos ministérios para organizar a comunidade
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 lg:p-6">
+                  <RegisterMinistryForm />
                 </CardContent>
               </Card>
             </TabsContent>
