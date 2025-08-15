@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -12,28 +12,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useMinistries } from "@/hooks/useMinistries";
 
 const studentSchema = z.object({
   firstName: z.string().min(1, "Nome é obrigatório"),
   lastName: z.string().min(1, "Sobrenome é obrigatório"),
   whatsapp: z.string().min(1, "WhatsApp é obrigatório"),
   birthDate: z.date({ required_error: "Data de nascimento é obrigatória" }),
-  ministryType: z.string().min(1, "Tipo de ministério é obrigatório"),
+  ministryId: z.string().min(1, "Ministério é obrigatório"),
+  role: z.string().min(1, "Função é obrigatória"),
 });
 
 type StudentFormData = z.infer<typeof studentSchema>;
 
-const ministryTypes = [
-  { value: "louvor", label: "Louvor" },
-  { value: "marketing", label: "Marketing" },
-  { value: "recepcao", label: "Recepção" },
-  { value: "obreiros", label: "Obreiros" },
-  { value: "jovens", label: "Jovens" },
-  { value: "criancas", label: "Crianças" },
-];
-
 const RegisterStudentForm = () => {
   const [photo, setPhoto] = useState<File | null>(null);
+  const { ministries, loading: loadingMinistries } = useMinistries();
 
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
@@ -41,7 +36,8 @@ const RegisterStudentForm = () => {
       firstName: "",
       lastName: "",
       whatsapp: "",
-      ministryType: "",
+      ministryId: "",
+      role: "",
     },
   });
 
@@ -51,15 +47,61 @@ const RegisterStudentForm = () => {
     }
   };
 
-  const onSubmit = (data: StudentFormData) => {
-    console.log("Student data:", data);
-    console.log("Photo:", photo);
-    toast({
-      title: "Aluno cadastrado com sucesso!",
-      description: `${data.firstName} ${data.lastName} foi adicionado ao ministério de ${data.ministryType}.`,
-    });
-    form.reset();
-    setPhoto(null);
+  const onSubmit = async (data: StudentFormData) => {
+    try {
+      // First, create the member
+      const { data: memberData, error: memberError } = await supabase
+        .from('members')
+        .insert({
+          first_name: data.firstName,
+          last_name: data.lastName,
+          birth_date: data.birthDate.toISOString().split('T')[0],
+          whatsapp: data.whatsapp,
+        })
+        .select()
+        .single();
+
+      if (memberError) {
+        toast({
+          title: "Erro ao cadastrar membro",
+          description: memberError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Then, add them to the ministry
+      const { error: ministryError } = await supabase
+        .from('ministry_members')
+        .insert({
+          member_id: memberData.id,
+          ministry_id: data.ministryId,
+          role: data.role,
+        });
+
+      if (ministryError) {
+        toast({
+          title: "Erro ao adicionar ao ministério",
+          description: ministryError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const selectedMinistry = ministries.find(m => m.id === data.ministryId);
+      toast({
+        title: "Membro cadastrado com sucesso!",
+        description: `${data.firstName} ${data.lastName} foi adicionado ao ministério ${selectedMinistry?.name} como ${data.role}.`,
+      });
+      form.reset();
+      setPhoto(null);
+    } catch (error) {
+      toast({
+        title: "Erro inesperado",
+        description: "Tente novamente mais tarde",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -151,10 +193,10 @@ const RegisterStudentForm = () => {
 
           <FormField
             control={form.control}
-            name="ministryType"
+            name="ministryId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tipo de Ministério</FormLabel>
+                <FormLabel>Ministério</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -162,11 +204,35 @@ const RegisterStudentForm = () => {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {ministryTypes.map((ministry) => (
-                      <SelectItem key={ministry.value} value={ministry.value}>
-                        {ministry.label}
+                    {ministries.map((ministry) => (
+                      <SelectItem key={ministry.id} value={ministry.id}>
+                        {ministry.name}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="role"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Função</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a função" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Líder">Líder</SelectItem>
+                    <SelectItem value="Vice-Líder">Vice-Líder</SelectItem>
+                    <SelectItem value="Membro">Membro</SelectItem>
+                    <SelectItem value="Estudante">Estudante</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -194,8 +260,8 @@ const RegisterStudentForm = () => {
           </div>
         </div>
 
-        <Button type="submit" className="w-full">
-          Cadastrar Aluno
+        <Button type="submit" className="w-full" disabled={loadingMinistries}>
+          {loadingMinistries ? "Carregando..." : "Cadastrar Membro no Ministério"}
         </Button>
       </form>
     </Form>
