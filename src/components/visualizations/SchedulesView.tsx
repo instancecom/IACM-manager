@@ -3,57 +3,35 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar, Clock, User, Phone, Mail } from "lucide-react";
+import { Calendar, Clock, User, Phone, Mail, Loader2 } from "lucide-react";
+import { useSchedules } from "@/hooks/useSchedules";
 
 const SchedulesView = () => {
-  // Mock data - será substituído pela integração com o banco de dados
-  const schedules = [
-    {
-      id: 1,
-      scheduleType: "louvor",
-      date: new Date("2025-08-24T19:00:00"),
-      personName: "João Silva",
-      phone: "(11) 99999-1111",
-      email: "joao@email.com",
-      status: "confirmed"
-    },
-    {
-      id: 2,
-      scheduleType: "recepcao",
-      date: new Date("2025-08-25T09:00:00"),
-      personName: "Maria Santos",
-      phone: "(11) 99999-2222",
-      email: "maria@email.com",
-      status: "confirmed"
-    },
-    {
-      id: 3,
-      scheduleType: "marketing",
-      date: new Date("2025-08-27T15:00:00"),
-      personName: "Pedro Costa",
-      phone: "(11) 99999-3333",
-      email: "pedro@email.com",
-      status: "pending"
-    },
-    {
-      id: 4,
-      scheduleType: "obreiros",
-      date: new Date("2025-08-30T18:00:00"),
-      personName: "Ana Silva",
-      phone: "(11) 99999-4444",
-      email: "ana@email.com",
-      status: "confirmed"
-    },
-    {
-      id: 5,
-      scheduleType: "louvor",
-      date: new Date("2025-08-31T19:00:00"),
-      personName: "Carlos Oliveira",
-      phone: "(11) 99999-5555",
-      email: "carlos@email.com",
-      status: "confirmed"
-    }
-  ];
+  const { data: schedules = [], isLoading, error } = useSchedules();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2 text-muted-foreground">Carregando escalas...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <p className="text-lg font-medium text-destructive mb-2">
+            Erro ao carregar escalas
+          </p>
+          <p className="text-sm text-muted-foreground text-center">
+            Tente novamente mais tarde.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const scheduleLabels = {
     louvor: "Louvor",
@@ -69,20 +47,22 @@ const SchedulesView = () => {
     obreiros: "bg-orange-500"
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "confirmed":
-        return <Badge variant="default" className="bg-green-600">Confirmado</Badge>;
-      case "pending":
-        return <Badge variant="secondary">Pendente</Badge>;
-      default:
-        return <Badge variant="outline">Não definido</Badge>;
+  const getStatusBadge = (scheduleDate: string) => {
+    const today = new Date();
+    const scheduleDay = new Date(scheduleDate);
+    
+    if (scheduleDay < today) {
+      return <Badge variant="secondary">Realizada</Badge>;
+    } else if (scheduleDay.toDateString() === today.toDateString()) {
+      return <Badge variant="default">Hoje</Badge>;
+    } else {
+      return <Badge variant="outline">Agendada</Badge>;
     }
   };
 
   // Agrupar escalas por data
   const schedulesByDate = schedules.reduce((acc, schedule) => {
-    const dateKey = format(schedule.date, "yyyy-MM-dd");
+    const dateKey = format(new Date(schedule.date), "yyyy-MM-dd");
     if (!acc[dateKey]) {
       acc[dateKey] = [];
     }
@@ -113,39 +93,45 @@ const SchedulesView = () => {
                 <div key={schedule.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center space-x-3">
-                      <div className={`w-10 h-10 ${scheduleColors[schedule.scheduleType as keyof typeof scheduleColors]} rounded-lg flex items-center justify-center`}>
-                        <User className="w-5 h-5 text-white" />
-                      </div>
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={schedule.members?.photo_url} />
+                        <AvatarFallback>
+                          <div className={`w-10 h-10 ${scheduleColors[schedule.schedule_type as keyof typeof scheduleColors]} rounded-lg flex items-center justify-center`}>
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                        </AvatarFallback>
+                      </Avatar>
                       <div>
-                        <h4 className="font-semibold">{schedule.personName}</h4>
+                        <h4 className="font-semibold">
+                          {schedule.members?.first_name} {schedule.members?.last_name}
+                        </h4>
                         <p className="text-sm text-muted-foreground">
-                          {scheduleLabels[schedule.scheduleType as keyof typeof scheduleLabels]}
+                          {scheduleLabels[schedule.schedule_type as keyof typeof scheduleLabels]}
                         </p>
                       </div>
                     </div>
-                    {getStatusBadge(schedule.status)}
+                    {getStatusBadge(schedule.date)}
                   </div>
                   
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-muted-foreground" />
-                      <span>{format(schedule.date, "HH:mm")}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-muted-foreground" />
-                      <a 
-                        href={`https://wa.me/55${schedule.phone.replace(/\D/g, '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-green-600 hover:text-green-800 hover:underline cursor-pointer"
-                      >
-                        {schedule.phone}
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-xs">{schedule.email}</span>
-                    </div>
+                    {schedule.members?.whatsapp && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-muted-foreground" />
+                        <a 
+                          href={`https://wa.me/55${schedule.members.whatsapp.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-green-600 hover:text-green-800 hover:underline cursor-pointer"
+                        >
+                          {schedule.members.whatsapp}
+                        </a>
+                      </div>
+                    )}
+                    {schedule.notes && (
+                      <div className="text-xs text-muted-foreground">
+                        <strong>Observações:</strong> {schedule.notes}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
