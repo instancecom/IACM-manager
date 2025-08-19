@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,35 +8,136 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Upload, Eye, Save, Image as ImageIcon, Type, Info } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const BannerManager = () => {
   const [bannerData, setBannerData] = useState({
-    title: "Evento Especial",
-    subtitle: "06 de Agosto de 2025",
-    description: "Junte-se a nós para uma noite especial de adoração e comunhão. Uma experiência transformadora que você não pode perder.",
-    backgroundImage: "/src/assets/hero-church.jpg"
+    title: "",
+    subtitle: "",
+    description: "",
+    backgroundImage: ""
   });
 
   const [previewImage, setPreviewImage] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setPreviewImage(result);
-        setBannerData({ ...bannerData, backgroundImage: result });
-      };
-      reader.readAsDataURL(file);
+  useEffect(() => {
+    fetchActiveBanner();
+  }, []);
+
+  const fetchActiveBanner = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('banners')
+        .select('*')
+        .eq('is_active', true)
+        .single();
+
+      if (data) {
+        setBannerData({
+          title: data.title || "",
+          subtitle: data.subtitle || "",
+          description: data.description || "",
+          backgroundImage: data.image_url || ""
+        });
+      } else {
+        // Set default values if no active banner exists
+        setBannerData({
+          title: "Evento Especial",
+          subtitle: "06 de Agosto de 2025",
+          description: "Junte-se a nós para uma noite especial de adoração e comunhão. Uma experiência transformadora que você não pode perder.",
+          backgroundImage: "/src/assets/hero-church.jpg"
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching banner:', error);
     }
   };
 
-  const handleSave = () => {
-    toast({
-      title: "Banner atualizado",
-      description: "As configurações do banner foram salvas com sucesso.",
-    });
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setUploading(true);
+      try {
+        // Upload to Supabase Storage
+        const fileExt = file.name.split('.').pop();
+        const fileName = `banner-${Date.now()}.${fileExt}`;
+        const { data, error } = await supabase.storage
+          .from('event-banners')
+          .upload(fileName, file);
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('event-banners')
+          .getPublicUrl(fileName);
+
+        setPreviewImage(publicUrl);
+        setBannerData({ ...bannerData, backgroundImage: publicUrl });
+        
+        toast({
+          title: "Upload realizado",
+          description: "Imagem enviada com sucesso!",
+        });
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        toast({
+          title: "Erro no upload",
+          description: "Não foi possível enviar a imagem.",
+          variant: "destructive",
+        });
+      }
+      setUploading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!bannerData.title || !bannerData.backgroundImage) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Título e imagem são obrigatórios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // First, deactivate all existing banners
+      await supabase
+        .from('banners')
+        .update({ is_active: false })
+        .neq('id', '00000000-0000-0000-0000-000000000000');
+
+      // Then create/activate the new banner
+      const { error } = await supabase
+        .from('banners')
+        .insert({
+          title: bannerData.title,
+          subtitle: bannerData.subtitle,
+          description: bannerData.description,
+          image_url: previewImage || bannerData.backgroundImage,
+          is_active: true,
+          display_order: 1
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Banner atualizado",
+        description: "As configurações do banner foram salvas com sucesso.",
+      });
+    } catch (error) {
+      console.error('Error saving banner:', error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar o banner.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
   };
 
   return (
