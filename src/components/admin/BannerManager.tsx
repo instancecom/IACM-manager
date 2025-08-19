@@ -105,25 +105,39 @@ const BannerManager = () => {
 
     setLoading(true);
     try {
-      // First, deactivate all existing banners
-      await supabase
+      // Check if there's an existing active banner
+      const { data: existingBanner } = await supabase
         .from('banners')
-        .update({ is_active: false })
-        .neq('id', '00000000-0000-0000-0000-000000000000');
+        .select('id')
+        .eq('is_active', true)
+        .single();
 
-      // Then create/activate the new banner
-      const { error } = await supabase
-        .from('banners')
-        .insert({
-          title: bannerData.title,
-          subtitle: bannerData.subtitle,
-          description: bannerData.description,
-          image_url: previewImage || bannerData.backgroundImage,
-          is_active: true,
-          display_order: 1
-        });
+      const bannerPayload = {
+        title: bannerData.title,
+        subtitle: bannerData.subtitle,
+        description: bannerData.description,
+        image_url: previewImage || bannerData.backgroundImage,
+        is_active: true,
+        display_order: 1,
+        updated_at: new Date().toISOString()
+      };
 
-      if (error) throw error;
+      if (existingBanner) {
+        // Update existing active banner
+        const { error } = await supabase
+          .from('banners')
+          .update(bannerPayload)
+          .eq('id', existingBanner.id);
+
+        if (error) throw error;
+      } else {
+        // Create new banner if none exists
+        const { error } = await supabase
+          .from('banners')
+          .insert(bannerPayload);
+
+        if (error) throw error;
+      }
 
       toast({
         title: "Banner atualizado",
