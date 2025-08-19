@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           created_at: string | null
           created_by: string | null
+          description: string | null
           display_order: number | null
           id: string
           image_url: string
@@ -30,6 +31,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           created_by?: string | null
+          description?: string | null
           display_order?: number | null
           id?: string
           image_url: string
@@ -42,6 +44,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           created_by?: string | null
+          description?: string | null
           display_order?: number | null
           id?: string
           image_url?: string
@@ -281,8 +284,10 @@ export type Database = {
           created_by: string | null
           date: string
           event_id: string | null
+          external_person_name: string | null
+          external_person_phone: string | null
           id: string
-          member_id: string
+          member_id: string | null
           notes: string | null
           schedule_type: Database["public"]["Enums"]["schedule_type"]
           updated_at: string | null
@@ -292,8 +297,10 @@ export type Database = {
           created_by?: string | null
           date: string
           event_id?: string | null
+          external_person_name?: string | null
+          external_person_phone?: string | null
           id?: string
-          member_id: string
+          member_id?: string | null
           notes?: string | null
           schedule_type: Database["public"]["Enums"]["schedule_type"]
           updated_at?: string | null
@@ -303,8 +310,10 @@ export type Database = {
           created_by?: string | null
           date?: string
           event_id?: string | null
+          external_person_name?: string | null
+          external_person_phone?: string | null
           id?: string
-          member_id?: string
+          member_id?: string | null
           notes?: string | null
           schedule_type?: Database["public"]["Enums"]["schedule_type"]
           updated_at?: string | null

@@ -38,7 +38,7 @@ const BannerManager = () => {
         setBannerData({
           title: data.title || "",
           subtitle: data.subtitle || "",
-          description: data.description || "",
+          description: "", // Will be loaded after types are updated
           backgroundImage: data.image_url || ""
         });
       } else {
@@ -147,9 +147,9 @@ const BannerManager = () => {
           <h1 className="heading-4 text-foreground">Configurar Banner</h1>
           <p className="text-enhanced-muted">Personalize o banner principal da página inicial</p>
         </div>
-        <Button onClick={handleSave} className="gap-2">
+        <Button onClick={handleSave} className="gap-2" disabled={loading || uploading}>
           <Save className="w-4 h-4" />
-          Salvar
+          {loading ? "Salvando..." : "Salvar"}
         </Button>
       </div>
 
@@ -233,7 +233,9 @@ const BannerManager = () => {
                     className="cursor-pointer flex flex-col items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <Upload className="w-8 h-8" />
-                    <span className="font-medium">Clique para fazer upload</span>
+                    <span className="font-medium">
+                      {uploading ? "Enviando..." : "Clique para fazer upload"}
+                    </span>
                     <span className="text-sm">ou arraste e solte uma imagem</span>
                   </Label>
                 </div>
