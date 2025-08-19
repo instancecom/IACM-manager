@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit, Trash2, Eye, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -11,104 +11,181 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useMinistries } from "@/hooks/useMinistries";
 
-// Mock data - será substituído pela integração com o banco de dados
-const mockStudents = [
-  {
-    id: 1,
-    firstName: "João",
-    lastName: "Silva",
-    whatsapp: "(11) 99999-1111",
-    birthDate: new Date("1995-05-15"),
-    ministryType: "louvor",
-    photo: null
-  },
-  {
-    id: 2,
-    firstName: "Maria",
-    lastName: "Santos",
-    whatsapp: "(11) 99999-2222",
-    birthDate: new Date("1998-03-20"),
-    ministryType: "marketing",
-    photo: null
-  },
-  {
-    id: 3,
-    firstName: "Pedro",
-    lastName: "Costa",
-    whatsapp: "(11) 99999-3333",
-    birthDate: new Date("1992-08-10"),
-    ministryType: "recepcao",
-    photo: null
-  }
-];
-
-const ministryLabels = {
-  louvor: "Louvor",
-  marketing: "Marketing",
-  recepcao: "Recepção",
-  obreiros: "Obreiros",
-  jovens: "Jovens",
-  criancas: "Crianças"
-};
+interface Student {
+  id: string;
+  first_name: string;
+  last_name: string;
+  whatsapp: string;
+  birth_date: string;
+  photo_url: string | null;
+  ministry_id: string;
+  ministry_name: string;
+  role: string;
+}
 
 const StudentsList = () => {
-  const [students, setStudents] = useState(mockStudents);
-  const [selectedStudent, setSelectedStudent] = useState<any>(null);
-  const [editingStudent, setEditingStudent] = useState<any>(null);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { ministries } = useMinistries();
 
-  const handleDelete = (id: number) => {
-    setStudents(students.filter(student => student.id !== id));
-    toast({
-      title: "Aluno removido",
-      description: "O aluno foi removido do ministério com sucesso.",
-    });
+  useEffect(() => {
+    fetchStudents();
+  }, []);
+
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('ministry_members')
+        .select(`
+          id,
+          role,
+          member_id,
+          ministry_id,
+          members!inner (
+            id,
+            first_name,
+            last_name,
+            whatsapp,
+            birth_date,
+            photo_url
+          ),
+          ministries!inner (
+            id,
+            name
+          )
+        `);
+
+      if (error) throw error;
+
+      const formattedStudents: Student[] = data?.map((item: any) => ({
+        id: item.member_id,
+        first_name: item.members.first_name,
+        last_name: item.members.last_name,
+        whatsapp: item.members.whatsapp,
+        birth_date: item.members.birth_date,
+        photo_url: item.members.photo_url,
+        ministry_id: item.ministry_id,
+        ministry_name: item.ministries.name,
+        role: item.role
+      })) || [];
+
+      setStudents(formattedStudents);
+    } catch (error) {
+      console.error('Erro ao buscar alunos:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os alunos.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleEdit = (student: any) => {
+  const handleDelete = async (memberId: string, ministryId: string) => {
+    try {
+      const { error } = await supabase
+        .from('ministry_members')
+        .delete()
+        .eq('member_id', memberId)
+        .eq('ministry_id', ministryId);
+
+      if (error) throw error;
+
+      setStudents(students.filter(student => 
+        !(student.id === memberId && student.ministry_id === ministryId)
+      ));
+      
+      toast({
+        title: "Aluno removido",
+        description: "O aluno foi removido do ministério com sucesso.",
+      });
+    } catch (error) {
+      console.error('Erro ao remover aluno:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível remover o aluno.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEdit = (student: Student) => {
     setEditingStudent({ ...student });
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingStudent) return;
     
-    setStudents(students.map(student => 
-      student.id === editingStudent.id ? editingStudent : student
-    ));
-    
-    setIsEditDialogOpen(false);
-    setEditingStudent(null);
-    
-    toast({
-      title: "Aluno atualizado",
-      description: "As informações do aluno foram atualizadas com sucesso.",
-    });
+    try {
+      // Atualizar dados do membro
+      const { error: memberError } = await supabase
+        .from('members')
+        .update({
+          first_name: editingStudent.first_name,
+          last_name: editingStudent.last_name,
+          whatsapp: editingStudent.whatsapp,
+          birth_date: editingStudent.birth_date,
+        })
+        .eq('id', editingStudent.id);
+
+      if (memberError) throw memberError;
+
+      // Atualizar ministério se mudou
+      const { error: ministryError } = await supabase
+        .from('ministry_members')
+        .update({
+          ministry_id: editingStudent.ministry_id,
+          role: editingStudent.role
+        })
+        .eq('member_id', editingStudent.id);
+
+      if (ministryError) throw ministryError;
+
+      // Atualizar estado local
+      setStudents(students.map(student => 
+        student.id === editingStudent.id ? editingStudent : student
+      ));
+      
+      setIsEditDialogOpen(false);
+      setEditingStudent(null);
+      
+      toast({
+        title: "Aluno atualizado",
+        description: "As informações do aluno foram atualizadas com sucesso.",
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar aluno:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o aluno.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const formatDateForInput = (date: Date) => {
-    return format(date, "yyyy-MM-dd");
+  const formatDateForInput = (dateString: string) => {
+    return dateString;
   };
 
-  const getMinistryBadge = (ministry: string) => {
-    const colors = {
-      louvor: "default",
-      marketing: "secondary",
-      recepcao: "outline",
-      obreiros: "destructive",
-      jovens: "default",
-      criancas: "secondary"
-    };
-    
+  const getMinistryBadge = (ministryName: string) => {
     return (
-      <Badge variant={colors[ministry as keyof typeof colors] as any}>
-        {ministryLabels[ministry as keyof typeof ministryLabels]}
+      <Badge variant="default">
+        {ministryName}
       </Badge>
     );
   };
 
-  const calculateAge = (birthDate: Date) => {
+  const calculateAge = (birthDateString: string) => {
+    const birthDate = new Date(birthDateString);
     const today = new Date();
     const age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -119,6 +196,15 @@ const StudentsList = () => {
     
     return age;
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="w-6 h-6 animate-spin" />
+        <span className="ml-2">Carregando alunos...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -135,17 +221,17 @@ const StudentsList = () => {
         </TableHeader>
         <TableBody>
           {students.map((student) => (
-            <TableRow key={student.id}>
+            <TableRow key={`${student.id}-${student.ministry_id}`}>
               <TableCell>
                 <Avatar>
-                  <AvatarImage src={student.photo || ""} />
+                  <AvatarImage src={student.photo_url || ""} />
                   <AvatarFallback>
-                    {student.firstName[0]}{student.lastName[0]}
+                    {student.first_name[0]}{student.last_name[0]}
                   </AvatarFallback>
                 </Avatar>
               </TableCell>
               <TableCell className="font-medium">
-                {student.firstName} {student.lastName}
+                {student.first_name} {student.last_name}
               </TableCell>
               <TableCell>
                 <a 
@@ -157,8 +243,8 @@ const StudentsList = () => {
                   {student.whatsapp}
                 </a>
               </TableCell>
-              <TableCell>{calculateAge(student.birthDate)} anos</TableCell>
-              <TableCell>{getMinistryBadge(student.ministryType)}</TableCell>
+              <TableCell>{calculateAge(student.birth_date)} anos</TableCell>
+              <TableCell>{getMinistryBadge(student.ministry_name)}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Dialog>
@@ -173,7 +259,7 @@ const StudentsList = () => {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>{selectedStudent?.firstName} {selectedStudent?.lastName}</DialogTitle>
+                        <DialogTitle>{selectedStudent?.first_name} {selectedStudent?.last_name}</DialogTitle>
                         <DialogDescription>
                           Detalhes do aluno
                         </DialogDescription>
@@ -182,14 +268,14 @@ const StudentsList = () => {
                         <div className="space-y-4">
                           <div className="flex items-center gap-4">
                             <Avatar className="w-16 h-16">
-                              <AvatarImage src={selectedStudent.photo || ""} />
+                              <AvatarImage src={selectedStudent.photo_url || ""} />
                               <AvatarFallback className="text-lg">
-                                {selectedStudent.firstName[0]}{selectedStudent.lastName[0]}
+                                {selectedStudent.first_name[0]}{selectedStudent.last_name[0]}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <h3 className="font-semibold">{selectedStudent.firstName} {selectedStudent.lastName}</h3>
-                              {getMinistryBadge(selectedStudent.ministryType)}
+                              <h3 className="font-semibold">{selectedStudent.first_name} {selectedStudent.last_name}</h3>
+                              {getMinistryBadge(selectedStudent.ministry_name)}
                             </div>
                           </div>
                           <div>
@@ -204,10 +290,13 @@ const StudentsList = () => {
                             </a>
                           </div>
                           <div>
-                            <strong>Data de Nascimento:</strong> {format(selectedStudent.birthDate, "dd/MM/yyyy")}
+                            <strong>Data de Nascimento:</strong> {format(new Date(selectedStudent.birth_date), "dd/MM/yyyy")}
                           </div>
                           <div>
-                            <strong>Idade:</strong> {calculateAge(selectedStudent.birthDate)} anos
+                            <strong>Idade:</strong> {calculateAge(selectedStudent.birth_date)} anos
+                          </div>
+                          <div>
+                            <strong>Função:</strong> {selectedStudent.role}
                           </div>
                         </div>
                       )}
@@ -232,12 +321,12 @@ const StudentsList = () => {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Tem certeza que deseja remover {student.firstName} {student.lastName} do ministério? Esta ação não pode ser desfeita.
+                          Tem certeza que deseja remover {student.first_name} {student.last_name} do ministério? Esta ação não pode ser desfeita.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(student.id)}>
+                        <AlertDialogAction onClick={() => handleDelete(student.id, student.ministry_id)}>
                           Remover
                         </AlertDialogAction>
                       </AlertDialogFooter>
@@ -266,66 +355,89 @@ const StudentsList = () => {
             </DialogDescription>
           </DialogHeader>
           {editingStudent && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-firstName">Nome</Label>
+                    <Input
+                      id="edit-firstName"
+                      value={editingStudent.first_name}
+                      onChange={(e) => setEditingStudent({...editingStudent, first_name: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="edit-lastName">Sobrenome</Label>
+                    <Input
+                      id="edit-lastName"
+                      value={editingStudent.last_name}
+                      onChange={(e) => setEditingStudent({...editingStudent, last_name: e.target.value})}
+                    />
+                  </div>
+                </div>
+                
                 <div>
-                  <Label htmlFor="edit-firstName">Nome</Label>
+                  <Label htmlFor="edit-whatsapp">WhatsApp</Label>
                   <Input
-                    id="edit-firstName"
-                    value={editingStudent.firstName}
-                    onChange={(e) => setEditingStudent({...editingStudent, firstName: e.target.value})}
+                    id="edit-whatsapp"
+                    value={editingStudent.whatsapp}
+                    onChange={(e) => setEditingStudent({...editingStudent, whatsapp: e.target.value})}
+                    placeholder="(11) 99999-9999"
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="edit-lastName">Sobrenome</Label>
+                  <Label htmlFor="edit-birthDate">Data de Nascimento</Label>
                   <Input
-                    id="edit-lastName"
-                    value={editingStudent.lastName}
-                    onChange={(e) => setEditingStudent({...editingStudent, lastName: e.target.value})}
+                    id="edit-birthDate"
+                    type="date"
+                    value={formatDateForInput(editingStudent.birth_date)}
+                    onChange={(e) => setEditingStudent({...editingStudent, birth_date: e.target.value})}
                   />
                 </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-whatsapp">WhatsApp</Label>
-                <Input
-                  id="edit-whatsapp"
-                  value={editingStudent.whatsapp}
-                  onChange={(e) => setEditingStudent({...editingStudent, whatsapp: e.target.value})}
-                  placeholder="(11) 99999-9999"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-birthDate">Data de Nascimento</Label>
-                <Input
-                  id="edit-birthDate"
-                  type="date"
-                  value={formatDateForInput(editingStudent.birthDate)}
-                  onChange={(e) => setEditingStudent({...editingStudent, birthDate: new Date(e.target.value)})}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-ministry">Ministério</Label>
-                <Select 
-                  value={editingStudent.ministryType} 
-                  onValueChange={(value) => setEditingStudent({...editingStudent, ministryType: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o ministério" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="louvor">Louvor</SelectItem>
-                    <SelectItem value="marketing">Marketing</SelectItem>
-                    <SelectItem value="recepcao">Recepção</SelectItem>
-                    <SelectItem value="obreiros">Obreiros</SelectItem>
-                    <SelectItem value="jovens">Jovens</SelectItem>
-                    <SelectItem value="criancas">Crianças</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                
+                <div>
+                  <Label htmlFor="edit-ministry">Ministério</Label>
+                  <Select 
+                    value={editingStudent.ministry_id} 
+                    onValueChange={(value) => {
+                      const ministry = ministries.find(m => m.id === value);
+                      setEditingStudent({
+                        ...editingStudent, 
+                        ministry_id: value,
+                        ministry_name: ministry?.name || ''
+                      });
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o ministério" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ministries.map((ministry) => (
+                        <SelectItem key={ministry.id} value={ministry.id}>
+                          {ministry.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="edit-role">Função</Label>
+                  <Select 
+                    value={editingStudent.role} 
+                    onValueChange={(value) => setEditingStudent({...editingStudent, role: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a função" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="student">Aluno</SelectItem>
+                      <SelectItem value="leader">Líder</SelectItem>
+                      <SelectItem value="coordinator">Coordenador</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
