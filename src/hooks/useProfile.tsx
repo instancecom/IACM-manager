@@ -71,11 +71,17 @@ export const useProfile = () => {
     setLoading(true);
 
     try {
+      // Tratar campos de data vazios convertendo para null
+      const cleanedUpdates = {
+        ...updates,
+        birth_date: updates.birth_date === "" ? null : updates.birth_date,
+      };
+
       const { data, error } = await supabase
         .from('profiles')
         .upsert({
           user_id: user.id,
-          ...updates,
+          ...cleanedUpdates,
           updated_at: new Date().toISOString()
         })
         .select()
