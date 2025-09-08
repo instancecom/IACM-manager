@@ -83,6 +83,8 @@ export const useProfile = () => {
           user_id: user.id,
           ...cleanedUpdates,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
         })
         .select()
         .single();
