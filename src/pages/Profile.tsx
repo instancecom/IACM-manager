@@ -1,5 +1,5 @@
 import { User, Mail, Phone, MapPin, Calendar, Settings, Shield, Edit, Save, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,16 +7,32 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Header from "@/components/Header";
+import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const { profile, loading, updateProfile, getFullName, getInitials } = useProfile();
+  const { user } = useAuth();
+  
   const [formData, setFormData] = useState({
-    name: "Marcelo Silva",
-    email: "marcelo@email.com", 
-    phone: "(11) 99999-9999",
-    address: "São Paulo, SP",
-    birthdate: "1990-05-15"
+    first_name: "",
+    last_name: "",
+    phone: "",
+    birth_date: ""
   });
+
+  // Atualizar formData quando o profile carregar
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        phone: profile.phone || "",
+        birth_date: profile.birth_date || ""
+      });
+    }
+  }, [profile]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -25,21 +41,30 @@ const Profile = () => {
     }));
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // Aqui você pode implementar a lógica para salvar os dados
+  const handleSave = async () => {
+    const success = await updateProfile({
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      phone: formData.phone,
+      birth_date: formData.birth_date
+    });
+    
+    if (success) {
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    // Reset form data to original values
-    setFormData({
-      name: "Marcelo Silva",
-      email: "marcelo@email.com", 
-      phone: "(11) 99999-9999",
-      address: "São Paulo, SP",
-      birthdate: "1990-05-15"
-    });
+    // Reset form data to profile values
+    if (profile) {
+      setFormData({
+        first_name: profile.first_name || "",
+        last_name: profile.last_name || "",
+        phone: profile.phone || "",
+        birth_date: profile.birth_date || ""
+      });
+    }
   };
 
   return (
@@ -52,12 +77,14 @@ const Profile = () => {
             <Avatar className="w-32 h-32 mx-auto">
               <AvatarImage src="" alt="Foto do perfil" />
               <AvatarFallback className="text-3xl bg-netflix-red text-white">
-                M
+                {getInitials()}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Marcelo Silva</h1>
-              <p className="text-muted-foreground">Membro desde Janeiro 2024</p>
+              <h1 className="text-3xl font-bold text-foreground">{getFullName()}</h1>
+              <p className="text-muted-foreground">
+                {user?.email || "Email não disponível"}
+              </p>
             </div>
           </div>
 
@@ -94,10 +121,11 @@ const Profile = () => {
                       <Button
                         size="sm"
                         onClick={handleSave}
+                        disabled={loading}
                         className="bg-netflix-red hover:bg-netflix-red/90 flex items-center gap-1"
                       >
                         <Save className="w-4 h-4" />
-                        Salvar
+                        {loading ? "Salvando..." : "Salvar"}
                       </Button>
                     </div>
                   )}
@@ -105,12 +133,23 @@ const Profile = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nome Completo</Label>
+                  <Label htmlFor="first_name">Nome</Label>
                   <Input 
-                    id="name" 
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    id="first_name" 
+                    value={formData.first_name}
+                    onChange={(e) => handleInputChange('first_name', e.target.value)}
                     disabled={!isEditing}
+                    placeholder="Digite seu nome"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="last_name">Sobrenome</Label>
+                  <Input 
+                    id="last_name" 
+                    value={formData.last_name}
+                    onChange={(e) => handleInputChange('last_name', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="Digite seu sobrenome"
                   />
                 </div>
                 <div className="space-y-2">
@@ -118,10 +157,11 @@ const Profile = () => {
                   <Input 
                     id="email" 
                     type="email" 
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    disabled={!isEditing}
+                    value={user?.email || ""}
+                    disabled={true}
+                    className="bg-muted"
                   />
+                  <p className="text-xs text-muted-foreground">O email não pode ser alterado por aqui</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Telefone</Label>
@@ -130,24 +170,16 @@ const Profile = () => {
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     disabled={!isEditing}
+                    placeholder="(11) 99999-9999"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="address">Endereço</Label>
+                  <Label htmlFor="birth_date">Data de Nascimento</Label>
                   <Input 
-                    id="address" 
-                    value={formData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    disabled={!isEditing}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="birthdate">Data de Nascimento</Label>
-                  <Input 
-                    id="birthdate" 
+                    id="birth_date" 
                     type="date" 
-                    value={formData.birthdate}
-                    onChange={(e) => handleInputChange('birthdate', e.target.value)}
+                    value={formData.birth_date}
+                    onChange={(e) => handleInputChange('birth_date', e.target.value)}
                     disabled={!isEditing}
                   />
                 </div>
