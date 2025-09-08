@@ -8,17 +8,19 @@ import { useState } from "react";
 interface ConfirmPresenceFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (data: any) => void;
+  onConfirm: (data: any) => Promise<boolean>;
   eventTitle: string;
+  eventId: string;
 }
 
-const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle }: ConfirmPresenceFormProps) => {
+const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId }: ConfirmPresenceFormProps) => {
   const [formData, setFormData] = useState({
     responsibleName: "",
     participantName: "",
     whatsapp: "",
     guests: [""]
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const addGuest = () => {
     setFormData(prev => ({
@@ -41,17 +43,25 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle }: Confirm
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onConfirm(formData);
-    onClose();
-    // Reset form
-    setFormData({
-      responsibleName: "",
-      participantName: "",
-      whatsapp: "",
-      guests: [""]
-    });
+    setIsSubmitting(true);
+    
+    try {
+      const success = await onConfirm(formData);
+      if (success) {
+        onClose();
+        // Reset form
+        setFormData({
+          responsibleName: "",
+          participantName: "",
+          whatsapp: "",
+          guests: [""]
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatWhatsApp = (value: string) => {
@@ -201,9 +211,10 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle }: Confirm
             <Button
               type="submit"
               onClick={handleSubmit}
+              disabled={isSubmitting}
               className="btn-netflix flex-1 text-lg py-3"
             >
-              Confirmar Presença
+              {isSubmitting ? "Confirmando..." : "Confirmar Presença"}
             </Button>
             <Button
               type="button"

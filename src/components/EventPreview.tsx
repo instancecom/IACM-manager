@@ -3,14 +3,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useEventConfirmations } from "@/hooks/useEventConfirmations";
 import ConfirmPresenceForm from "./ConfirmPresenceForm";
 
 interface EventPreviewProps {
   isOpen: boolean;
   onClose: () => void;
   event: {
+    id: string;
     title: string;
     date: string;
     location: string;
@@ -26,6 +28,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [showConfirmForm, setShowConfirmForm] = useState(false);
   const isMobile = useIsMobile();
+  const { confirmPresence } = useEventConfirmations();
 
   if (!event) return null;
 
@@ -33,10 +36,14 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
     setShowConfirmForm(true);
   };
 
-  const handleFormConfirm = (formData: any) => {
-    setIsConfirmed(true);
-    console.log('Dados de confirmação:', formData);
-    // Aqui você pode adicionar a lógica para salvar os dados
+  const handleFormConfirm = async (formData: any) => {
+    if (!event?.id) return false;
+    
+    const success = await confirmPresence(event.id, formData);
+    if (success) {
+      setIsConfirmed(true);
+    }
+    return success;
   };
 
   const EventContent = () => (
@@ -171,6 +178,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
           onClose={() => setShowConfirmForm(false)}
           onConfirm={handleFormConfirm}
           eventTitle={event?.title || ""}
+          eventId={event?.id || ""}
         />
       </>
     );
@@ -302,6 +310,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
         onClose={() => setShowConfirmForm(false)}
         onConfirm={handleFormConfirm}
         eventTitle={event?.title || ""}
+        eventId={event?.id || ""}
       />
     </>
   );
