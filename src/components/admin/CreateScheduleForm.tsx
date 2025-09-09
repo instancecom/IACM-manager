@@ -77,6 +77,11 @@ const CreateScheduleForm = () => {
         description: `${data.personName} foi escalado(a) para ${data.scheduleType} no dia ${format(data.date, "dd/MM/yyyy")}.`,
       });
       form.reset();
+      
+      // Refresh the page to show updated schedule list
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       toast({
         title: "Erro inesperado",

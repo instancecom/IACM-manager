@@ -7,9 +7,9 @@ import { Calendar, Clock, User, Phone, Mail, Loader2 } from "lucide-react";
 import { useSchedules } from "@/hooks/useSchedules";
 
 const SchedulesView = () => {
-  const { data: schedules = [], isLoading, error } = useSchedules();
+  const { schedules, loading, error } = useSchedules();
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin" />

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { Edit, Trash2, Eye, Calendar } from "lucide-react";
+import { Edit, Trash2, Eye, Calendar, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -9,37 +9,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-
-// Mock data - será substituído pela integração com o banco de dados
-const mockSchedules = [
-  {
-    id: 1,
-    scheduleType: "louvor",
-    date: new Date("2025-08-24T19:00:00"),
-    personName: "João Silva"
-  },
-  {
-    id: 2,
-    scheduleType: "recepcao",
-    date: new Date("2025-08-25T09:00:00"),
-    personName: "Maria Santos"
-  },
-  {
-    id: 3,
-    scheduleType: "marketing",
-    date: new Date("2025-08-27T15:00:00"),
-    personName: "Pedro Costa"
-  },
-  {
-    id: 4,
-    scheduleType: "obreiros",
-    date: new Date("2025-08-30T18:00:00"),
-    personName: "Ana Silva"
-  }
-];
+import { useSchedules } from "@/hooks/useSchedules";
+import { supabase } from "@/integrations/supabase/client";
 
 const scheduleLabels = {
   louvor: "Louvor",
@@ -48,50 +21,114 @@ const scheduleLabels = {
   obreiros: "Obreiros"
 };
 
-const SchedulesList = () => {
-  const [schedules, setSchedules] = useState(mockSchedules);
-  const [selectedSchedule, setSelectedSchedule] = useState<any>(null);
-  const [editingSchedule, setEditingSchedule] = useState<any>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+interface Schedule {
+  id: string;
+  schedule_type: string;
+  date: string;
+  member_id?: string;
+  external_person_name?: string;
+  external_person_phone?: string;
+  notes?: string;
+  members?: {
+    first_name: string;
+    last_name: string;
+    whatsapp: string;
+    photo_url?: string;
+  };
+}
 
-  const handleDelete = (id: number) => {
-    setSchedules(schedules.filter(schedule => schedule.id !== id));
-    toast({
-      title: "Escala removida",
-      description: "A escala foi removida com sucesso.",
-    });
+const SchedulesList = () => {
+  const { schedules, loading, error, refetch } = useSchedules();
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null);
+  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleDelete = async (id: string) => {
+    try {
+      setIsDeleting(id);
+      
+      const { error } = await supabase
+        .from('schedules')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Escala removida",
+        description: "A escala foi removida com sucesso.",
+      });
+      
+      refetch();
+    } catch (err) {
+      console.error('Error deleting schedule:', err);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover a escala. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
-  const handleEdit = (schedule: any) => {
+  const handleEdit = (schedule: Schedule) => {
     setEditingSchedule({ ...schedule });
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
-    if (editingSchedule) {
-      setSchedules(schedules.map(schedule => 
-        schedule.id === editingSchedule.id ? editingSchedule : schedule
-      ));
+  const handleSaveEdit = async () => {
+    if (!editingSchedule) return;
+
+    try {
+      setIsSaving(true);
+      
+      const { error } = await supabase
+        .from('schedules')
+        .update({
+          schedule_type: editingSchedule.schedule_type as any,
+          date: editingSchedule.date,
+          external_person_name: editingSchedule.external_person_name,
+          external_person_phone: editingSchedule.external_person_phone,
+          notes: editingSchedule.notes,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingSchedule.id);
+
+      if (error) throw error;
+
       setIsEditDialogOpen(false);
       setEditingSchedule(null);
       toast({
         title: "Escala atualizada",
         description: "A escala foi atualizada com sucesso.",
       });
+      
+      refetch();
+    } catch (err) {
+      console.error('Error updating schedule:', err);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar a escala. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const formatDateTimeForInput = (date: Date) => {
+  const formatDateTimeForInput = (dateString: string) => {
+    const date = new Date(dateString);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    return `${year}-${month}-${day}`;
   };
 
   const getScheduleBadge = (scheduleType: string) => {
-    const colors = {
+    const colors: Record<string, string> = {
       louvor: "default",
       marketing: "secondary",
       recepcao: "outline",
@@ -99,25 +136,50 @@ const SchedulesList = () => {
     };
     
     return (
-      <Badge variant={colors[scheduleType as keyof typeof colors] as any}>
-        {scheduleLabels[scheduleType as keyof typeof scheduleLabels]}
+      <Badge variant={colors[scheduleType] as any}>
+        {scheduleLabels[scheduleType as keyof typeof scheduleLabels] || scheduleType}
       </Badge>
     );
   };
 
-  const getStatusBadge = (date: Date) => {
+  const getStatusBadge = (dateString: string) => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const scheduleDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const scheduleDate = new Date(dateString);
+    const scheduleDateOnly = new Date(scheduleDate.getFullYear(), scheduleDate.getMonth(), scheduleDate.getDate());
     
-    if (scheduleDate > today) {
+    if (scheduleDateOnly > today) {
       return <Badge variant="secondary">Próximo</Badge>;
-    } else if (scheduleDate.getTime() === today.getTime()) {
+    } else if (scheduleDateOnly.getTime() === today.getTime()) {
       return <Badge variant="default">Hoje</Badge>;
     } else {
       return <Badge variant="outline">Finalizado</Badge>;
     }
   };
+
+  const getPersonName = (schedule: Schedule) => {
+    if (schedule.members) {
+      return `${schedule.members.first_name} ${schedule.members.last_name}`;
+    }
+    return schedule.external_person_name || "Não definido";
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="w-6 h-6 animate-spin" />
+        <span className="ml-2">Carregando escalas...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-600">
+        Erro ao carregar escalas: {error}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -134,11 +196,11 @@ const SchedulesList = () => {
         <TableBody>
           {schedules.map((schedule) => (
             <TableRow key={schedule.id}>
-              <TableCell>{getScheduleBadge(schedule.scheduleType)}</TableCell>
+              <TableCell>{getScheduleBadge(schedule.schedule_type)}</TableCell>
               <TableCell>
-                {format(schedule.date, "dd/MM/yyyy")}
+                {format(new Date(schedule.date), "dd/MM/yyyy")}
               </TableCell>
-              <TableCell className="font-medium">{schedule.personName}</TableCell>
+              <TableCell className="font-medium">{getPersonName(schedule)}</TableCell>
               <TableCell>{getStatusBadge(schedule.date)}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
@@ -162,14 +224,24 @@ const SchedulesList = () => {
                       {selectedSchedule && (
                         <div className="space-y-4">
                           <div>
-                            <strong>Tipo de Escala:</strong> {getScheduleBadge(selectedSchedule.scheduleType)}
+                            <strong>Tipo de Escala:</strong> {getScheduleBadge(selectedSchedule.schedule_type)}
                           </div>
                           <div>
-                            <strong>Data:</strong> {format(selectedSchedule.date, "dd/MM/yyyy")}
+                            <strong>Data:</strong> {format(new Date(selectedSchedule.date), "dd/MM/yyyy")}
                           </div>
                           <div>
-                            <strong>Pessoa Escalada:</strong> {selectedSchedule.personName}
+                            <strong>Pessoa Escalada:</strong> {getPersonName(selectedSchedule)}
                           </div>
+                          {selectedSchedule.external_person_phone && (
+                            <div>
+                              <strong>Telefone:</strong> {selectedSchedule.external_person_phone}
+                            </div>
+                          )}
+                          {selectedSchedule.notes && (
+                            <div>
+                              <strong>Observações:</strong> {selectedSchedule.notes}
+                            </div>
+                          )}
                           <div>
                             <strong>Status:</strong> {getStatusBadge(selectedSchedule.date)}
                           </div>
@@ -188,15 +260,19 @@ const SchedulesList = () => {
                   
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Trash2 className="w-4 h-4" />
+                      <Button variant="outline" size="sm" disabled={isDeleting === schedule.id}>
+                        {isDeleting === schedule.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Tem certeza que deseja remover a escala de {scheduleLabels[schedule.scheduleType as keyof typeof scheduleLabels]} para {schedule.personName}? Esta ação não pode ser desfeita.
+                          Tem certeza que deseja remover a escala de {scheduleLabels[schedule.schedule_type as keyof typeof scheduleLabels]} para {getPersonName(schedule)}? Esta ação não pode ser desfeita.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -214,7 +290,7 @@ const SchedulesList = () => {
         </TableBody>
       </Table>
       
-      {schedules.length === 0 && (
+      {schedules.length === 0 && !loading && (
         <div className="text-center py-8 text-muted-foreground">
           Nenhuma escala cadastrada
         </div>
@@ -234,10 +310,10 @@ const SchedulesList = () => {
               <div className="grid gap-2">
                 <Label htmlFor="scheduleType">Tipo de Escala</Label>
                 <Select
-                  value={editingSchedule.scheduleType}
+                  value={editingSchedule.schedule_type}
                   onValueChange={(value) => setEditingSchedule({
                     ...editingSchedule,
-                    scheduleType: value
+                    schedule_type: value
                   })}
                 >
                   <SelectTrigger>
@@ -252,35 +328,68 @@ const SchedulesList = () => {
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="date">Data e Horário</Label>
+                <Label htmlFor="date">Data</Label>
                 <Input
-                  type="datetime-local"
+                  type="date"
                   value={formatDateTimeForInput(editingSchedule.date)}
                   onChange={(e) => setEditingSchedule({
                     ...editingSchedule,
-                    date: new Date(e.target.value)
+                    date: e.target.value
                   })}
                 />
               </div>
+              {!editingSchedule.member_id && (
+                <>
+                  <div className="grid gap-2">
+                    <Label htmlFor="personName">Nome da Pessoa</Label>
+                    <Input
+                      id="personName"
+                      value={editingSchedule.external_person_name || ""}
+                      onChange={(e) => setEditingSchedule({
+                        ...editingSchedule,
+                        external_person_name: e.target.value
+                      })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="personPhone">Telefone</Label>
+                    <Input
+                      id="personPhone"
+                      value={editingSchedule.external_person_phone || ""}
+                      onChange={(e) => setEditingSchedule({
+                        ...editingSchedule,
+                        external_person_phone: e.target.value
+                      })}
+                    />
+                  </div>
+                </>
+              )}
               <div className="grid gap-2">
-                <Label htmlFor="personName">Pessoa Escalada</Label>
+                <Label htmlFor="notes">Observações</Label>
                 <Input
-                  id="personName"
-                  value={editingSchedule.personName}
+                  id="notes"
+                  value={editingSchedule.notes || ""}
                   onChange={(e) => setEditingSchedule({
                     ...editingSchedule,
-                    personName: e.target.value
+                    notes: e.target.value
                   })}
                 />
               </div>
             </div>
           )}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isSaving}>
               Cancelar
             </Button>
-            <Button onClick={handleSaveEdit}>
-              Salvar Alterações
+            <Button onClick={handleSaveEdit} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Salvando...
+                </>
+              ) : (
+                "Salvar Alterações"
+              )}
             </Button>
           </div>
         </DialogContent>
