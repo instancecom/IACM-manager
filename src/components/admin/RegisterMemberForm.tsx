@@ -67,6 +67,11 @@ const RegisterMemberForm = () => {
       });
       form.reset();
       setPhoto(null);
+      
+      // Refresh the page to show updated member list
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       toast({
         title: "Erro inesperado",

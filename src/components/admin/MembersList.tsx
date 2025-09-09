@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit, Trash2, Eye, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -8,90 +8,109 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-
-// Mock data - será substituído pela integração com o banco de dados
-const mockMembers = [
-  {
-    id: 1,
-    firstName: "Carlos",
-    lastName: "Oliveira",
-    birthDate: new Date("1985-12-03"),
-    whatsapp: "(11) 99999-4444",
-    photo: null,
-    status: "Ativo"
-  },
-  {
-    id: 2,
-    firstName: "Ana",
-    lastName: "Ferreira",
-    birthDate: new Date("1990-07-18"),
-    whatsapp: "(11) 99999-5555",
-    photo: null,
-    status: "Ativo"
-  },
-  {
-    id: 3,
-    firstName: "Lucas",
-    lastName: "Rodrigues",
-    birthDate: new Date("1987-11-25"),
-    whatsapp: "(11) 99999-6666",
-    photo: null,
-    status: "Inativo"
-  },
-  {
-    id: 4,
-    firstName: "Beatriz",
-    lastName: "Lima",
-    birthDate: new Date("1993-04-12"),
-    whatsapp: "(11) 99999-7777",
-    photo: null,
-    status: "Ativo"
-  }
-];
+import { useMembers, type Member } from "@/hooks/useMembers";
+import { supabase } from "@/integrations/supabase/client";
 
 const MembersList = () => {
-  const [members, setMembers] = useState(mockMembers);
-  const [selectedMember, setSelectedMember] = useState<any>(null);
-  const [editingMember, setEditingMember] = useState<any>(null);
+  const { members, loading, error, refetch } = useMembers();
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleDelete = (id: number) => {
-    setMembers(members.filter(member => member.id !== id));
-    toast({
-      title: "Membro removido",
-      description: "O membro foi removido da comunidade com sucesso.",
-    });
+  const handleDelete = async (id: string) => {
+    try {
+      setIsDeleting(id);
+      
+      // Delete from ministry_members first (if exists)
+      await supabase
+        .from('ministry_members')
+        .delete()
+        .eq('member_id', id);
+      
+      // Then delete from members
+      const { error } = await supabase
+        .from('members')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Membro removido",
+        description: "O membro foi removido da comunidade com sucesso.",
+      });
+      
+      refetch();
+    } catch (err) {
+      console.error('Error deleting member:', err);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover o membro. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
-  const handleEdit = (member: any) => {
+  const handleEdit = (member: Member) => {
     setEditingMember({ ...member });
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
-    if (editingMember) {
-      setMembers(members.map(member => 
-        member.id === editingMember.id ? editingMember : member
-      ));
+  const handleSaveEdit = async () => {
+    if (!editingMember) return;
+
+    try {
+      setIsSaving(true);
+      
+      const { error } = await supabase
+        .from('members')
+        .update({
+          first_name: editingMember.first_name,
+          last_name: editingMember.last_name,
+          whatsapp: editingMember.whatsapp,
+          birth_date: editingMember.birth_date,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', editingMember.id);
+
+      if (error) throw error;
+
       setIsEditDialogOpen(false);
       setEditingMember(null);
       toast({
         title: "Membro atualizado",
         description: "As informações do membro foram atualizadas com sucesso.",
       });
+      
+      refetch();
+    } catch (err) {
+      console.error('Error updating member:', err);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar o membro. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const formatDateForInput = (date: Date) => {
+  const formatDateForInput = (dateString: string) => {
+    const date = new Date(dateString);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
 
-  const calculateAge = (birthDate: Date) => {
+  const calculateAge = (birthDateString: string) => {
+    const birthDate = new Date(birthDateString);
     const today = new Date();
     const age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -103,6 +122,23 @@ const MembersList = () => {
     return age;
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="w-6 h-6 animate-spin" />
+        <span className="ml-2">Carregando membros...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-600">
+        Erro ao carregar membros: {error}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <Table>
@@ -113,7 +149,7 @@ const MembersList = () => {
             <TableHead>WhatsApp</TableHead>
             <TableHead>Idade</TableHead>
             <TableHead>Data de Nascimento</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>Ministério</TableHead>
             <TableHead>Ações</TableHead>
           </TableRow>
         </TableHeader>
@@ -122,14 +158,14 @@ const MembersList = () => {
             <TableRow key={member.id}>
               <TableCell>
                 <Avatar>
-                  <AvatarImage src={member.photo || ""} />
+                  <AvatarImage src={member.photo_url || ""} />
                   <AvatarFallback>
-                    {member.firstName[0]}{member.lastName[0]}
+                    {member.first_name[0]}{member.last_name[0]}
                   </AvatarFallback>
                 </Avatar>
               </TableCell>
               <TableCell className="font-medium">
-                {member.firstName} {member.lastName}
+                {member.first_name} {member.last_name}
               </TableCell>
               <TableCell>
                 <a 
@@ -141,14 +177,16 @@ const MembersList = () => {
                   {member.whatsapp}
                 </a>
               </TableCell>
-              <TableCell>{calculateAge(member.birthDate)} anos</TableCell>
-              <TableCell>{format(member.birthDate, "dd/MM/yyyy")}</TableCell>
+              <TableCell>{calculateAge(member.birth_date)} anos</TableCell>
+              <TableCell>{format(new Date(member.birth_date), "dd/MM/yyyy")}</TableCell>
               <TableCell>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  member.status === "Ativo" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                }`}>
-                  {member.status}
-                </span>
+                {member.ministry ? (
+                  <Badge variant="secondary">
+                    {member.ministry.name} - {member.ministry.role}
+                  </Badge>
+                ) : (
+                  <span className="text-muted-foreground text-sm">Sem ministério</span>
+                )}
               </TableCell>
               <TableCell>
                 <div className="flex gap-2">
@@ -164,7 +202,7 @@ const MembersList = () => {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>{selectedMember?.firstName} {selectedMember?.lastName}</DialogTitle>
+                        <DialogTitle>{selectedMember?.first_name} {selectedMember?.last_name}</DialogTitle>
                         <DialogDescription>
                           Detalhes do membro
                         </DialogDescription>
@@ -173,13 +211,13 @@ const MembersList = () => {
                         <div className="space-y-4">
                           <div className="flex items-center gap-4">
                             <Avatar className="w-16 h-16">
-                              <AvatarImage src={selectedMember.photo || ""} />
+                              <AvatarImage src={selectedMember.photo_url || ""} />
                               <AvatarFallback className="text-lg">
-                                {selectedMember.firstName[0]}{selectedMember.lastName[0]}
+                                {selectedMember.first_name[0]}{selectedMember.last_name[0]}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <h3 className="font-semibold text-lg">{selectedMember.firstName} {selectedMember.lastName}</h3>
+                              <h3 className="font-semibold text-lg">{selectedMember.first_name} {selectedMember.last_name}</h3>
                               <p className="text-muted-foreground">Membro da Comunidade</p>
                             </div>
                           </div>
@@ -195,11 +233,16 @@ const MembersList = () => {
                             </a>
                           </div>
                           <div>
-                            <strong>Data de Nascimento:</strong> {format(selectedMember.birthDate, "dd/MM/yyyy")}
+                            <strong>Data de Nascimento:</strong> {format(new Date(selectedMember.birth_date), "dd/MM/yyyy")}
                           </div>
                           <div>
-                            <strong>Idade:</strong> {calculateAge(selectedMember.birthDate)} anos
+                            <strong>Idade:</strong> {calculateAge(selectedMember.birth_date)} anos
                           </div>
+                          {selectedMember.ministry && (
+                            <div>
+                              <strong>Ministério:</strong> {selectedMember.ministry.name} ({selectedMember.ministry.role})
+                            </div>
+                          )}
                         </div>
                       )}
                     </DialogContent>
@@ -215,15 +258,19 @@ const MembersList = () => {
                   
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <Trash2 className="w-4 h-4" />
+                      <Button variant="outline" size="sm" disabled={isDeleting === member.id}>
+                        {isDeleting === member.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Tem certeza que deseja remover {member.firstName} {member.lastName} da comunidade? Esta ação não pode ser desfeita.
+                          Tem certeza que deseja remover {member.first_name} {member.last_name} da comunidade? Esta ação não pode ser desfeita.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -241,7 +288,7 @@ const MembersList = () => {
         </TableBody>
       </Table>
       
-      {members.length === 0 && (
+      {members.length === 0 && !loading && (
         <div className="text-center py-8 text-muted-foreground">
           Nenhum membro cadastrado
         </div>
@@ -262,10 +309,10 @@ const MembersList = () => {
                 <Label htmlFor="firstName">Nome</Label>
                 <Input
                   id="firstName"
-                  value={editingMember.firstName}
+                  value={editingMember.first_name}
                   onChange={(e) => setEditingMember({
                     ...editingMember,
-                    firstName: e.target.value
+                    first_name: e.target.value
                   })}
                 />
               </div>
@@ -273,10 +320,10 @@ const MembersList = () => {
                 <Label htmlFor="lastName">Sobrenome</Label>
                 <Input
                   id="lastName"
-                  value={editingMember.lastName}
+                  value={editingMember.last_name}
                   onChange={(e) => setEditingMember({
                     ...editingMember,
-                    lastName: e.target.value
+                    last_name: e.target.value
                   })}
                 />
               </div>
@@ -296,39 +343,28 @@ const MembersList = () => {
                 <Input
                   id="birthDate"
                   type="date"
-                  value={formatDateForInput(editingMember.birthDate)}
+                  value={formatDateForInput(editingMember.birth_date)}
                   onChange={(e) => setEditingMember({
                     ...editingMember,
-                    birthDate: new Date(e.target.value)
+                    birth_date: e.target.value
                   })}
                 />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="status">Status</Label>
-                <Select 
-                  value={editingMember.status || "Ativo"} 
-                  onValueChange={(value) => setEditingMember({
-                    ...editingMember,
-                    status: value
-                  })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Ativo">Ativo</SelectItem>
-                    <SelectItem value="Inativo">Inativo</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </div>
           )}
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isSaving}>
               Cancelar
             </Button>
-            <Button onClick={handleSaveEdit}>
-              Salvar Alterações
+            <Button onClick={handleSaveEdit} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Salvando...
+                </>
+              ) : (
+                "Salvar Alterações"
+              )}
             </Button>
           </div>
         </DialogContent>
