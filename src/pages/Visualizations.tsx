@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Users, Calendar, Music } from "lucide-react";
+import { BarChart3, Users, Calendar, Music, CheckCircle } from "lucide-react";
 import Header from "@/components/Header";
 import MinistriesView from "@/components/visualizations/MinistriesView";
 import SchedulesView from "@/components/visualizations/SchedulesView";
 import MembersView from "@/components/visualizations/MembersView";
+import EventConfirmationsView from "@/components/visualizations/EventConfirmationsView";
 import DashboardOverview from "@/components/visualizations/DashboardOverview";
 
 const Visualizations = () => {
@@ -18,7 +19,7 @@ const Visualizations = () => {
           <h1 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-enhanced-contrast tracking-tight">Consultar Cadastros</h1>
           
           <Tabs defaultValue="schedules" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-card border border-border">
+            <TabsList className="grid w-full grid-cols-4 bg-card border border-border">
               <TabsTrigger 
                 value="schedules" 
                 className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
@@ -42,6 +43,14 @@ const Visualizations = () => {
                 <Users className="w-4 h-4" />
                 <span className="hidden sm:inline">Todos os Membros</span>
                 <span className="sm:hidden">Membros</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="confirmations" 
+                className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <CheckCircle className="w-4 h-4" />
+                <span className="hidden sm:inline">Confirmações</span>
+                <span className="sm:hidden">Confirm.</span>
               </TabsTrigger>
             </TabsList>
             
@@ -83,6 +92,20 @@ const Visualizations = () => {
                 </CardHeader>
                 <CardContent className="p-6">
                   <MembersView />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="confirmations" className="mt-6">
+              <Card className="border-border shadow-lg">
+                <CardHeader className="bg-card">
+                  <CardTitle className="text-xl font-bold text-card-foreground">Confirmações de Eventos</CardTitle>
+                  <CardDescription className="text-enhanced-muted">
+                    Visualize quem confirmou presença em cada evento
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <EventConfirmationsView />
                 </CardContent>
               </Card>
             </TabsContent>
