@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Users, CalendarDays, Check, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Loader2, Users, CalendarDays, Check, X, Eye } from "lucide-react";
 import { useEventConfirmations } from "@/hooks/useEventConfirmations";
 import { useEvents } from "@/hooks/useEvents";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +27,8 @@ const EventConfirmationsView = () => {
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [confirmations, setConfirmations] = useState<MemberWithConfirmation[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<MemberWithConfirmation | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const fetchEventConfirmations = async (eventId: string) => {
     if (!eventId) return;
@@ -161,7 +164,14 @@ const EventConfirmationsView = () => {
           ) : (
             <div className="grid gap-3">
               {confirmations.map((member) => (
-                <Card key={member.id} className="border-border">
+                <Card 
+                  key={member.id} 
+                  className="border-border cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => {
+                    setSelectedMember(member);
+                    setIsPreviewOpen(true);
+                  }}
+                >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -188,6 +198,9 @@ const EventConfirmationsView = () => {
                       </div>
                       
                       <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         {member.confirmed ? (
                           <Badge className="bg-green-600 text-white hover:bg-green-700">
                             <Check className="h-3 w-3 mr-1" />
@@ -208,6 +221,73 @@ const EventConfirmationsView = () => {
           )}
         </div>
       )}
+
+      {/* Preview Modal */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detalhes da Confirmação</DialogTitle>
+          </DialogHeader>
+          
+          {selectedMember && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={selectedMember.photo_url} />
+                  <AvatarFallback className="bg-primary/10 text-primary font-medium text-lg">
+                    {selectedMember.first_name.charAt(0)}{selectedMember.last_name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg text-card-foreground">
+                    {selectedMember.first_name} {selectedMember.last_name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    WhatsApp: {selectedMember.whatsapp}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-muted-foreground">Status:</span>
+                  {selectedMember.confirmed ? (
+                    <Badge className="bg-green-600 text-white">
+                      <Check className="h-3 w-3 mr-1" />
+                      Confirmado
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="border-red-300 text-red-600">
+                      <X className="h-3 w-3 mr-1" />
+                      Não confirmado
+                    </Badge>
+                  )}
+                </div>
+
+                {selectedMember.confirmed_at && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-muted-foreground">Confirmado em:</span>
+                    <span className="text-sm text-card-foreground">
+                      {format(new Date(selectedMember.confirmed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                    </span>
+                  </div>
+                )}
+
+                {selectedEvent && (
+                  <div className="space-y-2 pt-3 border-t">
+                    <h4 className="text-sm font-medium text-card-foreground">Evento:</h4>
+                    <p className="text-sm text-muted-foreground">{selectedEvent.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(new Date(selectedEvent.start_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })} às {selectedEvent.start_time}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
