@@ -75,21 +75,32 @@ const Dashboard = () => {
   const sevenDaysFromNow = addDays(now, 7);
   const thirtyDaysAgo = subDays(now, 30);
   
-  // Recently registered events (last 30 days, regardless of status)
-  const recentEvents = allEvents.filter(event => {
-    const createdAt = parseISO(event.event?.created_at || event.event?.start_date);
-    return isAfter(createdAt, thirtyDaysAgo);
-  }).slice(0, 6); // Limit to 6 most recent
+  // Recently registered events (last 30 days) - only active/upcoming events
+  const recentEvents = allEvents
+    .filter(event => {
+      const createdAt = parseISO(event.event?.created_at || event.event?.start_date);
+      return isAfter(createdAt, thirtyDaysAgo) && 
+             (event.status === 'upcoming' || event.status === 'active');
+    })
+    .sort((a, b) => {
+      const aCreated = parseISO(a.event?.created_at || a.event?.start_date);
+      const bCreated = parseISO(b.event?.created_at || b.event?.start_date);
+      return bCreated.getTime() - aCreated.getTime(); // Most recent first
+    })
+    .slice(0, 6);
   
-  // Upcoming events (next 7 days)
+  // Upcoming events (next 7 days) - only active events
   const upcomingEvents = allEvents.filter(event => 
-    event.status === 'upcoming' && 
+    (event.status === 'upcoming' || event.status === 'active') && 
     isAfter(event.dateTime, now) && 
     isBefore(event.dateTime, sevenDaysFromNow)
   );
   
   // Finished events
-  const finishedEvents = allEvents.filter(event => event.status === 'finished');
+  const finishedEvents = allEvents
+    .filter(event => event.status === 'finished')
+    .sort((a, b) => b.dateTime.getTime() - a.dateTime.getTime()) // Most recent finished first
+    .slice(0, 6);
 
   const quickActions = [
     {
