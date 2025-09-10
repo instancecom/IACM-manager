@@ -41,7 +41,8 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
     
     const success = await confirmPresence(event.id, formData);
     if (success) {
-      setIsConfirmed(true);
+      setShowConfirmForm(false);
+      // Não alterar o isConfirmed para permitir novas confirmações
     }
     return success;
   };
@@ -121,35 +122,17 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
             </div>
           )}
 
-          {/* Status Badge */}
-          {isConfirmed && (
-            <Badge className="bg-green-600 text-white hover:bg-green-700">
-              <Check className="h-4 w-4 mr-2" />
-              Presença Confirmada
-            </Badge>
-          )}
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-3 pt-6 mt-6 border-t border-netflix-gray-dark">
-          {!isConfirmed ? (
-            <Button 
-              className="btn-netflix w-full text-sm sm:text-lg py-2.5 sm:py-4 min-h-[44px] sm:min-h-[48px] touch-manipulation"
-              onClick={handleConfirmPresence}
-            >
-              <Check className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              Ver Detalhes
-            </Button>
-          ) : (
-            <Button 
-              variant="outline" 
-              className="w-full text-sm sm:text-lg py-2.5 sm:py-4 min-h-[44px] sm:min-h-[48px] border-green-600 text-green-400 hover:bg-green-600/10"
-              disabled
-            >
-              <Check className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              Presença Confirmada
-            </Button>
-          )}
+          <Button 
+            className="btn-netflix w-full text-sm sm:text-lg py-2.5 sm:py-4 min-h-[44px] sm:min-h-[48px] touch-manipulation"
+            onClick={handleConfirmPresence}
+          >
+            <Check className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+            Confirmar Presença
+          </Button>
           
           <Button 
             variant="outline" 
@@ -260,36 +243,18 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                     </div>
                   )}
 
-                  {/* Status Badge */}
-                  {isConfirmed && (
-                    <Badge className="bg-green-600 text-white hover:bg-green-700">
-                      <Check className="h-4 w-4 mr-2" />
-                      Presença Confirmada
-                    </Badge>
-                  )}
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-netflix-gray-dark">
-                {!isConfirmed ? (
-                  <Button 
-                    className="btn-netflix flex-1 text-lg py-3"
-                    onClick={handleConfirmPresence}
-                  >
-                    <Check className="h-5 w-5 mr-2" />
-                    Confirmar Presença
-                  </Button>
-                ) : (
-                  <Button 
-                    variant="outline" 
-                    className="flex-1 text-lg py-3 border-green-600 text-green-400 hover:bg-green-600/10"
-                    disabled
-                  >
-                    <Check className="h-5 w-5 mr-2" />
-                    Presença Confirmada
-                  </Button>
-                )}
+                <Button 
+                  className="btn-netflix flex-1 text-lg py-3"
+                  onClick={handleConfirmPresence}
+                >
+                  <Check className="h-5 w-5 mr-2" />
+                  Confirmar Presença
+                </Button>
                 
                 <Button 
                   variant="outline" 
