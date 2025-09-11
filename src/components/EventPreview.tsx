@@ -73,8 +73,8 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
       </div>
 
       {/* Content Section */}
-      <div className="flex-1 flex flex-col min-h-0">
-        <ScrollArea className="flex-1 px-4 sm:px-6">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6">
           <div className="space-y-6 py-4">
             {/* Title */}
             <div>
@@ -111,7 +111,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
             {/* Description */}
             <div>
               <h3 className="text-base sm:text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
-              <p className="text-sm sm:text-base text-netflix-gray-light leading-relaxed">
+              <p className="text-sm sm:text-base text-netflix-gray-light leading-relaxed whitespace-pre-line">
                 {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
               </p>
             </div>
@@ -123,8 +123,11 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                 <p className="text-sm sm:text-base text-netflix-gray-light">{event.organizer}</p>
               </div>
             )}
+
+            {/* Extra space to ensure content is not hidden behind buttons */}
+            <div className="pb-4"></div>
           </div>
-        </ScrollArea>
+        </div>
 
         {/* Action Buttons - Fixed at bottom */}
         <div className="flex-shrink-0 p-4 sm:p-6 border-t border-netflix-gray-dark bg-netflix-dark">
@@ -197,15 +200,15 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
             </div>
 
             {/* Content Section - Desktop */}
-            <div className="w-1/2 flex flex-col min-h-0">
+            <div className="w-1/2 flex flex-col min-h-0 overflow-hidden">
               <div className="p-8 flex-1 overflow-hidden">
-                <DialogHeader className="mb-6">
+                <DialogHeader className="mb-6 flex-shrink-0">
                   <DialogTitle className="text-3xl font-bold text-netflix-white mb-4">
                     {event.title}
                   </DialogTitle>
                 </DialogHeader>
 
-                <ScrollArea className="h-full pr-4">
+                <div className="flex-1 overflow-y-auto pr-4">
                   <div className="space-y-6">
                     {/* Event Details */}
                     <div className="space-y-4">
@@ -235,7 +238,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                     {/* Description */}
                     <div>
                       <h3 className="text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
-                      <p className="text-netflix-gray-light leading-relaxed">
+                      <p className="text-netflix-gray-light leading-relaxed whitespace-pre-line">
                         {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
                       </p>
                     </div>
@@ -247,12 +250,15 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                         <p className="text-netflix-gray-light">{event.organizer}</p>
                       </div>
                     )}
+
+                    {/* Extra space to ensure content is not hidden behind buttons */}
+                    <div className="pb-4"></div>
                   </div>
-                </ScrollArea>
+                </div>
               </div>
 
               {/* Action Buttons - Fixed at bottom */}
-              <div className="p-8 pt-4 border-t border-netflix-gray-dark bg-netflix-dark">
+              <div className="flex-shrink-0 p-8 pt-4 border-t border-netflix-gray-dark bg-netflix-dark">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <Button 
                     className="btn-netflix flex-1 text-lg py-3"
