@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEventConfirmations } from "@/hooks/useEventConfirmations";
@@ -109,9 +110,11 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
           {/* Description */}
           <div>
             <h3 className="text-base sm:text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
-            <p className="text-sm sm:text-base text-netflix-gray-light leading-relaxed">
-              {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
-            </p>
+            <ScrollArea className="max-h-40 sm:max-h-60">
+              <p className="text-sm sm:text-base text-netflix-gray-light leading-relaxed pr-4">
+                {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
+              </p>
+            </ScrollArea>
           </div>
 
           {/* Organizer */}
@@ -230,9 +233,11 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                   {/* Description */}
                   <div>
                     <h3 className="text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
-                    <p className="text-netflix-gray-light leading-relaxed">
-                      {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
-                    </p>
+                    <ScrollArea className="max-h-48">
+                      <p className="text-netflix-gray-light leading-relaxed pr-4">
+                        {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
+                      </p>
+                    </ScrollArea>
                   </div>
 
                   {/* Organizer */}
