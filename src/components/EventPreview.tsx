@@ -74,8 +74,8 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
 
       {/* Content Section */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6">
-          <div className="space-y-6 py-4">
+        <ScrollArea className="flex-1">
+          <div className="space-y-6 p-4 sm:p-6">
             {/* Title */}
             <div>
               <h2 className="text-xl sm:text-3xl font-bold text-netflix-white mb-2">
@@ -125,9 +125,9 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
             )}
 
             {/* Extra space to ensure content is not hidden behind buttons */}
-            <div className="pb-4"></div>
+            <div className="pb-20"></div>
           </div>
-        </div>
+        </ScrollArea>
 
         {/* Action Buttons - Fixed at bottom */}
         <div className="flex-shrink-0 p-4 sm:p-6 border-t border-netflix-gray-dark bg-netflix-dark">
@@ -208,8 +208,8 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                   </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto pr-4">
-                  <div className="space-y-6">
+                <ScrollArea className="flex-1">
+                  <div className="space-y-6 pr-4">
                     {/* Event Details */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-3 text-netflix-gray-light">
@@ -252,9 +252,9 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                     )}
 
                     {/* Extra space to ensure content is not hidden behind buttons */}
-                    <div className="pb-4"></div>
+                    <div className="pb-20"></div>
                   </div>
-                </div>
+                </ScrollArea>
               </div>
 
               {/* Action Buttons - Fixed at bottom */}
