@@ -73,77 +73,78 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
       </div>
 
       {/* Content Section */}
-      <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
-        <div className="space-y-6">
-          {/* Title */}
-          <div>
-            <h2 className="text-xl sm:text-3xl font-bold text-netflix-white mb-2">
-              {event.title}
-            </h2>
-          </div>
-
-          {/* Event Details */}
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex items-center gap-3 text-netflix-gray-light">
-              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-netflix-red flex-shrink-0" />
-              <span className="text-sm sm:text-base">{event.date}</span>
+      <div className="flex-1 flex flex-col min-h-0">
+        <ScrollArea className="flex-1 px-4 sm:px-6">
+          <div className="space-y-6 py-4">
+            {/* Title */}
+            <div>
+              <h2 className="text-xl sm:text-3xl font-bold text-netflix-white mb-2">
+                {event.title}
+              </h2>
             </div>
-            
-            {event.time && (
+
+            {/* Event Details */}
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center gap-3 text-netflix-gray-light">
-                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-netflix-red flex-shrink-0" />
-                <span className="text-sm sm:text-base">{event.time}</span>
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-netflix-red flex-shrink-0" />
+                <span className="text-sm sm:text-base">{event.date}</span>
               </div>
-            )}
-            
-            <div className="flex items-center gap-3 text-netflix-gray-light">
-              <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-netflix-red flex-shrink-0" />
-              <span className="text-sm sm:text-base">{event.location}</span>
+              
+              {event.time && (
+                <div className="flex items-center gap-3 text-netflix-gray-light">
+                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-netflix-red flex-shrink-0" />
+                  <span className="text-sm sm:text-base">{event.time}</span>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-3 text-netflix-gray-light">
+                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-netflix-red flex-shrink-0" />
+                <span className="text-sm sm:text-base">{event.location}</span>
+              </div>
+              
+              <div className="flex items-center gap-3 text-netflix-gray-light">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-netflix-red flex-shrink-0" />
+                <span className="text-sm sm:text-base">{event.attendees} pessoas interessadas</span>
+              </div>
             </div>
-            
-            <div className="flex items-center gap-3 text-netflix-gray-light">
-              <Users className="h-4 w-4 sm:h-5 sm:w-5 text-netflix-red flex-shrink-0" />
-              <span className="text-sm sm:text-base">{event.attendees} pessoas interessadas</span>
-            </div>
-          </div>
 
-          {/* Description */}
-          <div>
-            <h3 className="text-base sm:text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
-            <ScrollArea className="max-h-40 sm:max-h-60">
-              <p className="text-sm sm:text-base text-netflix-gray-light leading-relaxed pr-4">
+            {/* Description */}
+            <div>
+              <h3 className="text-base sm:text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
+              <p className="text-sm sm:text-base text-netflix-gray-light leading-relaxed">
                 {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
               </p>
-            </ScrollArea>
-          </div>
-
-          {/* Organizer */}
-          {event.organizer && (
-            <div>
-              <h3 className="text-sm sm:text-lg font-medium text-netflix-white mb-2">Organizador</h3>
-              <p className="text-sm sm:text-base text-netflix-gray-light">{event.organizer}</p>
             </div>
-          )}
 
-        </div>
+            {/* Organizer */}
+            {event.organizer && (
+              <div>
+                <h3 className="text-sm sm:text-lg font-medium text-netflix-white mb-2">Organizador</h3>
+                <p className="text-sm sm:text-base text-netflix-gray-light">{event.organizer}</p>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-3 pt-6 mt-6 border-t border-netflix-gray-dark">
-          <Button 
-            className="btn-netflix w-full text-sm sm:text-lg py-2.5 sm:py-4 min-h-[44px] sm:min-h-[48px] touch-manipulation"
-            onClick={handleConfirmPresence}
-          >
-            <Check className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-            Confirmar Presença
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            className="btn-netflix-outline w-full text-sm sm:text-lg py-2.5 sm:py-4 min-h-[44px] sm:min-h-[48px] touch-manipulation"
-            onClick={onClose}
-          >
-            Mais Informações
-          </Button>
+        {/* Action Buttons - Fixed at bottom */}
+        <div className="flex-shrink-0 p-4 sm:p-6 border-t border-netflix-gray-dark bg-netflix-dark">
+          <div className="flex flex-col gap-3">
+            <Button 
+              className="btn-netflix w-full text-sm sm:text-lg py-2.5 sm:py-4 min-h-[44px] sm:min-h-[48px] touch-manipulation"
+              onClick={handleConfirmPresence}
+            >
+              <Check className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+              Confirmar Presença
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="btn-netflix-outline w-full text-sm sm:text-lg py-2.5 sm:py-4 min-h-[44px] sm:min-h-[48px] touch-manipulation"
+              onClick={onClose}
+            >
+              Mais Informações
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -196,78 +197,79 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
             </div>
 
             {/* Content Section - Desktop */}
-            <div className="w-1/2 p-8 flex flex-col justify-between overflow-y-auto">
-              <div>
+            <div className="w-1/2 flex flex-col min-h-0">
+              <div className="p-8 flex-1 overflow-hidden">
                 <DialogHeader className="mb-6">
                   <DialogTitle className="text-3xl font-bold text-netflix-white mb-4">
                     {event.title}
                   </DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-6 mb-8">
-                  {/* Event Details */}
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 text-netflix-gray-light">
-                      <Calendar className="h-5 w-5 text-netflix-red" />
-                      <span className="text-lg">{event.date}</span>
-                    </div>
-                    
-                    {event.time && (
+                <ScrollArea className="h-full pr-4">
+                  <div className="space-y-6">
+                    {/* Event Details */}
+                    <div className="space-y-4">
                       <div className="flex items-center gap-3 text-netflix-gray-light">
-                        <Clock className="h-5 w-5 text-netflix-red" />
-                        <span className="text-lg">{event.time}</span>
+                        <Calendar className="h-5 w-5 text-netflix-red" />
+                        <span className="text-lg">{event.date}</span>
                       </div>
-                    )}
-                    
-                    <div className="flex items-center gap-3 text-netflix-gray-light">
-                      <MapPin className="h-5 w-5 text-netflix-red" />
-                      <span className="text-lg">{event.location}</span>
+                      
+                      {event.time && (
+                        <div className="flex items-center gap-3 text-netflix-gray-light">
+                          <Clock className="h-5 w-5 text-netflix-red" />
+                          <span className="text-lg">{event.time}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-3 text-netflix-gray-light">
+                        <MapPin className="h-5 w-5 text-netflix-red" />
+                        <span className="text-lg">{event.location}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-3 text-netflix-gray-light">
+                        <Users className="h-5 w-5 text-netflix-red" />
+                        <span className="text-lg">{event.attendees} pessoas interessadas</span>
+                      </div>
                     </div>
-                    
-                    <div className="flex items-center gap-3 text-netflix-gray-light">
-                      <Users className="h-5 w-5 text-netflix-red" />
-                      <span className="text-lg">{event.attendees} pessoas interessadas</span>
-                    </div>
-                  </div>
 
-                  {/* Description */}
-                  <div>
-                    <h3 className="text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
-                    <ScrollArea className="max-h-48">
-                      <p className="text-netflix-gray-light leading-relaxed pr-4">
+                    {/* Description */}
+                    <div>
+                      <h3 className="text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
+                      <p className="text-netflix-gray-light leading-relaxed">
                         {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
                       </p>
-                    </ScrollArea>
-                  </div>
-
-                  {/* Organizer */}
-                  {event.organizer && (
-                    <div>
-                      <h3 className="text-lg font-medium text-netflix-white mb-2">Organizador</h3>
-                      <p className="text-netflix-gray-light">{event.organizer}</p>
                     </div>
-                  )}
 
-                </div>
+                    {/* Organizer */}
+                    {event.organizer && (
+                      <div>
+                        <h3 className="text-lg font-medium text-netflix-white mb-2">Organizador</h3>
+                        <p className="text-netflix-gray-light">{event.organizer}</p>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-netflix-gray-dark">
-                <Button 
-                  className="btn-netflix flex-1 text-lg py-3"
-                  onClick={handleConfirmPresence}
-                >
-                  <Check className="h-5 w-5 mr-2" />
-                  Confirmar Presença
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="btn-netflix-outline flex-1 text-lg py-3"
-                  onClick={onClose}
-                >
-                  Fechar
-                </Button>
+              {/* Action Buttons - Fixed at bottom */}
+              <div className="p-8 pt-4 border-t border-netflix-gray-dark bg-netflix-dark">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button 
+                    className="btn-netflix flex-1 text-lg py-3"
+                    onClick={handleConfirmPresence}
+                  >
+                    <Check className="h-5 w-5 mr-2" />
+                    Confirmar Presença
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="btn-netflix-outline flex-1 text-lg py-3"
+                    onClick={onClose}
+                  >
+                    Fechar
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
