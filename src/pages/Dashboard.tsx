@@ -10,6 +10,7 @@ import EventPreview from "@/components/EventPreview";
 import { useEvents } from "@/hooks/useEvents";
 import { format, parseISO, isAfter, isBefore, subDays, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { getEventStatus, formatEventDateTimeRange } from "@/lib/eventUtils";
 import musicImage from "@/assets/music-ministry.jpg";
 import youthImage from "@/assets/youth-ministry.jpg";
 
@@ -43,28 +44,21 @@ const Dashboard = () => {
 
   // Transform database events to dashboard format
   const allEvents = events.map(event => {
+    const eventStatus = getEventStatus(event.start_date, event.start_time, event.end_date, event.end_time);
     const startDateTime = new Date(`${event.start_date}T${event.start_time}`);
-    const endDateTime = new Date(`${event.end_date}T${event.end_time}`);
-    const now = new Date();
-    
-    let status = 'upcoming';
-    if (endDateTime < now) {
-      status = 'finished';
-    } else if (startDateTime <= now && endDateTime >= now) {
-      status = 'active';
-    }
+    const dateTimeRange = formatEventDateTimeRange(event.start_date, event.start_time, event.end_date, event.end_time);
 
     return {
       id: event.id,
       title: event.title,
-      date: format(parseISO(event.start_date), "dd 'de' MMMM, yyyy", { locale: ptBR }),
-      time: format(parseISO(`1970-01-01T${event.start_time}`), "HH:mm"),
+      date: dateTimeRange,
+      time: `${event.start_time} - ${event.end_time}`,
       location: event.address,
       attendees: Math.floor(Math.random() * 200) + 20, // Placeholder até ter confirmações reais
       image: event.banner_url || musicImage,
       description: event.description,
       organizer: "Organização", // Placeholder até ter dados do criador
-      status,
+      status: eventStatus.status,
       dateTime: startDateTime,
       event // Original event data for modal
     };

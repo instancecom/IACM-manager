@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import EventPreview from "@/components/EventPreview";
 import { useEvents } from "@/hooks/useEvents";
-import { format } from "date-fns";
+import { getEventStatus, formatEventDateTimeRange } from "@/lib/eventUtils";
 import musicImage from "@/assets/music-ministry.jpg";
 import youthImage from "@/assets/youth-ministry.jpg";
 
@@ -23,42 +23,33 @@ const Events = () => {
 
   // Converter eventos do banco para o formato da UI
   const allEvents = events.map(event => {
-    const eventDate = new Date(`${event.start_date}T${event.start_time}`);
-    const now = new Date();
-    
-    let status = "upcoming";
-    if (eventDate.toDateString() === now.toDateString()) {
-      status = "active";
-    } else if (eventDate < now) {
-      status = "finished";
-    }
+    const eventStatus = getEventStatus(event.start_date, event.start_time, event.end_date, event.end_time);
+    const startDateTime = new Date(`${event.start_date}T${event.start_time}`);
+    const dateTimeRange = formatEventDateTimeRange(event.start_date, event.start_time, event.end_date, event.end_time);
     
     return {
       id: event.id,
       title: event.title,
-      date: format(eventDate, "dd 'de' MMMM, yyyy"),
-      time: event.start_time,
+      date: dateTimeRange,
+      time: `${event.start_time} - ${event.end_time}`,
       location: event.address,
       attendees: Math.floor(Math.random() * 200) + 20, // Mock para agora
       image: event.banner_url || musicImage, // Usar banner real ou fallback
       description: event.description,
       organizer: "Igreja", // Mock para agora
-      status,
-      dateTime: eventDate
+      status: eventStatus.status,
+      statusLabel: eventStatus.label,
+      statusColor: eventStatus.color,
+      dateTime: startDateTime,
+      startDate: event.start_date,
+      startTime: event.start_time,
+      endDate: event.end_date,
+      endTime: event.end_time
     };
   });
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return <Badge className="bg-green-600 text-white">Ativo</Badge>;
-      case "upcoming":
-        return <Badge className="bg-blue-600 text-white">Próximo</Badge>;
-      case "finished":
-        return <Badge className="bg-gray-600 text-white">Finalizado</Badge>;
-      default:
-        return <Badge>{status}</Badge>;
-    }
+  const getStatusBadge = (event: any) => {
+    return <Badge className={`${event.statusColor} text-white`}>{event.statusLabel}</Badge>;
   };
 
   const filteredEvents = useMemo(() => {
@@ -220,7 +211,7 @@ const Events = () => {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
                   <div className="absolute top-2 right-2">
-                    {getStatusBadge(event.status)}
+                    {getStatusBadge(event)}
                   </div>
                 </div>
                 <CardContent className="p-4">
@@ -231,7 +222,7 @@ const Events = () => {
                   <div className="space-y-1 text-sm text-muted-foreground mb-3">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      <span>{event.date} - {event.time}</span>
+                      <span>{event.date}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4" />

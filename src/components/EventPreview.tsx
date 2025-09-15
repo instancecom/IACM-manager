@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEventConfirmations } from "@/hooks/useEventConfirmations";
+import { formatEventDateTimeRange } from "@/lib/eventUtils";
 import ConfirmPresenceForm from "./ConfirmPresenceForm";
 
 interface EventPreviewProps {
@@ -22,6 +23,11 @@ interface EventPreviewProps {
     description?: string;
     time?: string;
     organizer?: string;
+    startDate?: string;
+    startTime?: string;
+    endDate?: string;
+    endTime?: string;
+    event?: any;
   } | null;
 }
 
@@ -85,17 +91,18 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
 
             {/* Event Details */}
             <div className="space-y-3 sm:space-y-4">
-              <div className="flex items-center gap-3 text-netflix-gray-light">
-                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-netflix-red flex-shrink-0" />
-                <span className="text-sm sm:text-base">{event.date}</span>
-              </div>
-              
-              {event.time && (
-                <div className="flex items-center gap-3 text-netflix-gray-light">
-                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-netflix-red flex-shrink-0" />
-                  <span className="text-sm sm:text-base">{event.time}</span>
+              <div className="flex items-start gap-3 text-netflix-gray-light">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-netflix-red flex-shrink-0 mt-1" />
+                <div className="flex-1">
+                  <div className="text-sm sm:text-base font-medium text-netflix-white mb-1">Data e Horário</div>
+                  <div className="text-sm sm:text-base">
+                    {event.startDate && event.startTime && event.endDate && event.endTime 
+                      ? formatEventDateTimeRange(event.startDate, event.startTime, event.endDate, event.endTime)
+                      : event.date
+                    }
+                  </div>
                 </div>
-              )}
+              </div>
               
               <div className="flex items-center gap-3 text-netflix-gray-light">
                 <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-netflix-red flex-shrink-0" />
@@ -214,17 +221,18 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                   <div className="space-y-6 pr-4">
                     {/* Event Details */}
                     <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-netflix-gray-light">
-                        <Calendar className="h-5 w-5 text-netflix-red" />
-                        <span className="text-lg">{event.date}</span>
-                      </div>
-                      
-                      {event.time && (
-                        <div className="flex items-center gap-3 text-netflix-gray-light">
-                          <Clock className="h-5 w-5 text-netflix-red" />
-                          <span className="text-lg">{event.time}</span>
+                      <div className="flex items-start gap-3 text-netflix-gray-light">
+                        <Calendar className="h-5 w-5 text-netflix-red flex-shrink-0 mt-1" />
+                        <div className="flex-1">
+                          <div className="text-lg font-medium text-netflix-white mb-1">Data e Horário</div>
+                          <div className="text-lg">
+                            {event.startDate && event.startTime && event.endDate && event.endTime 
+                              ? formatEventDateTimeRange(event.startDate, event.startTime, event.endDate, event.endTime)
+                              : event.date
+                            }
+                          </div>
                         </div>
-                      )}
+                      </div>
                       
                       <div className="flex items-center gap-3 text-netflix-gray-light">
                         <MapPin className="h-5 w-5 text-netflix-red" />
