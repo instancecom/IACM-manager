@@ -203,7 +203,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
 
             {/* Content Section - Desktop */}
             <div className="w-1/2 flex flex-col min-h-0 overflow-hidden">
-              <div className="p-8 flex-1 overflow-hidden">
+              <div className="p-8 flex-1 min-h-0 overflow-hidden flex flex-col">
                 <DialogHeader className="mb-6 flex-shrink-0">
                   <DialogTitle className="text-3xl font-bold text-netflix-white mb-4">
                     {event.title}
