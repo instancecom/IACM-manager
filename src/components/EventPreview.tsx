@@ -74,7 +74,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
 
       {/* Content Section */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 h-full">
           <div className="space-y-6 p-4 sm:p-6">
             {/* Title */}
             <div>
@@ -210,7 +210,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                   </DialogTitle>
                 </DialogHeader>
 
-                <ScrollArea className="flex-1">
+                <ScrollArea className="flex-1 h-full">
                   <div className="space-y-6 pr-4">
                     {/* Event Details */}
                     <div className="space-y-4">
