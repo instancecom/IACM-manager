@@ -111,9 +111,11 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
             {/* Description */}
             <div>
               <h3 className="text-base sm:text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
-              <p className="text-sm sm:text-base text-netflix-gray-light leading-relaxed whitespace-pre-line">
-                {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
-              </p>
+              <ScrollArea className="max-h-48 sm:max-h-64 md:max-h-72 pr-2">
+                <p className="text-sm sm:text-base text-netflix-gray-light leading-relaxed whitespace-pre-line">
+                  {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
+                </p>
+              </ScrollArea>
             </div>
 
             {/* Organizer */}
@@ -238,9 +240,11 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                     {/* Description */}
                     <div>
                       <h3 className="text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
-                      <p className="text-netflix-gray-light leading-relaxed whitespace-pre-line">
-                        {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
-                      </p>
+                      <ScrollArea className="max-h-64 md:max-h-80 pr-3">
+                        <p className="text-netflix-gray-light leading-relaxed whitespace-pre-line">
+                          {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
+                        </p>
+                      </ScrollArea>
                     </div>
 
                     {/* Organizer */}
