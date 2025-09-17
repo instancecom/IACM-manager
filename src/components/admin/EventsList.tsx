@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { Edit, Trash2, Eye } from "lucide-react";
+import { getEventStatus, formatEventDateTimeRange } from "@/lib/eventUtils";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -45,16 +46,16 @@ const EventsList = () => {
     }
   };
 
-  const getStatusBadge = (startDate: string) => {
-    const now = new Date();
-    const eventDate = new Date(startDate);
-    if (eventDate > now) {
-      return <Badge variant="secondary">Próximo</Badge>;
-    } else if (eventDate.toDateString() === now.toDateString()) {
-      return <Badge variant="default">Hoje</Badge>;
-    } else {
-      return <Badge variant="outline">Finalizado</Badge>;
-    }
+  const getStatusBadge = (startDate: string, startTime: string, endDate: string, endTime: string) => {
+    const eventStatus = getEventStatus(startDate, startTime, endDate, endTime);
+    
+    const variantMap = {
+      upcoming: "secondary" as const,
+      active: "default" as const,
+      finished: "outline" as const
+    };
+
+    return <Badge variant={variantMap[eventStatus.status]}>{eventStatus.label}</Badge>;
   };
 
   if (loading) {
@@ -82,10 +83,10 @@ const EventsList = () => {
             <TableRow key={event.id}>
               <TableCell className="font-medium">{event.title}</TableCell>
               <TableCell>
-                {format(new Date(`${event.start_date}T${event.start_time}`), "dd/MM/yyyy 'às' HH:mm")}
+                {formatEventDateTimeRange(event.start_date, event.start_time, event.end_date, event.end_time)}
               </TableCell>
               <TableCell>{event.address}</TableCell>
-              <TableCell>{getStatusBadge(event.start_date)}</TableCell>
+              <TableCell>{getStatusBadge(event.start_date, event.start_time, event.end_date, event.end_time)}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Dialog>
