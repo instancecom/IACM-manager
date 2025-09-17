@@ -77,12 +77,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     // Se não é email, trata como WhatsApp - busca o email correspondente
     try {
-      const cleanPhone = emailOrPhone.replace(/\D/g, '');
-      
       // Busca membro pelo WhatsApp
       const { data: member, error: memberError } = await supabase
         .from('members')
-        .select('user_id, profiles!inner(user_id)')
+        .select('user_id')
         .eq('whatsapp', emailOrPhone)
         .maybeSingle();
 
@@ -93,18 +91,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Busca o email do usuário no profiles
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('user_id')
+        .select('email')
         .eq('user_id', member.user_id)
         .maybeSingle();
 
-      if (profileError || !profile) {
-        return { error: { message: "Perfil de usuário não encontrado" } };
+      if (profileError || !profile || !profile.email) {
+        return { error: { message: "Email não encontrado para este usuário. Entre com seu email." } };
       }
 
-      // Busca o email na tabela auth.users via uma edge function ou direto pelo user_id
-      // Como não podemos acessar auth.users diretamente, vamos usar outra abordagem
-      // Vamos salvar o email no profiles quando o usuário se registra
-      return { error: { message: "Sistema de login por WhatsApp precisa ser configurado. Use seu email para entrar." } };
+      // Faz login com o email encontrado
+      return await signIn(profile.email, password);
       
     } catch (error) {
       return { error: { message: "Erro ao processar login com WhatsApp" } };
