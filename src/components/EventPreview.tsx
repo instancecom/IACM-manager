@@ -181,7 +181,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl w-full h-[80vh] p-0 bg-netflix-dark border-netflix-gray-dark overflow-hidden">
+        <DialogContent className="max-w-4xl w-full max-h-[85vh] h-auto p-0 bg-netflix-dark border-netflix-gray-dark overflow-hidden">
           {/* Close button for desktop */}
           <Button
             variant="ghost"
@@ -192,9 +192,9 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
             <X className="h-5 w-5" />
           </Button>
 
-          <div className="flex h-full">
+          <div className="flex max-h-[85vh] h-[600px]">
             {/* Image Section - Desktop */}
-            <div className="w-1/2 relative">
+            <div className="w-1/2 relative flex-shrink-0">
               <div 
                 className="absolute inset-0 bg-cover bg-center"
                 style={{ backgroundImage: `url(${event.image})` }}
@@ -205,23 +205,23 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
 
             {/* Content Section - Desktop */}
             <div className="w-1/2 flex flex-col overflow-hidden">
-              <div className="p-8 pb-0 flex-shrink-0">
-                <DialogHeader className="mb-6">
-                  <DialogTitle className="text-3xl font-bold text-netflix-white mb-4">
+              <div className="p-6 pb-0 flex-shrink-0">
+                <DialogHeader className="mb-4">
+                  <DialogTitle className="text-2xl font-bold text-netflix-white">
                     {event.title}
                   </DialogTitle>
                 </DialogHeader>
               </div>
 
-              <ScrollArea className="flex-1 px-8">
-                <div className="space-y-6 pb-4">
+              <ScrollArea className="flex-1 px-6">
+                <div className="space-y-4 pb-4">
                   {/* Event Details */}
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <div className="flex items-start gap-3 text-netflix-gray-light">
-                      <Calendar className="h-5 w-5 text-netflix-red flex-shrink-0 mt-1" />
+                      <Calendar className="h-4 w-4 text-netflix-red flex-shrink-0 mt-1" />
                       <div className="flex-1">
-                        <div className="text-lg font-medium text-netflix-white mb-1">Data e Horário</div>
-                        <div className="text-lg">
+                        <div className="text-sm font-medium text-netflix-white mb-1">Data e Horário</div>
+                        <div className="text-sm">
                           {event.startDate && event.startTime && event.endDate && event.endTime 
                             ? formatEventDateTimeRange(event.startDate, event.startTime, event.endDate, event.endTime)
                             : event.date
@@ -231,20 +231,20 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                     </div>
                     
                     <div className="flex items-center gap-3 text-netflix-gray-light">
-                      <MapPin className="h-5 w-5 text-netflix-red" />
-                      <span className="text-lg">{event.location}</span>
+                      <MapPin className="h-4 w-4 text-netflix-red" />
+                      <span className="text-sm">{event.location}</span>
                     </div>
                     
                     <div className="flex items-center gap-3 text-netflix-gray-light">
-                      <Users className="h-5 w-5 text-netflix-red" />
-                      <span className="text-lg">{event.attendees} pessoas interessadas</span>
+                      <Users className="h-4 w-4 text-netflix-red" />
+                      <span className="text-sm">{event.attendees} pessoas interessadas</span>
                     </div>
                   </div>
 
                   {/* Description */}
                   <div>
-                    <h3 className="text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
-                    <p className="text-netflix-gray-light leading-relaxed whitespace-pre-line">
+                    <h3 className="text-lg font-semibold text-netflix-white mb-2">Sobre o Evento</h3>
+                    <p className="text-sm text-netflix-gray-light leading-relaxed whitespace-pre-line">
                       {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
                     </p>
                   </div>
@@ -252,27 +252,27 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                   {/* Organizer */}
                   {event.organizer && (
                     <div>
-                      <h3 className="text-lg font-medium text-netflix-white mb-2">Organizador</h3>
-                      <p className="text-netflix-gray-light">{event.organizer}</p>
+                      <h3 className="text-base font-medium text-netflix-white mb-1">Organizador</h3>
+                      <p className="text-sm text-netflix-gray-light">{event.organizer}</p>
                     </div>
                   )}
                 </div>
               </ScrollArea>
 
               {/* Action Buttons - Fixed at bottom */}
-              <div className="flex-shrink-0 p-8 pt-4 border-t border-netflix-gray-dark bg-netflix-dark">
-                <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-shrink-0 p-6 pt-4 border-t border-netflix-gray-dark bg-netflix-dark">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Button 
-                    className="btn-netflix flex-1 text-lg py-3"
+                    className="btn-netflix flex-1 py-2.5"
                     onClick={handleConfirmPresence}
                   >
-                    <Check className="h-5 w-5 mr-2" />
+                    <Check className="h-4 w-4 mr-2" />
                     Confirmar Presença
                   </Button>
                   
                   <Button 
                     variant="outline" 
-                    className="btn-netflix-outline flex-1 text-lg py-3"
+                    className="btn-netflix-outline flex-1 py-2.5"
                     onClick={onClose}
                   >
                     Fechar
