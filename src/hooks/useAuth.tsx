@@ -77,11 +77,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     
     // Se não é email, trata como telefone - busca o email correspondente no profiles
     try {
-      // Busca o perfil pelo telefone
+      const cleanPhone = emailOrPhone.replace(/\D/g, ''); // remove (, ), espaços e -
+
+      // Busca o perfil pelo telefone normalizado
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('email')
-        .eq('phone', emailOrPhone)
+        .eq('phone', cleanPhone)
         .maybeSingle();
 
       if (profileError || !profile || !profile.email) {
