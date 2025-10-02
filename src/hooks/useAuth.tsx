@@ -75,35 +75,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return await signIn(emailOrPhone, password);
     }
     
-    // Se não é email, trata como WhatsApp - busca o email correspondente
+    // Se não é email, trata como telefone - busca o email correspondente no profiles
     try {
-      // Busca membro pelo WhatsApp
-      const { data: member, error: memberError } = await supabase
-        .from('members')
-        .select('user_id')
-        .eq('whatsapp', emailOrPhone)
-        .maybeSingle();
-
-      if (memberError || !member) {
-        return { error: { message: "Usuário não encontrado com este WhatsApp" } };
-      }
-
-      // Busca o email do usuário no profiles
+      // Busca o perfil pelo telefone
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('email')
-        .eq('user_id', member.user_id)
+        .eq('phone', emailOrPhone)
         .maybeSingle();
 
       if (profileError || !profile || !profile.email) {
-        return { error: { message: "Email não encontrado para este usuário. Entre com seu email." } };
+        return { error: { message: "Usuário não encontrado com este telefone" } };
       }
 
       // Faz login com o email encontrado
       return await signIn(profile.email, password);
       
     } catch (error) {
-      return { error: { message: "Erro ao processar login com WhatsApp" } };
+      return { error: { message: "Erro ao processar login com telefone" } };
     }
   };
 
