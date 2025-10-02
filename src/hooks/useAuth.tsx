@@ -62,13 +62,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
+    // Após login por email, sincroniza o email no perfil para habilitar login por telefone futuramente
+    try {
+      if (!error) {
+        const { data: userRes } = await supabase.auth.getUser();
+        const u = userRes?.user;
+        if (u?.id && u.email) {
+          await supabase
+            .from('profiles')
+            .update({ email: u.email })
+            .eq('user_id', u.id);
+        }
+      }
+    } catch {}
+
     return { error };
   };
-
   const signInWithEmailOrPhone = async (emailOrPhone: string, password: string) => {
     // Verifica se é email
     if (emailOrPhone.includes('@') && emailOrPhone.includes('.')) {
@@ -82,12 +96,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Busca o perfil pelo telefone normalizado
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('email')
+        .select('user_id, email')
         .eq('phone', cleanPhone)
         .maybeSingle();
 
-      if (profileError || !profile || !profile.email) {
+      if (profileError || !profile) {
         return { error: { message: "Usuário não encontrado com este telefone" } };
+      }
+
+      if (!profile.email) {
+        return { error: { message: "Telefone localizado, mas sem email vinculado. Entre uma vez com seu email e senha para ativar o login por telefone." } };
       }
 
       // Faz login com o email encontrado
