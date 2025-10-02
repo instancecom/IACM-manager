@@ -78,18 +78,17 @@ const Login = () => {
   };
 
   const handleInputChange = (value: string, onChange: (value: string) => void) => {
-    // Detecta automaticamente se é email ou telefone
+    // Se contém @ e ., definitivamente é email - não formata
     if (isEmail(value)) {
       setInputType("email");
       onChange(value);
-    } else {
+    } else if (isPhone(value)) {
+      // Se não é email e parece telefone, formata
       setInputType("phone");
-      // Se parecer um telefone, formata automaticamente
-      if (value.replace(/\D/g, '').length > 0) {
-        onChange(formatPhone(value));
-      } else {
-        onChange(value);
-      }
+      onChange(formatPhone(value));
+    } else {
+      // Caso contrário, mantém como digitado (pode estar começando a digitar)
+      onChange(value);
     }
   };
 
