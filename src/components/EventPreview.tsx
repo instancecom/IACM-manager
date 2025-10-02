@@ -79,9 +79,9 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
       </div>
 
       {/* Content Section */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div className="flex-1 h-full overflow-y-auto">
-          <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <ScrollArea className="flex-1">
+          <div className="space-y-6 p-4 sm:p-6 pb-4">
             {/* Title */}
             <div>
               <h2 className="text-xl sm:text-3xl font-bold text-netflix-white mb-2">
@@ -118,11 +118,9 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
             {/* Description */}
             <div>
               <h3 className="text-base sm:text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
-              <div className="max-h-48 sm:max-h-64 md:max-h-72 pr-2 overflow-y-auto">
-                <p className="text-sm sm:text-base text-netflix-gray-light leading-relaxed whitespace-pre-line">
-                  {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
-                </p>
-              </div>
+              <p className="text-sm sm:text-base text-netflix-gray-light leading-relaxed whitespace-pre-line">
+                {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
+              </p>
             </div>
 
             {/* Organizer */}
@@ -132,11 +130,8 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                 <p className="text-sm sm:text-base text-netflix-gray-light">{event.organizer}</p>
               </div>
             )}
-
-            {/* Extra space to ensure content is not hidden behind buttons */}
-            <div className="pb-20"></div>
           </div>
-        </div>
+        </ScrollArea>
 
         {/* Action Buttons - Fixed at bottom */}
         <div className="flex-shrink-0 p-4 sm:p-6 border-t border-netflix-gray-dark bg-netflix-dark">
@@ -154,7 +149,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
               className="btn-netflix-outline w-full text-sm sm:text-lg py-2.5 sm:py-4 min-h-[44px] sm:min-h-[48px] touch-manipulation"
               onClick={onClose}
             >
-              Mais Informações
+              Fechar
             </Button>
           </div>
         </div>
@@ -209,65 +204,60 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
             </div>
 
             {/* Content Section - Desktop */}
-            <div className="w-1/2 flex flex-col min-h-0 overflow-hidden">
-              <div className="p-8 flex-1 min-h-0 overflow-hidden flex flex-col">
-                <DialogHeader className="mb-6 flex-shrink-0">
+            <div className="w-1/2 flex flex-col overflow-hidden">
+              <div className="p-8 pb-0 flex-shrink-0">
+                <DialogHeader className="mb-6">
                   <DialogTitle className="text-3xl font-bold text-netflix-white mb-4">
                     {event.title}
                   </DialogTitle>
                 </DialogHeader>
+              </div>
 
-                <div className="flex-1 h-full overflow-y-auto">
-                  <div className="space-y-6 pr-4">
-                    {/* Event Details */}
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3 text-netflix-gray-light">
-                        <Calendar className="h-5 w-5 text-netflix-red flex-shrink-0 mt-1" />
-                        <div className="flex-1">
-                          <div className="text-lg font-medium text-netflix-white mb-1">Data e Horário</div>
-                          <div className="text-lg">
-                            {event.startDate && event.startTime && event.endDate && event.endTime 
-                              ? formatEventDateTimeRange(event.startDate, event.startTime, event.endDate, event.endTime)
-                              : event.date
-                            }
-                          </div>
+              <ScrollArea className="flex-1 px-8">
+                <div className="space-y-6 pb-4">
+                  {/* Event Details */}
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3 text-netflix-gray-light">
+                      <Calendar className="h-5 w-5 text-netflix-red flex-shrink-0 mt-1" />
+                      <div className="flex-1">
+                        <div className="text-lg font-medium text-netflix-white mb-1">Data e Horário</div>
+                        <div className="text-lg">
+                          {event.startDate && event.startTime && event.endDate && event.endTime 
+                            ? formatEventDateTimeRange(event.startDate, event.startTime, event.endDate, event.endTime)
+                            : event.date
+                          }
                         </div>
                       </div>
-                      
-                      <div className="flex items-center gap-3 text-netflix-gray-light">
-                        <MapPin className="h-5 w-5 text-netflix-red" />
-                        <span className="text-lg">{event.location}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-3 text-netflix-gray-light">
-                        <Users className="h-5 w-5 text-netflix-red" />
-                        <span className="text-lg">{event.attendees} pessoas interessadas</span>
-                      </div>
                     </div>
-
-                    {/* Description */}
-                    <div>
-                      <h3 className="text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
-                      <div className="max-h-64 md:max-h-80 pr-3 overflow-y-auto">
-                        <p className="text-netflix-gray-light leading-relaxed whitespace-pre-line">
-                          {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
-                        </p>
-                      </div>
+                    
+                    <div className="flex items-center gap-3 text-netflix-gray-light">
+                      <MapPin className="h-5 w-5 text-netflix-red" />
+                      <span className="text-lg">{event.location}</span>
                     </div>
-
-                    {/* Organizer */}
-                    {event.organizer && (
-                      <div>
-                        <h3 className="text-lg font-medium text-netflix-white mb-2">Organizador</h3>
-                        <p className="text-netflix-gray-light">{event.organizer}</p>
-                      </div>
-                    )}
-
-                    {/* Extra space to ensure content is not hidden behind buttons */}
-                    <div className="pb-20"></div>
+                    
+                    <div className="flex items-center gap-3 text-netflix-gray-light">
+                      <Users className="h-5 w-5 text-netflix-red" />
+                      <span className="text-lg">{event.attendees} pessoas interessadas</span>
+                    </div>
                   </div>
+
+                  {/* Description */}
+                  <div>
+                    <h3 className="text-xl font-semibold text-netflix-white mb-3">Sobre o Evento</h3>
+                    <p className="text-netflix-gray-light leading-relaxed whitespace-pre-line">
+                      {event.description || "Junte-se a nós para uma experiência única de adoração e comunhão. Este evento promete ser transformador para toda a nossa comunidade. Venha participar deste momento especial onde iremos nos conectar com Deus e uns com os outros em um ambiente de fé e celebração."}
+                    </p>
+                  </div>
+
+                  {/* Organizer */}
+                  {event.organizer && (
+                    <div>
+                      <h3 className="text-lg font-medium text-netflix-white mb-2">Organizador</h3>
+                      <p className="text-netflix-gray-light">{event.organizer}</p>
+                    </div>
+                  )}
                 </div>
-              </div>
+              </ScrollArea>
 
               {/* Action Buttons - Fixed at bottom */}
               <div className="flex-shrink-0 p-8 pt-4 border-t border-netflix-gray-dark bg-netflix-dark">
