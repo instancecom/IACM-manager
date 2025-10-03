@@ -5,11 +5,13 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
+import { useRoles } from "@/hooks/useRoles";
 import { toast } from "@/hooks/use-toast";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { canEdit } = useRoles();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -67,12 +69,14 @@ const Header = () => {
           <div className="hidden lg:flex items-center space-x-1">
             {user ? (
               <>
-                <Link to="/admin" className="text-muted-foreground hover:text-foreground transition-colors">
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <Settings className="w-4 h-4" />
-                    Admin
-                  </Button>
-                </Link>
+                {canEdit && (
+                  <Link to="/admin" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <Settings className="w-4 h-4" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
                 <Link to="/visualizations" className="text-muted-foreground hover:text-foreground transition-colors">
                   <Button variant="ghost" size="sm" className="gap-2">
                     <BarChart3 className="w-4 h-4" />
@@ -140,14 +144,16 @@ const Header = () => {
                       <BarChart3 className="w-5 h-5" />
                       Consultar Dados
                     </Link>
-                    <Link 
-                      to="/admin" 
-                      className="flex items-center gap-2 text-lg font-medium"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <Settings className="w-5 h-5" />
-                      Administração
-                    </Link>
+                    {canEdit && (
+                      <Link 
+                        to="/admin" 
+                        className="flex items-center gap-2 text-lg font-medium"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Settings className="w-5 h-5" />
+                        Administração
+                      </Link>
+                    )}
                     <Link 
                       to="/profile" 
                       className="flex items-center gap-2 text-lg font-medium"

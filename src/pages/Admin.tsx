@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Users, Music, UserPlus, Settings, Globe, Shield } from "lucide-react";
+import { Calendar, Users, Music, UserPlus, Settings, Globe, Shield, UserCog } from "lucide-react";
 import Header from "@/components/Header";
 import EventsListPage from "@/components/admin/EventsListPage";
 import RegisterStudentForm from "@/components/admin/RegisterStudentForm";
@@ -10,8 +10,44 @@ import RegisterMemberForm from "@/components/admin/RegisterMemberForm";
 import RegisterMinistryForm from "@/components/admin/RegisterMinistryForm";
 import ManageRecords from "@/components/admin/ManageRecords";
 import BannerManager from "@/components/admin/BannerManager";
+import { RolesManager } from "@/components/admin/RolesManager";
+import { useRoles } from "@/hooks/useRoles";
+import { useNavigate } from "react-router-dom";
 
 const Admin = () => {
+  const { canEdit, isAdmin, loading } = useRoles();
+  const navigate = useNavigate();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-16 lg:pt-20 container mx-auto px-2 lg:px-4 py-4 lg:py-8">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <p className="text-muted-foreground">Carregando...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!canEdit) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-16 lg:pt-20 container mx-auto px-2 lg:px-4 py-4 lg:py-8">
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-center text-muted-foreground">
+                Você não tem permissão para acessar o painel administrativo.
+              </p>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -87,13 +123,22 @@ const Admin = () => {
                       <Settings className="w-4 h-4 shrink-0" />
                       <span className="text-xs font-medium whitespace-nowrap">Gerenciar</span>
                     </TabsTrigger>
+                    {isAdmin && (
+                      <TabsTrigger 
+                        value="roles" 
+                        className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                      >
+                        <UserCog className="w-4 h-4 shrink-0" />
+                        <span className="text-xs font-medium whitespace-nowrap">Acessos</span>
+                      </TabsTrigger>
+                    )}
                   </TabsList>
                 </div>
               </div>
 
               {/* Desktop: Grid layout */}
               <div className="hidden md:block">
-                <TabsList className="grid grid-cols-7 h-auto p-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg">
+                <TabsList className={`grid ${isAdmin ? 'grid-cols-8' : 'grid-cols-7'} h-auto p-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg`}>
                   <TabsTrigger 
                     value="events" 
                     className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
@@ -143,6 +188,15 @@ const Admin = () => {
                     <Settings className="w-5 h-5" />
                     <span className="text-sm font-medium">Gerenciar</span>
                   </TabsTrigger>
+                  {isAdmin && (
+                    <TabsTrigger 
+                      value="roles" 
+                      className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                    >
+                      <UserCog className="w-5 h-5" />
+                      <span className="text-sm font-medium">Acessos</span>
+                    </TabsTrigger>
+                  )}
                 </TabsList>
               </div>
             </div>
@@ -264,6 +318,23 @@ const Admin = () => {
                 <ManageRecords />
               </div>
             </TabsContent>
+            
+            {isAdmin && (
+              <TabsContent value="roles" className="mt-4 lg:mt-8 animate-fade-in">
+                <div className="space-y-4 lg:space-y-6">
+                  <div className="flex items-center gap-2 lg:gap-3 mb-4 lg:mb-6">
+                    <div className="p-1.5 lg:p-2 bg-primary/10 rounded-lg">
+                      <UserCog className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg lg:text-xl font-semibold">Gerenciar Acessos</h2>
+                      <p className="text-muted-foreground text-sm lg:text-base">Atribua roles aos usuários do sistema</p>
+                    </div>
+                  </div>
+                  <RolesManager />
+                </div>
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </main>
