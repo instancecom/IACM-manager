@@ -59,34 +59,32 @@ export const useRoles = () => {
 
   const fetchAllUsersWithRoles = async () => {
     try {
-      // Busca todos os usuários do auth
-      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (usersError) throw usersError;
+      if (!session) {
+        console.error('No session found');
+        return [];
+      }
 
-      // Busca roles de todos os usuários
-      const { data: rolesData, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
+      const SUPABASE_URL = "https://gyzkhgtafwwzlvmpeqdk.supabase.co";
+      const response = await fetch(
+        `${SUPABASE_URL}/functions/v1/list-users-with-roles`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-      if (rolesError) throw rolesError;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to fetch users');
+      }
 
-      // Mapeia roles por user_id
-      const rolesMap = new Map<string, AppRole[]>();
-      rolesData?.forEach(r => {
-        const existing = rolesMap.get(r.user_id) || [];
-        rolesMap.set(r.user_id, [...existing, r.role as AppRole]);
-      });
-
-      // Combina usuários com seus roles
-      const usersWithRoles: UserWithRoles[] = users.map(u => ({
-        id: u.id,
-        email: u.email || '',
-        roles: rolesMap.get(u.id) || [],
-        created_at: u.created_at
-      }));
-
-      return usersWithRoles;
+      const { users } = await response.json();
+      return users as UserWithRoles[];
     } catch (error) {
       console.error('Error fetching users with roles:', error);
       return [];
