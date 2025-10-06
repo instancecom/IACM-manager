@@ -60,6 +60,10 @@ const Dashboard = () => {
       organizer: "Organização", // Placeholder até ter dados do criador
       status: eventStatus.status,
       dateTime: startDateTime,
+      startDate: event.start_date,
+      startTime: event.start_time,
+      endDate: event.end_date,
+      endTime: event.end_time,
       event // Original event data for modal
     };
   });
@@ -148,6 +152,10 @@ const Dashboard = () => {
                 time={event.time}
                 description={event.description}
                 organizer={event.organizer}
+                startDate={event.startDate}
+                startTime={event.startTime}
+                endDate={event.endDate}
+                endTime={event.endTime}
                 onClick={() => handleEventClick(event)}
               />
             ))}
@@ -168,6 +176,10 @@ const Dashboard = () => {
                 time={event.time}
                 description={event.description}
                 organizer={event.organizer}
+                startDate={event.startDate}
+                startTime={event.startTime}
+                endDate={event.endDate}
+                endTime={event.endTime}
                 onClick={() => handleEventClick(event)}
               />
             ))}
@@ -188,6 +200,10 @@ const Dashboard = () => {
                 time={event.time}
                 description={event.description}
                 organizer={event.organizer}
+                startDate={event.startDate}
+                startTime={event.startTime}
+                endDate={event.endDate}
+                endTime={event.endTime}
                 onClick={() => handleEventClick(event)}
               />
             ))}

@@ -1,6 +1,8 @@
 import { Calendar, MapPin, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { getEventStatus } from "@/lib/eventUtils";
 
 interface EventCardProps {
   title: string;
@@ -12,9 +14,17 @@ interface EventCardProps {
   description?: string;
   organizer?: string;
   onClick?: () => void;
+  startDate?: string;
+  startTime?: string;
+  endDate?: string;
+  endTime?: string;
 }
 
-const EventCard = ({ title, date, location, attendees, image, onClick }: EventCardProps) => {
+const EventCard = ({ title, date, location, attendees, image, onClick, startDate, startTime, endDate, endTime }: EventCardProps) => {
+  const eventStatus = startDate && startTime && endDate && endTime 
+    ? getEventStatus(startDate, startTime, endDate, endTime)
+    : null;
+
   return (
     <Card className="netflix-card w-64 sm:w-80 h-48 sm:h-64 flex-shrink-0 group cursor-pointer touch-manipulation snap-start">
       <div className="relative h-full overflow-hidden">
@@ -25,6 +35,15 @@ const EventCard = ({ title, date, location, attendees, image, onClick }: EventCa
         >
           <div className="absolute inset-0 card-content-enhanced"></div>
         </div>
+
+        {/* Status Badge - Top Right Corner */}
+        {eventStatus?.status === 'finished' && (
+          <div className="absolute top-3 right-3 z-20">
+            <Badge variant="secondary" className="bg-netflix-gray-dark/90 text-netflix-white border-none">
+              Finalizado
+            </Badge>
+          </div>
+        )}
 
         {/* Content */}
         <CardContent className="relative z-10 p-4 sm:p-6 h-full flex flex-col justify-end">

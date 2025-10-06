@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEventConfirmations } from "@/hooks/useEventConfirmations";
-import { formatEventDateTimeRange } from "@/lib/eventUtils";
+import { formatEventDateTimeRange, getEventStatus } from "@/lib/eventUtils";
 import ConfirmPresenceForm from "./ConfirmPresenceForm";
 
 interface EventPreviewProps {
@@ -38,6 +38,12 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
   const { confirmPresence } = useEventConfirmations();
 
   if (!event) return null;
+
+  const eventStatus = event.startDate && event.startTime && event.endDate && event.endTime
+    ? getEventStatus(event.startDate, event.startTime, event.endDate, event.endTime)
+    : null;
+  
+  const isEventFinished = eventStatus?.status === 'finished';
 
   const handleConfirmPresence = () => {
     setShowConfirmForm(true);
@@ -135,23 +141,31 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
 
         {/* Action Buttons - Fixed at bottom */}
         <div className="flex-shrink-0 p-4 sm:p-6 border-t border-netflix-gray-dark bg-netflix-dark">
-          <div className="flex flex-col gap-3">
-            <Button 
-              className="btn-netflix w-full text-sm sm:text-lg py-2.5 sm:py-4 min-h-[44px] sm:min-h-[48px] touch-manipulation"
-              onClick={handleConfirmPresence}
-            >
-              <Check className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              Confirmar Presença
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              className="btn-netflix-outline w-full text-sm sm:text-lg py-2.5 sm:py-4 min-h-[44px] sm:min-h-[48px] touch-manipulation"
-              onClick={onClose}
-            >
-              Fechar
-            </Button>
-          </div>
+          {isEventFinished ? (
+            <div className="text-center py-2">
+              <Badge variant="secondary" className="bg-netflix-gray-dark text-netflix-white text-base px-4 py-2">
+                Evento Finalizado
+              </Badge>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <Button 
+                className="btn-netflix w-full text-sm sm:text-lg py-2.5 sm:py-4 min-h-[44px] sm:min-h-[48px] touch-manipulation"
+                onClick={handleConfirmPresence}
+              >
+                <Check className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                Confirmar Presença
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="btn-netflix-outline w-full text-sm sm:text-lg py-2.5 sm:py-4 min-h-[44px] sm:min-h-[48px] touch-manipulation"
+                onClick={onClose}
+              >
+                Fechar
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -261,23 +275,31 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
 
               {/* Action Buttons - Fixed at bottom */}
               <div className="flex-shrink-0 p-6 pt-4 border-t border-netflix-gray-dark bg-netflix-dark">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button 
-                    className="btn-netflix flex-1 py-2.5"
-                    onClick={handleConfirmPresence}
-                  >
-                    <Check className="h-4 w-4 mr-2" />
-                    Confirmar Presença
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    className="btn-netflix-outline flex-1 py-2.5"
-                    onClick={onClose}
-                  >
-                    Fechar
-                  </Button>
-                </div>
+                {isEventFinished ? (
+                  <div className="text-center py-2">
+                    <Badge variant="secondary" className="bg-netflix-gray-dark text-netflix-white text-base px-4 py-2">
+                      Evento Finalizado
+                    </Badge>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button 
+                      className="btn-netflix flex-1 py-2.5"
+                      onClick={handleConfirmPresence}
+                    >
+                      <Check className="h-4 w-4 mr-2" />
+                      Confirmar Presença
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="btn-netflix-outline flex-1 py-2.5"
+                      onClick={onClose}
+                    >
+                      Fechar
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
