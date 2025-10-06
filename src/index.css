@@ -167,7 +167,7 @@
 
   /* Enhanced Netflix Button Variants */
   .btn-netflix {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground;
     @apply px-8 py-3 rounded-lg font-semibold transition-all duration-200;
     @apply focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
     box-shadow: 0 2px 8px rgba(229, 9, 20, 0.3);
@@ -187,7 +187,8 @@
   }
   
   .btn-netflix-outline:hover {
-    background: hsl(var(--netflix-white));
+    background: hsl(var(--netflix-white)) !important;
+    color: hsl(var(--netflix-black)) !important;
     box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
   }
 
