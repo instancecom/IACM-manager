@@ -54,7 +54,7 @@ const Dashboard = () => {
       date: dateTimeRange,
       time: `${event.start_time} - ${event.end_time}`,
       location: event.address,
-      attendees: Math.floor(Math.random() * 200) + 20, // Placeholder até ter confirmações reais
+      attendees: event.confirmations_count || 0,
       image: event.banner_url || musicImage,
       description: event.description,
       organizer: "Organização", // Placeholder até ter dados do criador

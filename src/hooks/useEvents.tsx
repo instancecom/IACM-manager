@@ -15,6 +15,7 @@ export interface Event {
   created_at: string;
   updated_at: string;
   created_by?: string;
+  confirmations_count?: number;
 }
 
 export const useEvents = () => {
@@ -27,22 +28,39 @@ export const useEvents = () => {
     setError(null);
 
     try {
-      const { data, error } = await supabase
+      // Buscar eventos
+      const { data: eventsData, error: eventsError } = await supabase
         .from('events')
         .select('*')
         .order('start_date', { ascending: true });
 
-      if (error) {
-        setError(error.message);
+      if (eventsError) {
+        setError(eventsError.message);
         toast({
           title: "Erro ao carregar eventos",
-          description: error.message,
+          description: eventsError.message,
           variant: "destructive",
         });
         return;
       }
 
-      setEvents(data || []);
+      // Buscar contagem de confirmações para cada evento
+      const eventsWithConfirmations = await Promise.all(
+        (eventsData || []).map(async (event) => {
+          const { count } = await supabase
+            .from('event_confirmations')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_id', event.id)
+            .eq('confirmed', true);
+
+          return {
+            ...event,
+            confirmations_count: count || 0
+          };
+        })
+      );
+
+      setEvents(eventsWithConfirmations);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro inesperado";
       setError(errorMessage);

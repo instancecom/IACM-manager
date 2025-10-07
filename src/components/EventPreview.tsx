@@ -117,7 +117,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
               
               <div className="flex items-center gap-3 text-netflix-gray-light">
                 <Users className="h-4 w-4 sm:h-5 sm:w-5 text-netflix-red flex-shrink-0" />
-                <span className="text-sm sm:text-base">{event.attendees} pessoas interessadas</span>
+                <span className="text-sm sm:text-base">{event.attendees} {event.attendees === 1 ? 'pessoa confirmada' : 'pessoas confirmadas'}</span>
               </div>
             </div>
 
@@ -251,7 +251,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                     
                     <div className="flex items-center gap-3 text-netflix-gray-light">
                       <Users className="h-4 w-4 text-netflix-red" />
-                      <span className="text-sm">{event.attendees} pessoas interessadas</span>
+                      <span className="text-sm">{event.attendees} {event.attendees === 1 ? 'pessoa confirmada' : 'pessoas confirmadas'}</span>
                     </div>
                   </div>
 

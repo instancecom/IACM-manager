@@ -61,7 +61,7 @@ const EventCard = ({ title, date, location, attendees, image, onClick, startDate
               </div>
               <div className="flex items-center gap-2 caption sm:body-small text-enhanced-muted">
                 <Users className="h-3 w-3 sm:h-4 sm:w-4 text-netflix-red flex-shrink-0" />
-                <span>{attendees} interessados</span>
+                <span>{attendees} {attendees === 1 ? 'pessoa confirmada' : 'pessoas confirmadas'}</span>
               </div>
             </div>
 
