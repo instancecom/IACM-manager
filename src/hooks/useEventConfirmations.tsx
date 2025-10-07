@@ -16,6 +16,7 @@ export interface ConfirmationData {
   participantName: string;
   whatsapp: string;
   guests: string[];
+  userId?: string; // ID do usuário logado (opcional)
 }
 
 export const useEventConfirmations = () => {
@@ -67,12 +68,20 @@ export const useEventConfirmations = () => {
       // Procura por um membro existente com esse WhatsApp
       const { data: existingMember } = await supabase
         .from('members')
-        .select('id')
+        .select('id, user_id')
         .eq('whatsapp', confirmationData.whatsapp.replace(/\D/g, ''))
         .single();
 
       if (existingMember) {
         memberId = existingMember.id;
+        
+        // Se o usuário está logado e o membro ainda não tem user_id, associa
+        if (confirmationData.userId && !existingMember.user_id) {
+          await supabase
+            .from('members')
+            .update({ user_id: confirmationData.userId })
+            .eq('id', memberId);
+        }
       } else {
         // Cria um novo membro
         const { data: newMember, error: memberError } = await supabase
@@ -81,7 +90,8 @@ export const useEventConfirmations = () => {
             first_name: confirmationData.participantName.split(' ')[0] || confirmationData.participantName,
             last_name: confirmationData.participantName.split(' ').slice(1).join(' ') || '',
             whatsapp: confirmationData.whatsapp.replace(/\D/g, ''),
-            birth_date: '2000-01-01' // Data padrão - pode ser ajustada depois
+            birth_date: '2000-01-01', // Data padrão - pode ser ajustada depois
+            user_id: confirmationData.userId || null // Associa ao usuário se estiver logado
           })
           .select()
           .single();

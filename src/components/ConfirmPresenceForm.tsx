@@ -3,7 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 
 interface ConfirmPresenceFormProps {
   isOpen: boolean;
@@ -14,6 +16,9 @@ interface ConfirmPresenceFormProps {
 }
 
 const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId }: ConfirmPresenceFormProps) => {
+  const { user } = useAuth();
+  const { profile } = useProfile();
+  
   const [formData, setFormData] = useState({
     responsibleName: "",
     participantName: "",
@@ -21,6 +26,19 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId }
     guests: [""]
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Preenche automaticamente os dados se o usuário estiver logado
+  useEffect(() => {
+    if (user && profile && isOpen) {
+      const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+      setFormData(prev => ({
+        ...prev,
+        responsibleName: fullName || user.email || "",
+        participantName: fullName || user.email || "",
+        whatsapp: profile.phone || ""
+      }));
+    }
+  }, [user, profile, isOpen]);
 
   const addGuest = () => {
     setFormData(prev => ({
@@ -48,16 +66,23 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId }
     setIsSubmitting(true);
     
     try {
-      const success = await onConfirm(formData);
+      const dataToSubmit = {
+        ...formData,
+        userId: user?.id // Adiciona o userId se o usuário estiver logado
+      };
+      
+      const success = await onConfirm(dataToSubmit);
       if (success) {
         onClose();
-        // Reset form
-        setFormData({
-          responsibleName: "",
-          participantName: "",
-          whatsapp: "",
-          guests: [""]
-        });
+        // Reset form apenas se não estiver logado
+        if (!user) {
+          setFormData({
+            responsibleName: "",
+            participantName: "",
+            whatsapp: "",
+            guests: [""]
+          });
+        }
       }
     } finally {
       setIsSubmitting(false);
@@ -97,6 +122,11 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId }
             <p className="text-netflix-gray-light mt-2">
               Evento: <span className="text-netflix-red font-medium">{eventTitle}</span>
             </p>
+            {user && (
+              <p className="text-netflix-gray-light text-sm mt-1">
+                Logado como: <span className="text-netflix-white">{profile?.first_name || user.email}</span>
+              </p>
+            )}
           </DialogHeader>
         </div>
 
