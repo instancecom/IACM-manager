@@ -5,10 +5,15 @@ import { toast } from "@/hooks/use-toast";
 export interface EventConfirmation {
   id: string;
   event_id: string;
-  member_id: string;
+  user_id: string | null;
+  responsible_name: string | null;
+  participant_name: string | null;
+  whatsapp: string | null;
+  guests: string[] | null;
   confirmed: boolean;
   confirmed_at: string | null;
   created_at: string;
+  member_id: string | null; // Mantido por compatibilidade com dados antigos
 }
 
 export interface ConfirmationData {
@@ -62,63 +67,48 @@ export const useEventConfirmations = () => {
     try {
       setLoading(true);
       
-      // Primeiro, vamos verificar se existe um membro com esse WhatsApp ou criar um novo
-      let memberId: string;
+      // Verifica se já existe uma confirmação para este evento e usuário/whatsapp
+      let existingConfirmation = null;
       
-      // Procura por um membro existente com esse WhatsApp
-      const { data: existingMember } = await supabase
-        .from('members')
-        .select('id, user_id')
-        .eq('whatsapp', confirmationData.whatsapp.replace(/\D/g, ''))
-        .single();
-
-      if (existingMember) {
-        memberId = existingMember.id;
+      if (confirmationData.userId) {
+        // Se o usuário está logado, busca por user_id
+        const { data } = await supabase
+          .from('event_confirmations')
+          .select('id')
+          .eq('event_id', eventId)
+          .eq('user_id', confirmationData.userId)
+          .maybeSingle();
         
-        // Se o usuário está logado e o membro ainda não tem user_id, associa
-        if (confirmationData.userId && !existingMember.user_id) {
-          await supabase
-            .from('members')
-            .update({ user_id: confirmationData.userId })
-            .eq('id', memberId);
-        }
+        existingConfirmation = data;
       } else {
-        // Cria um novo membro
-        const { data: newMember, error: memberError } = await supabase
-          .from('members')
-          .insert({
-            first_name: confirmationData.participantName.split(' ')[0] || confirmationData.participantName,
-            last_name: confirmationData.participantName.split(' ').slice(1).join(' ') || '',
-            whatsapp: confirmationData.whatsapp.replace(/\D/g, ''),
-            birth_date: '2000-01-01', // Data padrão - pode ser ajustada depois
-            user_id: confirmationData.userId || null // Associa ao usuário se estiver logado
-          })
-          .select()
-          .single();
-
-        if (memberError) {
-          throw memberError;
-        }
-
-        memberId = newMember.id;
+        // Se não está logado, busca por whatsapp
+        const { data } = await supabase
+          .from('event_confirmations')
+          .select('id')
+          .eq('event_id', eventId)
+          .eq('whatsapp', confirmationData.whatsapp.replace(/\D/g, ''))
+          .maybeSingle();
+        
+        existingConfirmation = data;
       }
 
-      // Verifica se já existe uma confirmação para este evento e membro
-      const { data: existingConfirmation } = await supabase
-        .from('event_confirmations')
-        .select('id')
-        .eq('event_id', eventId)
-        .eq('member_id', memberId)
-        .single();
+      const confirmationPayload = {
+        event_id: eventId,
+        user_id: confirmationData.userId || null,
+        responsible_name: confirmationData.responsibleName,
+        participant_name: confirmationData.participantName,
+        whatsapp: confirmationData.whatsapp.replace(/\D/g, ''),
+        guests: confirmationData.guests.filter(g => g.trim() !== ''), // Remove guests vazios
+        confirmed: true,
+        confirmed_at: new Date().toISOString(),
+        member_id: null // Não usamos mais member_id
+      };
 
       if (existingConfirmation) {
         // Atualiza a confirmação existente
         const { error: updateError } = await supabase
           .from('event_confirmations')
-          .update({
-            confirmed: true,
-            confirmed_at: new Date().toISOString()
-          })
+          .update(confirmationPayload)
           .eq('id', existingConfirmation.id);
 
         if (updateError) {
@@ -128,12 +118,7 @@ export const useEventConfirmations = () => {
         // Cria uma nova confirmação
         const { error: confirmationError } = await supabase
           .from('event_confirmations')
-          .insert({
-            event_id: eventId,
-            member_id: memberId,
-            confirmed: true,
-            confirmed_at: new Date().toISOString()
-          });
+          .insert(confirmationPayload);
 
         if (confirmationError) {
           throw confirmationError;
@@ -161,15 +146,15 @@ export const useEventConfirmations = () => {
     }
   };
 
-  const checkConfirmation = async (eventId: string, memberId: string) => {
+  const checkUserConfirmation = async (eventId: string, userId: string) => {
     try {
       const { data, error } = await supabase
         .from('event_confirmations')
         .select('*')
         .eq('event_id', eventId)
-        .eq('member_id', memberId)
+        .eq('user_id', userId)
         .eq('confirmed', true)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
         throw error;
@@ -192,6 +177,6 @@ export const useEventConfirmations = () => {
     error,
     fetchConfirmations,
     confirmPresence,
-    checkConfirmation,
+    checkUserConfirmation,
   };
 };

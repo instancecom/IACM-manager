@@ -62,24 +62,39 @@ export type Database = {
           confirmed_at: string | null
           created_at: string | null
           event_id: string
+          guests: string[] | null
           id: string
-          member_id: string
+          member_id: string | null
+          participant_name: string | null
+          responsible_name: string | null
+          user_id: string | null
+          whatsapp: string | null
         }
         Insert: {
           confirmed?: boolean | null
           confirmed_at?: string | null
           created_at?: string | null
           event_id: string
+          guests?: string[] | null
           id?: string
-          member_id: string
+          member_id?: string | null
+          participant_name?: string | null
+          responsible_name?: string | null
+          user_id?: string | null
+          whatsapp?: string | null
         }
         Update: {
           confirmed?: boolean | null
           confirmed_at?: string | null
           created_at?: string | null
           event_id?: string
+          guests?: string[] | null
           id?: string
-          member_id?: string
+          member_id?: string | null
+          participant_name?: string | null
+          responsible_name?: string | null
+          user_id?: string | null
+          whatsapp?: string | null
         }
         Relationships: [
           {
