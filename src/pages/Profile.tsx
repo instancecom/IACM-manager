@@ -1,19 +1,24 @@
-import { User, Mail, Phone, MapPin, Calendar, Settings, Shield, Edit, Save, X } from "lucide-react";
+import { User, Calendar, Shield, Edit, Save, X, CalendarCheck } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Header from "@/components/Header";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
+import { useEventConfirmations } from "@/hooks/useEventConfirmations";
+import { useEvents } from "@/hooks/useEvents";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { profile, loading, updateProfile, getFullName, getInitials } = useProfile();
   const { user } = useAuth();
+  const { confirmations } = useEventConfirmations();
+  const { events } = useEvents();
   
   const [formData, setFormData] = useState({
     first_name: "",
@@ -227,24 +232,54 @@ const Profile = () => {
             </Card>
           </div>
 
-          {/* Configurações */}
+          {/* Eventos Confirmados */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Settings className="w-5 h-5 text-netflix-red" />
-                Configurações
+                <CalendarCheck className="w-5 h-5 text-netflix-red" />
+                Eventos Confirmados
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">Alterar Senha</h3>
-                  <p className="text-sm text-muted-foreground">Atualizar sua senha de acesso</p>
-                </div>
-                <Button variant="outline" size="sm">
-                  Alterar
-                </Button>
-              </div>
+            <CardContent>
+              {(() => {
+                const userConfirmations = confirmations.filter(c => c.user_id === user?.id && c.confirmed);
+                const confirmedEvents = events.filter(event => 
+                  userConfirmations.some(c => c.event_id === event.id)
+                );
+
+                if (confirmedEvents.length === 0) {
+                  return (
+                    <p className="text-muted-foreground text-center py-4">
+                      Você ainda não confirmou presença em nenhum evento
+                    </p>
+                  );
+                }
+
+                return (
+                  <div className="space-y-3">
+                    {confirmedEvents.map(event => {
+                      const confirmation = userConfirmations.find(c => c.event_id === event.id);
+                      return (
+                        <div key={event.id} className="p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+                          <div className="flex justify-between items-start gap-4">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-foreground">{event.title}</h3>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {format(new Date(event.start_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })} às {event.start_time}
+                              </p>
+                              {confirmation?.confirmed_at && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Confirmado em {format(new Date(confirmation.confirmed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </CardContent>
           </Card>
         </div>
