@@ -5,19 +5,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Users, CalendarDays, Check, X, Eye } from "lucide-react";
+import { Loader2, Users, CalendarDays, Check, X, Eye, User2, UserCheck } from "lucide-react";
 import { useEventConfirmations } from "@/hooks/useEventConfirmations";
 import { useEvents } from "@/hooks/useEvents";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-interface MemberWithConfirmation {
+interface EventConfirmationData {
   id: string;
-  first_name: string;
-  last_name: string;
-  whatsapp: string;
-  photo_url?: string;
+  participant_name: string | null;
+  responsible_name: string | null;
+  whatsapp: string | null;
+  guests: string[] | null;
   confirmed: boolean;
   confirmed_at?: string;
 }
@@ -25,9 +25,9 @@ interface MemberWithConfirmation {
 const EventConfirmationsView = () => {
   const { events, loading: eventsLoading } = useEvents();
   const [selectedEventId, setSelectedEventId] = useState<string>("");
-  const [confirmations, setConfirmations] = useState<MemberWithConfirmation[]>([]);
+  const [confirmations, setConfirmations] = useState<EventConfirmationData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedMember, setSelectedMember] = useState<MemberWithConfirmation | null>(null);
+  const [selectedConfirmation, setSelectedConfirmation] = useState<EventConfirmationData | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const fetchEventConfirmations = async (eventId: string) => {
@@ -35,35 +35,25 @@ const EventConfirmationsView = () => {
     
     setLoading(true);
     try {
-      // Buscar todas as confirmações do evento com dados dos membros
       const { data: confirmationData, error } = await supabase
         .from('event_confirmations')
-        .select(`
-          *,
-          members (
-            id,
-            first_name,
-            last_name,
-            whatsapp,
-            photo_url
-          )
-        `)
-        .eq('event_id', eventId);
+        .select('*')
+        .eq('event_id', eventId)
+        .order('confirmed_at', { ascending: false });
 
       if (error) throw error;
 
-      // Transformar os dados para o formato esperado
-      const membersWithConfirmations: MemberWithConfirmation[] = confirmationData?.map(conf => ({
-        id: conf.members?.id || '',
-        first_name: conf.members?.first_name || '',
-        last_name: conf.members?.last_name || '',
-        whatsapp: conf.members?.whatsapp || '',
-        photo_url: conf.members?.photo_url,
+      const confirmationsData: EventConfirmationData[] = confirmationData?.map(conf => ({
+        id: conf.id,
+        participant_name: conf.participant_name,
+        responsible_name: conf.responsible_name,
+        whatsapp: conf.whatsapp,
+        guests: conf.guests,
         confirmed: conf.confirmed,
         confirmed_at: conf.confirmed_at
       })) || [];
 
-      setConfirmations(membersWithConfirmations);
+      setConfirmations(confirmationsData);
     } catch (error) {
       console.error('Erro ao buscar confirmações:', error);
       setConfirmations([]);
@@ -78,7 +68,7 @@ const EventConfirmationsView = () => {
     }
   }, [selectedEventId]);
 
-  const confirmedCount = confirmations.filter(member => member.confirmed).length;
+  const confirmedCount = confirmations.filter(conf => conf.confirmed).length;
   const totalCount = confirmations.length;
 
   const selectedEvent = events.find(event => event.id === selectedEventId);
@@ -163,12 +153,12 @@ const EventConfirmationsView = () => {
             </Card>
           ) : (
             <div className="grid gap-3">
-              {confirmations.map((member) => (
+              {confirmations.map((confirmation) => (
                 <Card 
-                  key={member.id} 
+                  key={confirmation.id} 
                   className="border-border cursor-pointer hover:bg-muted/50 transition-colors"
                   onClick={() => {
-                    setSelectedMember(member);
+                    setSelectedConfirmation(confirmation);
                     setIsPreviewOpen(true);
                   }}
                 >
@@ -176,22 +166,21 @@ const EventConfirmationsView = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={member.photo_url} />
                           <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                            {member.first_name.charAt(0)}{member.last_name.charAt(0)}
+                            {confirmation.participant_name?.charAt(0) || 'P'}
                           </AvatarFallback>
                         </Avatar>
                         
                         <div className="flex-1">
                           <p className="font-medium text-card-foreground">
-                            {member.first_name} {member.last_name}
+                            {confirmation.participant_name || 'Sem nome'}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            WhatsApp: {member.whatsapp}
+                            WhatsApp: {confirmation.whatsapp || 'Não informado'}
                           </p>
-                          {member.confirmed_at && (
+                          {confirmation.confirmed_at && (
                             <p className="text-xs text-muted-foreground">
-                              Confirmado em: {format(new Date(member.confirmed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                              Confirmado em: {format(new Date(confirmation.confirmed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                             </p>
                           )}
                         </div>
@@ -201,7 +190,7 @@ const EventConfirmationsView = () => {
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                           <Eye className="h-4 w-4" />
                         </Button>
-                        {member.confirmed ? (
+                        {confirmation.confirmed ? (
                           <Badge className="bg-green-600 text-white hover:bg-green-700">
                             <Check className="h-3 w-3 mr-1" />
                             Confirmado
@@ -229,30 +218,63 @@ const EventConfirmationsView = () => {
             <DialogTitle>Detalhes da Confirmação</DialogTitle>
           </DialogHeader>
           
-          {selectedMember && (
+          {selectedConfirmation && (
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 <Avatar className="h-16 w-16">
-                  <AvatarImage src={selectedMember.photo_url} />
                   <AvatarFallback className="bg-primary/10 text-primary font-medium text-lg">
-                    {selectedMember.first_name.charAt(0)}{selectedMember.last_name.charAt(0)}
+                    {selectedConfirmation.participant_name?.charAt(0) || 'P'}
                   </AvatarFallback>
                 </Avatar>
                 
                 <div className="flex-1">
                   <h3 className="font-semibold text-lg text-card-foreground">
-                    {selectedMember.first_name} {selectedMember.last_name}
+                    {selectedConfirmation.participant_name || 'Sem nome'}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    WhatsApp: {selectedMember.whatsapp}
-                  </p>
+                  {selectedConfirmation.whatsapp && (
+                    <a 
+                      href={`https://wa.me/55${selectedConfirmation.whatsapp.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-green-600 hover:text-green-700 hover:underline flex items-center gap-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      WhatsApp: {selectedConfirmation.whatsapp}
+                    </a>
+                  )}
                 </div>
               </div>
 
               <div className="space-y-3 pt-4 border-t">
-                <div className="flex items-center justify-between">
+                {selectedConfirmation.responsible_name && (
+                  <div className="flex items-start gap-2">
+                    <UserCheck className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div className="flex-1">
+                      <span className="text-sm font-medium text-muted-foreground block">Responsável:</span>
+                      <span className="text-sm text-card-foreground">{selectedConfirmation.responsible_name}</span>
+                    </div>
+                  </div>
+                )}
+
+                {selectedConfirmation.guests && selectedConfirmation.guests.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div className="flex-1">
+                      <span className="text-sm font-medium text-muted-foreground block">
+                        Convidados ({selectedConfirmation.guests.length}):
+                      </span>
+                      <ul className="text-sm text-card-foreground list-disc list-inside">
+                        {selectedConfirmation.guests.map((guest, index) => (
+                          <li key={index}>{guest}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-3 border-t">
                   <span className="text-sm font-medium text-muted-foreground">Status:</span>
-                  {selectedMember.confirmed ? (
+                  {selectedConfirmation.confirmed ? (
                     <Badge className="bg-green-600 text-white">
                       <Check className="h-3 w-3 mr-1" />
                       Confirmado
@@ -265,11 +287,11 @@ const EventConfirmationsView = () => {
                   )}
                 </div>
 
-                {selectedMember.confirmed_at && (
+                {selectedConfirmation.confirmed_at && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-muted-foreground">Confirmado em:</span>
                     <span className="text-sm text-card-foreground">
-                      {format(new Date(selectedMember.confirmed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                      {format(new Date(selectedConfirmation.confirmed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                     </span>
                   </div>
                 )}
