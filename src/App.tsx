@@ -13,6 +13,8 @@ import Admin from "./pages/Admin";
 import Events from "./pages/Events";
 import Profile from "./pages/Profile";
 import Visualizations from "./pages/Visualizations";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +30,8 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/events" element={<Events />} />
             <Route path="/profile" element={<Profile />} />

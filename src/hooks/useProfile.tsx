@@ -11,6 +11,9 @@ export interface UserProfile {
   phone: string | null;
   birth_date: string | null;
   avatar_url: string | null;
+  privacy_consent_given_at: string | null;
+  terms_accepted_at: string | null;
+  data_processing_consent: boolean | null;
   created_at: string;
   updated_at: string;
 }

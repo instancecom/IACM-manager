@@ -10,6 +10,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "Nome é obrigatório"),
@@ -19,6 +21,12 @@ const registerSchema = z.object({
   password: z.string()
     .min(6, "Senha deve ter pelo menos 6 caracteres"),
   confirmPassword: z.string(),
+  privacyConsent: z.boolean().refine((val) => val === true, {
+    message: "Você deve aceitar a Política de Privacidade",
+  }),
+  termsConsent: z.boolean().refine((val) => val === true, {
+    message: "Você deve aceitar os Termos de Uso",
+  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Senhas não coincidem",
   path: ["confirmPassword"],
@@ -42,6 +50,8 @@ const Register = () => {
       phone: "",
       password: "",
       confirmPassword: "",
+      privacyConsent: false,
+      termsConsent: false,
     },
   });
 
@@ -67,6 +77,31 @@ const Register = () => {
           variant: "destructive",
         });
       } else {
+        // Registrar consentimentos LGPD
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const now = new Date().toISOString();
+          await supabase.from('profiles').update({
+            privacy_consent_given_at: now,
+            terms_accepted_at: now,
+            data_processing_consent: true,
+          }).eq('user_id', user.id);
+
+          // Log de consentimentos para auditoria
+          await supabase.from('consent_logs').insert([
+            {
+              user_id: user.id,
+              consent_type: 'privacy_policy',
+              consent_given: true,
+            },
+            {
+              user_id: user.id,
+              consent_type: 'terms_of_service',
+              consent_given: true,
+            },
+          ]);
+        }
+
         toast({
           title: "Conta criada com sucesso!",
           description: "Verifique seu email para confirmar a conta.",
@@ -242,6 +277,64 @@ const Register = () => {
                     </FormItem>
                   )}
                 />
+
+                <div className="space-y-4 pt-2">
+                  <FormField
+                    control={form.control}
+                    name="privacyConsent"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-sm font-normal">
+                            Li e aceito a{" "}
+                            <Link
+                              to="/privacy-policy"
+                              target="_blank"
+                              className="text-primary hover:underline font-medium"
+                            >
+                              Política de Privacidade
+                            </Link>
+                          </FormLabel>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="termsConsent"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-sm font-normal">
+                            Li e aceito os{" "}
+                            <Link
+                              to="/terms-of-service"
+                              target="_blank"
+                              className="text-primary hover:underline font-medium"
+                            >
+                              Termos de Uso
+                            </Link>
+                          </FormLabel>
+                          <FormMessage />
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <Button
                   type="submit"

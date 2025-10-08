@@ -56,6 +56,36 @@ export type Database = {
         }
         Relationships: []
       }
+      consent_logs: {
+        Row: {
+          consent_given: boolean
+          consent_type: string
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          consent_given: boolean
+          consent_type: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          consent_given?: boolean
+          consent_type?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       event_confirmations: {
         Row: {
           confirmed: boolean | null
@@ -262,11 +292,14 @@ export type Database = {
           avatar_url: string | null
           birth_date: string | null
           created_at: string | null
+          data_processing_consent: boolean | null
           email: string | null
           first_name: string | null
           id: string
           last_name: string | null
           phone: string | null
+          privacy_consent_given_at: string | null
+          terms_accepted_at: string | null
           updated_at: string | null
           user_id: string
         }
@@ -274,11 +307,14 @@ export type Database = {
           avatar_url?: string | null
           birth_date?: string | null
           created_at?: string | null
+          data_processing_consent?: boolean | null
           email?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
           phone?: string | null
+          privacy_consent_given_at?: string | null
+          terms_accepted_at?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -286,11 +322,14 @@ export type Database = {
           avatar_url?: string | null
           birth_date?: string | null
           created_at?: string | null
+          data_processing_consent?: boolean | null
           email?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
           phone?: string | null
+          privacy_consent_given_at?: string | null
+          terms_accepted_at?: string | null
           updated_at?: string | null
           user_id?: string
         }

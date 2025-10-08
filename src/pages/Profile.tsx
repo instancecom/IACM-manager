@@ -1,17 +1,30 @@
-import { User, Calendar, Shield, Edit, Save, X, CalendarCheck } from "lucide-react";
+import { User, Calendar, Shield, Edit, Save, X, CalendarCheck, Download, Trash2, FileText } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import Header from "@/components/Header";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useEventConfirmations } from "@/hooks/useEventConfirmations";
 import { useEvents } from "@/hooks/useEvents";
+import { useLGPDActions } from "@/hooks/useLGPDActions";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -19,6 +32,7 @@ const Profile = () => {
   const { user } = useAuth();
   const { confirmations } = useEventConfirmations();
   const { events } = useEvents();
+  const { exportUserData, deleteUserAccount, loading: lgpdLoading } = useLGPDActions();
   
   const [formData, setFormData] = useState({
     first_name: "",
@@ -280,6 +294,100 @@ const Profile = () => {
                   </div>
                 );
               })()}
+            </CardContent>
+          </Card>
+
+          {/* Seção LGPD - Privacidade e Dados */}
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Privacidade e Dados (LGPD)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-foreground mb-2">Seus Direitos</h3>
+                  <p className="text-sm text-muted-foreground">
+                    De acordo com a Lei Geral de Proteção de Dados (LGPD), você tem direitos sobre seus dados pessoais.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => user?.id && exportUserData(user.id)}
+                    disabled={lgpdLoading}
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Exportar Meus Dados
+                  </Button>
+
+                  <Link to="/privacy-policy" target="_blank">
+                    <Button variant="outline" className="w-full flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Política de Privacidade
+                    </Button>
+                  </Link>
+
+                  <Link to="/terms-of-service" target="_blank">
+                    <Button variant="outline" className="w-full flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Termos de Uso
+                    </Button>
+                  </Link>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" className="flex items-center gap-2">
+                        <Trash2 className="h-4 w-4" />
+                        Excluir Minha Conta
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Tem certeza absoluta?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta ação não pode ser desfeita. Isso irá excluir permanentemente sua conta
+                          e remover todos os seus dados de nossos servidores, incluindo:
+                          <ul className="list-disc list-inside mt-2 space-y-1">
+                            <li>Perfil e informações pessoais</li>
+                            <li>Confirmações de eventos</li>
+                            <li>Histórico de participações</li>
+                            <li>Todos os registros relacionados</li>
+                          </ul>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => user?.id && deleteUserAccount(user.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Sim, excluir minha conta
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+
+                {profile?.privacy_consent_given_at && (
+                  <div className="pt-4 border-t border-border">
+                    <p className="text-xs text-muted-foreground">
+                      Consentimento de privacidade dado em:{" "}
+                      {format(new Date(profile.privacy_consent_given_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                    </p>
+                    {profile?.terms_accepted_at && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Termos de uso aceitos em:{" "}
+                        {format(new Date(profile.terms_accepted_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
