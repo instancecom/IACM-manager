@@ -97,6 +97,9 @@ export type Database = {
           member_id: string | null
           paid: boolean | null
           participant_name: string | null
+          payment_amount: number | null
+          payment_date: string | null
+          payment_type: string | null
           responsible_name: string | null
           user_id: string | null
           whatsapp: string | null
@@ -111,6 +114,9 @@ export type Database = {
           member_id?: string | null
           paid?: boolean | null
           participant_name?: string | null
+          payment_amount?: number | null
+          payment_date?: string | null
+          payment_type?: string | null
           responsible_name?: string | null
           user_id?: string | null
           whatsapp?: string | null
@@ -125,6 +131,9 @@ export type Database = {
           member_id?: string | null
           paid?: boolean | null
           participant_name?: string | null
+          payment_amount?: number | null
+          payment_date?: string | null
+          payment_type?: string | null
           responsible_name?: string | null
           user_id?: string | null
           whatsapp?: string | null

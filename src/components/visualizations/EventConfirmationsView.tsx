@@ -4,7 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Loader2, Users, CalendarDays, Check, X, Eye, User2, UserCheck, DollarSign } from "lucide-react";
 import { useEventConfirmations } from "@/hooks/useEventConfirmations";
 import { useEvents } from "@/hooks/useEvents";
@@ -22,17 +24,25 @@ interface EventConfirmationData {
   confirmed: boolean;
   confirmed_at?: string;
   paid: boolean;
+  payment_type?: string | null;
+  payment_date?: string | null;
+  payment_amount?: number | null;
 }
 
 const EventConfirmationsView = () => {
   const { events, loading: eventsLoading } = useEvents();
-  const { updatePaymentStatus } = useEventConfirmations();
+  const { updatePaymentDetails } = useEventConfirmations();
   const { canEdit } = useRoles();
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [confirmations, setConfirmations] = useState<EventConfirmationData[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedConfirmation, setSelectedConfirmation] = useState<EventConfirmationData | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [paymentConfirmation, setPaymentConfirmation] = useState<EventConfirmationData | null>(null);
+  const [paymentType, setPaymentType] = useState<string>("");
+  const [paymentDate, setPaymentDate] = useState<string>("");
+  const [paymentAmount, setPaymentAmount] = useState<string>("");
 
   const fetchEventConfirmations = async (eventId: string) => {
     if (!eventId) return;
@@ -55,7 +65,10 @@ const EventConfirmationsView = () => {
         guests: conf.guests,
         confirmed: conf.confirmed,
         confirmed_at: conf.confirmed_at,
-        paid: conf.paid || false
+        paid: conf.paid || false,
+        payment_type: conf.payment_type,
+        payment_date: conf.payment_date,
+        payment_amount: conf.payment_amount
       })) || [];
 
       setConfirmations(confirmationsData);
@@ -73,15 +86,42 @@ const EventConfirmationsView = () => {
     }
   }, [selectedEventId]);
 
-  const handlePaymentToggle = async (confirmationId: string, currentPaidStatus: boolean) => {
-    const success = await updatePaymentStatus(confirmationId, !currentPaidStatus);
+  const openPaymentDialog = (confirmation: EventConfirmationData) => {
+    setPaymentConfirmation(confirmation);
+    setPaymentType(confirmation.payment_type || "");
+    setPaymentDate(confirmation.payment_date || "");
+    setPaymentAmount(confirmation.payment_amount?.toString() || "");
+    setIsPaymentDialogOpen(true);
+  };
+
+  const handlePaymentSubmit = async () => {
+    if (!paymentConfirmation || !paymentType || !paymentDate || !paymentAmount) {
+      return;
+    }
+
+    const success = await updatePaymentDetails(
+      paymentConfirmation.id,
+      paymentType,
+      paymentDate,
+      parseFloat(paymentAmount)
+    );
+
     if (success && selectedEventId) {
       await fetchEventConfirmations(selectedEventId);
+      setIsPaymentDialogOpen(false);
+      setPaymentType("");
+      setPaymentDate("");
+      setPaymentAmount("");
+      setPaymentConfirmation(null);
+
       // Atualiza também o selectedConfirmation se estiver aberto
-      if (selectedConfirmation?.id === confirmationId) {
+      if (selectedConfirmation?.id === paymentConfirmation.id) {
         setSelectedConfirmation({
           ...selectedConfirmation,
-          paid: !currentPaidStatus
+          paid: true,
+          payment_type: paymentType,
+          payment_date: paymentDate,
+          payment_amount: parseFloat(paymentAmount)
         });
       }
     }
@@ -212,12 +252,12 @@ const EventConfirmationsView = () => {
                             variant={confirmation.paid ? "default" : "outline"}
                             onClick={(e) => {
                               e.stopPropagation();
-                              handlePaymentToggle(confirmation.id, confirmation.paid);
+                              openPaymentDialog(confirmation);
                             }}
                             className="gap-1"
                           >
                             <DollarSign className="h-3 w-3" />
-                            {confirmation.paid ? "Pago" : "Não pago"}
+                            {confirmation.paid ? "Pago" : "Registrar pagamento"}
                           </Button>
                         )}
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -282,12 +322,12 @@ const EventConfirmationsView = () => {
                     variant={selectedConfirmation.paid ? "default" : "outline"}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handlePaymentToggle(selectedConfirmation.id, selectedConfirmation.paid);
+                      openPaymentDialog(selectedConfirmation);
                     }}
                     className="gap-2"
                   >
                     <DollarSign className="h-4 w-4" />
-                    {selectedConfirmation.paid ? "Pago" : "Marcar como pago"}
+                    {selectedConfirmation.paid ? "Pago" : "Registrar pagamento"}
                   </Button>
                 )}
               </div>
@@ -344,12 +384,42 @@ const EventConfirmationsView = () => {
                 )}
 
                 {canEdit && (
-                  <div className="flex items-center justify-between pt-3 border-t">
-                    <span className="text-sm font-medium text-muted-foreground">Pagamento:</span>
-                    <Badge variant={selectedConfirmation.paid ? "default" : "outline"}>
-                      {selectedConfirmation.paid ? "✓ Pago" : "Não pago"}
-                    </Badge>
-                  </div>
+                  <>
+                    <div className="flex items-center justify-between pt-3 border-t">
+                      <span className="text-sm font-medium text-muted-foreground">Pagamento:</span>
+                      <Badge variant={selectedConfirmation.paid ? "default" : "outline"}>
+                        {selectedConfirmation.paid ? "✓ Pago" : "Não pago"}
+                      </Badge>
+                    </div>
+
+                    {selectedConfirmation.paid && selectedConfirmation.payment_type && (
+                      <div className="space-y-2 pt-3 border-t">
+                        <h4 className="text-sm font-medium text-card-foreground">Detalhes do Pagamento:</h4>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <span className="text-muted-foreground">Tipo:</span>
+                          <span className="text-card-foreground capitalize">{selectedConfirmation.payment_type}</span>
+                          
+                          {selectedConfirmation.payment_date && (
+                            <>
+                              <span className="text-muted-foreground">Data:</span>
+                              <span className="text-card-foreground">
+                                {format(new Date(selectedConfirmation.payment_date), "dd/MM/yyyy")}
+                              </span>
+                            </>
+                          )}
+                          
+                          {selectedConfirmation.payment_amount && (
+                            <>
+                              <span className="text-muted-foreground">Valor:</span>
+                              <span className="text-card-foreground">
+                                R$ {selectedConfirmation.payment_amount.toFixed(2)}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {selectedEvent && (
@@ -364,6 +434,88 @@ const EventConfirmationsView = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Dialog */}
+      <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Registrar Pagamento</DialogTitle>
+          </DialogHeader>
+          
+          {paymentConfirmation && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 pb-4 border-b">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                    {paymentConfirmation.participant_name?.charAt(0) || 'P'}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium text-card-foreground">
+                    {paymentConfirmation.participant_name || 'Sem nome'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {paymentConfirmation.whatsapp || 'Sem WhatsApp'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="payment-type">Tipo de pagamento</Label>
+                  <Select value={paymentType} onValueChange={setPaymentType}>
+                    <SelectTrigger id="payment-type">
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                      <SelectItem value="pix">PIX</SelectItem>
+                      <SelectItem value="cartao">Cartão</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="payment-date">Quando foi pago</Label>
+                  <Input
+                    id="payment-date"
+                    type="date"
+                    value={paymentDate}
+                    onChange={(e) => setPaymentDate(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="payment-amount">Valor pago</Label>
+                  <Input
+                    id="payment-amount"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsPaymentDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handlePaymentSubmit}
+              disabled={!paymentType || !paymentDate || !paymentAmount}
+            >
+              Salvar Pagamento
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
