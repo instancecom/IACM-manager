@@ -5,9 +5,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Users, CalendarDays, Check, X, Eye, User2, UserCheck } from "lucide-react";
+import { Loader2, Users, CalendarDays, Check, X, Eye, User2, UserCheck, DollarSign } from "lucide-react";
 import { useEventConfirmations } from "@/hooks/useEventConfirmations";
 import { useEvents } from "@/hooks/useEvents";
+import { useRoles } from "@/hooks/useRoles";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -20,10 +21,13 @@ interface EventConfirmationData {
   guests: string[] | null;
   confirmed: boolean;
   confirmed_at?: string;
+  paid: boolean;
 }
 
 const EventConfirmationsView = () => {
   const { events, loading: eventsLoading } = useEvents();
+  const { updatePaymentStatus } = useEventConfirmations();
+  const { canEdit } = useRoles();
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [confirmations, setConfirmations] = useState<EventConfirmationData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,7 +54,8 @@ const EventConfirmationsView = () => {
         whatsapp: conf.whatsapp,
         guests: conf.guests,
         confirmed: conf.confirmed,
-        confirmed_at: conf.confirmed_at
+        confirmed_at: conf.confirmed_at,
+        paid: conf.paid || false
       })) || [];
 
       setConfirmations(confirmationsData);
@@ -67,6 +72,20 @@ const EventConfirmationsView = () => {
       fetchEventConfirmations(selectedEventId);
     }
   }, [selectedEventId]);
+
+  const handlePaymentToggle = async (confirmationId: string, currentPaidStatus: boolean) => {
+    const success = await updatePaymentStatus(confirmationId, !currentPaidStatus);
+    if (success && selectedEventId) {
+      await fetchEventConfirmations(selectedEventId);
+      // Atualiza também o selectedConfirmation se estiver aberto
+      if (selectedConfirmation?.id === confirmationId) {
+        setSelectedConfirmation({
+          ...selectedConfirmation,
+          paid: !currentPaidStatus
+        });
+      }
+    }
+  };
 
   const confirmedCount = confirmations.filter(conf => conf.confirmed).length;
   const totalCount = confirmations.length;
@@ -187,6 +206,20 @@ const EventConfirmationsView = () => {
                       </div>
                       
                       <div className="flex items-center gap-2">
+                        {canEdit && (
+                          <Button
+                            size="sm"
+                            variant={confirmation.paid ? "default" : "outline"}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePaymentToggle(confirmation.id, confirmation.paid);
+                            }}
+                            className="gap-1"
+                          >
+                            <DollarSign className="h-3 w-3" />
+                            {confirmation.paid ? "Pago" : "Não pago"}
+                          </Button>
+                        )}
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                           <Eye className="h-4 w-4" />
                         </Button>
@@ -243,6 +276,20 @@ const EventConfirmationsView = () => {
                     </a>
                   )}
                 </div>
+
+                {canEdit && (
+                  <Button
+                    variant={selectedConfirmation.paid ? "default" : "outline"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePaymentToggle(selectedConfirmation.id, selectedConfirmation.paid);
+                    }}
+                    className="gap-2"
+                  >
+                    <DollarSign className="h-4 w-4" />
+                    {selectedConfirmation.paid ? "Pago" : "Marcar como pago"}
+                  </Button>
+                )}
               </div>
 
               <div className="space-y-3 pt-4 border-t">
@@ -293,6 +340,15 @@ const EventConfirmationsView = () => {
                     <span className="text-sm text-card-foreground">
                       {format(new Date(selectedConfirmation.confirmed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                     </span>
+                  </div>
+                )}
+
+                {canEdit && (
+                  <div className="flex items-center justify-between pt-3 border-t">
+                    <span className="text-sm font-medium text-muted-foreground">Pagamento:</span>
+                    <Badge variant={selectedConfirmation.paid ? "default" : "outline"}>
+                      {selectedConfirmation.paid ? "✓ Pago" : "Não pago"}
+                    </Badge>
                   </div>
                 )}
 

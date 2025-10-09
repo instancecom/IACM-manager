@@ -14,6 +14,7 @@ export interface EventConfirmation {
   confirmed_at: string | null;
   created_at: string;
   member_id: string | null; // Mantido por compatibilidade com dados antigos
+  paid: boolean;
 }
 
 export interface ConfirmationData {
@@ -171,6 +172,40 @@ export const useEventConfirmations = () => {
     fetchConfirmations();
   }, []);
 
+  const updatePaymentStatus = async (confirmationId: string, paid: boolean) => {
+    try {
+      setLoading(true);
+      
+      const { error } = await supabase
+        .from('event_confirmations')
+        .update({ paid })
+        .eq('id', confirmationId);
+
+      if (error) {
+        throw error;
+      }
+
+      await fetchConfirmations();
+      
+      toast({
+        title: paid ? "Pagamento confirmado!" : "Pagamento desmarcado",
+        description: paid ? "O pagamento foi marcado como realizado." : "O pagamento foi marcado como não realizado.",
+      });
+
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Erro inesperado";
+      toast({
+        title: "Erro ao atualizar status de pagamento",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     confirmations,
     loading,
@@ -178,5 +213,6 @@ export const useEventConfirmations = () => {
     fetchConfirmations,
     confirmPresence,
     checkUserConfirmation,
+    updatePaymentStatus,
   };
 };

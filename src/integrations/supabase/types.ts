@@ -95,6 +95,7 @@ export type Database = {
           guests: string[] | null
           id: string
           member_id: string | null
+          paid: boolean | null
           participant_name: string | null
           responsible_name: string | null
           user_id: string | null
@@ -108,6 +109,7 @@ export type Database = {
           guests?: string[] | null
           id?: string
           member_id?: string | null
+          paid?: boolean | null
           participant_name?: string | null
           responsible_name?: string | null
           user_id?: string | null
@@ -121,6 +123,7 @@ export type Database = {
           guests?: string[] | null
           id?: string
           member_id?: string | null
+          paid?: boolean | null
           participant_name?: string | null
           responsible_name?: string | null
           user_id?: string | null
