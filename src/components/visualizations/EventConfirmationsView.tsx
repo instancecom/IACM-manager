@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Users, CalendarDays, Check, X, Eye, User2, UserCheck, DollarSign } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Loader2, Users, CalendarDays, Check, X, Eye, UserCheck, DollarSign, Trash2, Plus } from "lucide-react";
 import { useEventConfirmations } from "@/hooks/useEventConfirmations";
+import { useEventPayments } from "@/hooks/useEventPayments";
 import { useEvents } from "@/hooks/useEvents";
 import { useRoles } from "@/hooks/useRoles";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,25 +26,27 @@ interface EventConfirmationData {
   confirmed: boolean;
   confirmed_at?: string;
   paid: boolean;
-  payment_type?: string | null;
-  payment_date?: string | null;
-  payment_amount?: number | null;
+  total_amount: number | null;
 }
 
 const EventConfirmationsView = () => {
   const { events, loading: eventsLoading } = useEvents();
-  const { updatePaymentDetails } = useEventConfirmations();
+  const { updateTotalAmount } = useEventConfirmations();
+  const { payments, fetchPayments, addPayment, deletePayment } = useEventPayments();
   const { canEdit } = useRoles();
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [confirmations, setConfirmations] = useState<EventConfirmationData[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedConfirmation, setSelectedConfirmation] = useState<EventConfirmationData | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [isTotalAmountDialogOpen, setIsTotalAmountDialogOpen] = useState(false);
   const [paymentConfirmation, setPaymentConfirmation] = useState<EventConfirmationData | null>(null);
-  const [paymentType, setPaymentType] = useState<string>("");
-  const [paymentDate, setPaymentDate] = useState<string>("");
-  const [paymentAmount, setPaymentAmount] = useState<string>("");
+  const [newPaymentType, setNewPaymentType] = useState("");
+  const [newPaymentDate, setNewPaymentDate] = useState("");
+  const [newPaymentAmount, setNewPaymentAmount] = useState("");
+  const [totalAmountInput, setTotalAmountInput] = useState("");
 
   const fetchEventConfirmations = async (eventId: string) => {
     if (!eventId) return;
@@ -66,9 +70,7 @@ const EventConfirmationsView = () => {
         confirmed: conf.confirmed,
         confirmed_at: conf.confirmed_at,
         paid: conf.paid || false,
-        payment_type: conf.payment_type,
-        payment_date: conf.payment_date,
-        payment_amount: conf.payment_amount
+        total_amount: conf.total_amount
       })) || [];
 
       setConfirmations(confirmationsData);
@@ -86,45 +88,72 @@ const EventConfirmationsView = () => {
     }
   }, [selectedEventId]);
 
-  const openPaymentDialog = (confirmation: EventConfirmationData) => {
+  const openPaymentDialog = async (confirmation: EventConfirmationData) => {
     setPaymentConfirmation(confirmation);
-    setPaymentType(confirmation.payment_type || "");
-    setPaymentDate(confirmation.payment_date || "");
-    setPaymentAmount(confirmation.payment_amount?.toString() || "");
+    setNewPaymentType("");
+    setNewPaymentDate("");
+    setNewPaymentAmount("");
     setIsPaymentDialogOpen(true);
+    await fetchPayments(confirmation.id);
   };
 
-  const handlePaymentSubmit = async () => {
-    if (!paymentConfirmation || !paymentType || !paymentDate || !paymentAmount) {
-      return;
+  const openTotalAmountDialog = (confirmation: EventConfirmationData) => {
+    setPaymentConfirmation(confirmation);
+    setTotalAmountInput(confirmation.total_amount?.toString() || "");
+    setIsTotalAmountDialogOpen(true);
+  };
+
+  const handleAddPayment = async () => {
+    if (!paymentConfirmation || !newPaymentType || !newPaymentDate || !newPaymentAmount) return;
+
+    try {
+      await addPayment(paymentConfirmation.id, {
+        payment_type: newPaymentType,
+        payment_date: newPaymentDate,
+        amount: parseFloat(newPaymentAmount),
+      });
+
+      setNewPaymentType("");
+      setNewPaymentDate("");
+      setNewPaymentAmount("");
+      await fetchEventConfirmations(selectedEventId!);
+      await fetchPayments(paymentConfirmation.id);
+    } catch (error) {
+      console.error("Error adding payment:", error);
     }
+  };
 
-    const success = await updatePaymentDetails(
-      paymentConfirmation.id,
-      paymentType,
-      paymentDate,
-      parseFloat(paymentAmount)
-    );
+  const handleDeletePayment = async (paymentId: string) => {
+    if (!paymentConfirmation) return;
 
-    if (success && selectedEventId) {
-      await fetchEventConfirmations(selectedEventId);
-      setIsPaymentDialogOpen(false);
-      setPaymentType("");
-      setPaymentDate("");
-      setPaymentAmount("");
-      setPaymentConfirmation(null);
-
-      // Atualiza também o selectedConfirmation se estiver aberto
-      if (selectedConfirmation?.id === paymentConfirmation.id) {
-        setSelectedConfirmation({
-          ...selectedConfirmation,
-          paid: true,
-          payment_type: paymentType,
-          payment_date: paymentDate,
-          payment_amount: parseFloat(paymentAmount)
-        });
-      }
+    try {
+      await deletePayment(paymentId, paymentConfirmation.id);
+      await fetchEventConfirmations(selectedEventId!);
+    } catch (error) {
+      console.error("Error deleting payment:", error);
     }
+  };
+
+  const handleUpdateTotalAmount = async () => {
+    if (!paymentConfirmation || !totalAmountInput) return;
+
+    try {
+      await updateTotalAmount(paymentConfirmation.id, parseFloat(totalAmountInput));
+      setIsTotalAmountDialogOpen(false);
+      await fetchEventConfirmations(selectedEventId!);
+    } catch (error) {
+      console.error("Error updating total amount:", error);
+    }
+  };
+
+  const calculateTotalPaid = () => {
+    return payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+  };
+
+  const calculateRemaining = () => {
+    const total = Number(paymentConfirmation?.total_amount || 0);
+    const paid = calculateTotalPaid();
+    return Math.max(0, total - paid);
   };
 
   const confirmedCount = confirmations.filter(conf => conf.confirmed).length;
@@ -316,20 +345,6 @@ const EventConfirmationsView = () => {
                     </a>
                   )}
                 </div>
-
-                {canEdit && (
-                  <Button
-                    variant={selectedConfirmation.paid ? "default" : "outline"}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openPaymentDialog(selectedConfirmation);
-                    }}
-                    className="gap-2"
-                  >
-                    <DollarSign className="h-4 w-4" />
-                    {selectedConfirmation.paid ? "Pago" : "Registrar pagamento"}
-                  </Button>
-                )}
               </div>
 
               <div className="space-y-3 pt-4 border-t">
@@ -391,34 +406,6 @@ const EventConfirmationsView = () => {
                         {selectedConfirmation.paid ? "✓ Pago" : "Não pago"}
                       </Badge>
                     </div>
-
-                    {selectedConfirmation.paid && selectedConfirmation.payment_type && (
-                      <div className="space-y-2 pt-3 border-t">
-                        <h4 className="text-sm font-medium text-card-foreground">Detalhes do Pagamento:</h4>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <span className="text-muted-foreground">Tipo:</span>
-                          <span className="text-card-foreground capitalize">{selectedConfirmation.payment_type}</span>
-                          
-                          {selectedConfirmation.payment_date && (
-                            <>
-                              <span className="text-muted-foreground">Data:</span>
-                              <span className="text-card-foreground">
-                                {format(new Date(selectedConfirmation.payment_date), "dd/MM/yyyy")}
-                              </span>
-                            </>
-                          )}
-                          
-                          {selectedConfirmation.payment_amount && (
-                            <>
-                              <span className="text-muted-foreground">Valor:</span>
-                              <span className="text-card-foreground">
-                                R$ {selectedConfirmation.payment_amount.toFixed(2)}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </>
                 )}
 
@@ -439,9 +426,175 @@ const EventConfirmationsView = () => {
 
       {/* Payment Dialog */}
       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Controle de Pagamentos</DialogTitle>
+          </DialogHeader>
+          
+          {paymentConfirmation && (
+            <div className="space-y-6">
+              {/* Participant Info */}
+              <div className="flex items-center gap-3 pb-4 border-b">
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                    {paymentConfirmation.participant_name?.charAt(0) || 'P'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <p className="font-medium text-card-foreground">
+                    {paymentConfirmation.participant_name || 'Sem nome'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {paymentConfirmation.whatsapp || 'Sem WhatsApp'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Total Amount Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-card-foreground">Valor Total a Pagar</h4>
+                    <p className="text-2xl font-bold text-primary">
+                      R$ {(paymentConfirmation.total_amount || 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openTotalAmountDialog(paymentConfirmation)}
+                  >
+                    Definir Valor
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 p-3 bg-muted/50 rounded-lg">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Pago</p>
+                    <p className="text-lg font-semibold text-green-600">
+                      R$ {calculateTotalPaid().toFixed(2)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Restante</p>
+                    <p className="text-lg font-semibold text-orange-600">
+                      R$ {calculateRemaining().toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Payments List */}
+              <div className="space-y-3">
+                <h4 className="font-medium text-card-foreground">Histórico de Pagamentos</h4>
+                {payments.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Nenhum pagamento registrado ainda
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {payments.map((payment) => (
+                      <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium text-card-foreground capitalize">
+                            {payment.payment_type}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(payment.payment_date), "dd/MM/yyyy")}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <p className="font-semibold text-green-600">
+                            R$ {Number(payment.amount).toFixed(2)}
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeletePayment(payment.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Add New Payment Form */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-card-foreground flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Adicionar Pagamento
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-payment-type">Tipo</Label>
+                    <Select value={newPaymentType} onValueChange={setNewPaymentType}>
+                      <SelectTrigger id="new-payment-type">
+                        <SelectValue placeholder="Tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                        <SelectItem value="pix">PIX</SelectItem>
+                        <SelectItem value="cartao">Cartão</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="new-payment-date">Data</Label>
+                    <Input
+                      id="new-payment-date"
+                      type="date"
+                      value={newPaymentDate}
+                      onChange={(e) => setNewPaymentDate(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="new-payment-amount">Valor</Label>
+                    <Input
+                      id="new-payment-amount"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={newPaymentAmount}
+                      onChange={(e) => setNewPaymentAmount(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleAddPayment}
+                  disabled={!newPaymentType || !newPaymentDate || !newPaymentAmount}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Pagamento
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Total Amount Dialog */}
+      <Dialog open={isTotalAmountDialogOpen} onOpenChange={setIsTotalAmountDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Registrar Pagamento</DialogTitle>
+            <DialogTitle>Definir Valor Total</DialogTitle>
           </DialogHeader>
           
           {paymentConfirmation && (
@@ -456,48 +609,19 @@ const EventConfirmationsView = () => {
                   <p className="font-medium text-card-foreground">
                     {paymentConfirmation.participant_name || 'Sem nome'}
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    {paymentConfirmation.whatsapp || 'Sem WhatsApp'}
-                  </p>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <Label htmlFor="payment-type">Tipo de pagamento</Label>
-                  <Select value={paymentType} onValueChange={setPaymentType}>
-                    <SelectTrigger id="payment-type">
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                      <SelectItem value="pix">PIX</SelectItem>
-                      <SelectItem value="cartao">Cartão</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="payment-date">Quando foi pago</Label>
-                  <Input
-                    id="payment-date"
-                    type="date"
-                    value={paymentDate}
-                    onChange={(e) => setPaymentDate(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="payment-amount">Valor pago</Label>
-                  <Input
-                    id="payment-amount"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(e.target.value)}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="total-amount">Valor Total a Pagar</Label>
+                <Input
+                  id="total-amount"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={totalAmountInput}
+                  onChange={(e) => setTotalAmountInput(e.target.value)}
+                />
               </div>
             </div>
           )}
@@ -505,15 +629,15 @@ const EventConfirmationsView = () => {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setIsPaymentDialogOpen(false)}
+              onClick={() => setIsTotalAmountDialogOpen(false)}
             >
               Cancelar
             </Button>
             <Button
-              onClick={handlePaymentSubmit}
-              disabled={!paymentType || !paymentDate || !paymentAmount}
+              onClick={handleUpdateTotalAmount}
+              disabled={!totalAmountInput}
             >
-              Salvar Pagamento
+              Salvar
             </Button>
           </DialogFooter>
         </DialogContent>

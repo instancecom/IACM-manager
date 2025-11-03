@@ -13,11 +13,9 @@ export interface EventConfirmation {
   confirmed: boolean;
   confirmed_at: string | null;
   created_at: string;
-  member_id: string | null; // Mantido por compatibilidade com dados antigos
+  member_id: string | null;
   paid: boolean;
-  payment_type?: string | null;
-  payment_date?: string | null;
-  payment_amount?: number | null;
+  total_amount?: number | null;
 }
 
 export interface ConfirmationData {
@@ -209,23 +207,13 @@ export const useEventConfirmations = () => {
     }
   };
 
-  const updatePaymentDetails = async (
-    confirmationId: string,
-    paymentType: string,
-    paymentDate: string,
-    paymentAmount: number
-  ) => {
+  const updateTotalAmount = async (confirmationId: string, totalAmount: number) => {
     try {
       setLoading(true);
 
       const { error } = await supabase
         .from('event_confirmations')
-        .update({
-          paid: true,
-          payment_type: paymentType,
-          payment_date: paymentDate,
-          payment_amount: paymentAmount,
-        })
+        .update({ total_amount: totalAmount })
         .eq('id', confirmationId);
 
       if (error) {
@@ -235,15 +223,15 @@ export const useEventConfirmations = () => {
       await fetchConfirmations();
 
       toast({
-        title: "Pagamento registrado!",
-        description: "Os detalhes do pagamento foram salvos com sucesso.",
+        title: "Valor total atualizado!",
+        description: "O valor total a ser pago foi atualizado com sucesso.",
       });
 
       return true;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro inesperado";
       toast({
-        title: "Erro ao registrar pagamento",
+        title: "Erro ao atualizar valor total",
         description: errorMessage,
         variant: "destructive",
       });
@@ -261,6 +249,6 @@ export const useEventConfirmations = () => {
     confirmPresence,
     checkUserConfirmation,
     updatePaymentStatus,
-    updatePaymentDetails,
+    updateTotalAmount,
   };
 };

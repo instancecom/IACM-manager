@@ -97,10 +97,8 @@ export type Database = {
           member_id: string | null
           paid: boolean | null
           participant_name: string | null
-          payment_amount: number | null
-          payment_date: string | null
-          payment_type: string | null
           responsible_name: string | null
+          total_amount: number | null
           user_id: string | null
           whatsapp: string | null
         }
@@ -114,10 +112,8 @@ export type Database = {
           member_id?: string | null
           paid?: boolean | null
           participant_name?: string | null
-          payment_amount?: number | null
-          payment_date?: string | null
-          payment_type?: string | null
           responsible_name?: string | null
+          total_amount?: number | null
           user_id?: string | null
           whatsapp?: string | null
         }
@@ -131,10 +127,8 @@ export type Database = {
           member_id?: string | null
           paid?: boolean | null
           participant_name?: string | null
-          payment_amount?: number | null
-          payment_date?: string | null
-          payment_type?: string | null
           responsible_name?: string | null
+          total_amount?: number | null
           user_id?: string | null
           whatsapp?: string | null
         }
@@ -151,6 +145,44 @@ export type Database = {
             columns: ["member_id"]
             isOneToOne: false
             referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_payments: {
+        Row: {
+          amount: number
+          confirmation_id: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          payment_date: string
+          payment_type: string
+        }
+        Insert: {
+          amount: number
+          confirmation_id: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          payment_date: string
+          payment_type: string
+        }
+        Update: {
+          amount?: number
+          confirmation_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          payment_date?: string
+          payment_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_payments_confirmation_id_fkey"
+            columns: ["confirmation_id"]
+            isOneToOne: false
+            referencedRelation: "event_confirmations"
             referencedColumns: ["id"]
           },
         ]
@@ -433,10 +465,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_edit: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      can_edit: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -444,10 +473,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "editor" | "reader" | "user"
