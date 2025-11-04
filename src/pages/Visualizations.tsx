@@ -18,41 +18,51 @@ const Visualizations = () => {
         <div className="max-w-6xl mx-auto">
           <h1 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-enhanced-contrast tracking-tight">Consultar Cadastros</h1>
           
-          <Tabs defaultValue="schedules" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-card border border-border">
+          <Tabs defaultValue="confirmations" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 bg-card border border-border p-2">
               <TabsTrigger 
-                value="schedules" 
-                className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                value="confirmations" 
+                className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-12 sm:h-10"
               >
-                <Calendar className="w-4 h-4" />
-                <span className="hidden sm:inline">Escalas Ativas</span>
-                <span className="sm:hidden">Escalas</span>
+                <CheckCircle className="w-4 h-4" />
+                <span>Confirmações</span>
               </TabsTrigger>
               <TabsTrigger 
-                value="ministries" 
-                className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                value="schedules" 
+                className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-12 sm:h-10"
               >
-                <Music className="w-4 h-4" />
-                <span className="hidden sm:inline">Ministérios</span>
-                <span className="sm:hidden">Ministérios</span>
+                <Calendar className="w-4 h-4" />
+                <span>Escalas</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="members" 
-                className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-12 sm:h-10"
               >
                 <Users className="w-4 h-4" />
-                <span className="hidden sm:inline">Todos os Membros</span>
-                <span className="sm:hidden">Membros</span>
+                <span>Membros</span>
               </TabsTrigger>
               <TabsTrigger 
-                value="confirmations" 
-                className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                value="ministries" 
+                className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-12 sm:h-10"
               >
-                <CheckCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">Confirmações</span>
-                <span className="sm:hidden">Confirm.</span>
+                <Music className="w-4 h-4" />
+                <span>Ministérios</span>
               </TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="confirmations" className="mt-6">
+              <Card className="border-border shadow-lg">
+                <CardHeader className="bg-card">
+                  <CardTitle className="text-xl font-bold text-card-foreground">Confirmações de Eventos</CardTitle>
+                  <CardDescription className="text-enhanced-muted">
+                    Visualize quem confirmou presença em cada evento
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <EventConfirmationsView />
+                </CardContent>
+              </Card>
+            </TabsContent>
             
             <TabsContent value="schedules" className="mt-6">
               <Card className="border-border shadow-lg">
@@ -64,20 +74,6 @@ const Visualizations = () => {
                 </CardHeader>
                 <CardContent className="p-6">
                   <SchedulesView />
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="ministries" className="mt-6">
-              <Card className="border-border shadow-lg">
-                <CardHeader className="bg-card">
-                  <CardTitle className="text-xl font-bold text-card-foreground">Membros por Ministério</CardTitle>
-                  <CardDescription className="text-enhanced-muted">
-                    Consulte todos os membros cadastrados em cada ministério
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <MinistriesView />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -96,16 +92,16 @@ const Visualizations = () => {
               </Card>
             </TabsContent>
             
-            <TabsContent value="confirmations" className="mt-6">
+            <TabsContent value="ministries" className="mt-6">
               <Card className="border-border shadow-lg">
                 <CardHeader className="bg-card">
-                  <CardTitle className="text-xl font-bold text-card-foreground">Confirmações de Eventos</CardTitle>
+                  <CardTitle className="text-xl font-bold text-card-foreground">Membros por Ministério</CardTitle>
                   <CardDescription className="text-enhanced-muted">
-                    Visualize quem confirmou presença em cada evento
+                    Consulte todos os membros cadastrados em cada ministério
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-6">
-                  <EventConfirmationsView />
+                  <MinistriesView />
                 </CardContent>
               </Card>
             </TabsContent>

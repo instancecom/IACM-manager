@@ -43,7 +43,7 @@ const Header = () => {
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
+        <nav className="hidden md:flex items-center space-x-4">
           <Link to="/">
             <Button variant="ghost" className="text-foreground hover:text-netflix-red transition-colors font-medium">
               Início
@@ -55,11 +55,20 @@ const Header = () => {
             </Button>
           </Link>
           {user && (
-            <Link to="/visualizations">
-              <Button variant="ghost" className="text-muted-foreground hover:text-netflix-red transition-colors font-medium">
-                Visualizações
-              </Button>
-            </Link>
+            <>
+              <Link to="/visualizations">
+                <Button variant="ghost" className="text-muted-foreground hover:text-netflix-red transition-colors font-medium">
+                  Dados
+                </Button>
+              </Link>
+              {canEdit && (
+                <Link to="/admin">
+                  <Button variant="ghost" className="text-muted-foreground hover:text-netflix-red transition-colors font-medium">
+                    Admin
+                  </Button>
+                </Link>
+              )}
+            </>
           )}
         </nav>
 
@@ -69,20 +78,6 @@ const Header = () => {
           <div className="hidden lg:flex items-center space-x-1">
             {user ? (
               <>
-                {canEdit && (
-                  <Link to="/admin" className="text-muted-foreground hover:text-foreground transition-colors">
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <Settings className="w-4 h-4" />
-                      Admin
-                    </Button>
-                  </Link>
-                )}
-                <Link to="/visualizations" className="text-muted-foreground hover:text-foreground transition-colors">
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <BarChart3 className="w-4 h-4" />
-                    Dados
-                  </Button>
-                </Link>
                 <Link to="/profile" className="text-muted-foreground hover:text-foreground transition-colors">
                   <Button variant="ghost" size="sm" className="gap-2">
                     <User className="w-4 h-4" />
@@ -108,7 +103,7 @@ const Header = () => {
                   </Button>
                 </Link>
                 <Link to="/register" className="text-muted-foreground hover:text-foreground transition-colors">
-                  <Button variant="ghost" size="sm" className="gap-2">
+                  <Button variant="default" size="sm" className="gap-2">
                     <User className="w-4 h-4" />
                     Criar Conta
                   </Button>
@@ -127,8 +122,16 @@ const Header = () => {
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <nav className="flex flex-col gap-4">
                 <Link 
+                  to="/" 
+                  className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Search className="w-5 h-5" />
+                  Início
+                </Link>
+                <Link 
                   to="/events" 
-                  className="flex items-center gap-2 text-lg font-medium"
+                  className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   <Bell className="w-5 h-5" />
@@ -138,50 +141,50 @@ const Header = () => {
                   <>
                     <Link 
                       to="/visualizations" 
-                      className="flex items-center gap-2 text-lg font-medium"
+                      className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
                       onClick={() => setIsOpen(false)}
                     >
                       <BarChart3 className="w-5 h-5" />
-                      Consultar Dados
+                      Dados
                     </Link>
                     {canEdit && (
                       <Link 
                         to="/admin" 
-                        className="flex items-center gap-2 text-lg font-medium"
+                        className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
                         onClick={() => setIsOpen(false)}
                       >
                         <Settings className="w-5 h-5" />
-                        Administração
+                        Admin
                       </Link>
                     )}
+                    <hr className="my-2" />
                     <Link 
                       to="/profile" 
-                      className="flex items-center gap-2 text-lg font-medium"
+                      className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
                       onClick={() => setIsOpen(false)}
                     >
                       <User className="w-5 h-5" />
                       Perfil
                     </Link>
+                    <Button 
+                      variant="ghost" 
+                      className="flex items-center gap-2 text-lg font-medium justify-start p-0 h-auto hover:text-primary"
+                      onClick={() => {
+                        handleSignOut();
+                        setIsOpen(false);
+                      }}
+                    >
+                      <LogOut className="w-5 h-5" />
+                      Sair
+                    </Button>
                   </>
                 )}
-                <hr className="my-4" />
-                {user ? (
-                  <Button 
-                    variant="ghost" 
-                    className="flex items-center gap-2 text-lg font-medium justify-start p-0 h-auto"
-                    onClick={() => {
-                      handleSignOut();
-                      setIsOpen(false);
-                    }}
-                  >
-                    <LogOut className="w-5 h-5" />
-                    Sair
-                  </Button>
-                ) : (
+                {!user && (
                   <>
+                    <hr className="my-2" />
                     <Link 
                       to="/login" 
-                      className="flex items-center gap-2 text-lg font-medium"
+                      className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
                       onClick={() => setIsOpen(false)}
                     >
                       <LogIn className="w-5 h-5" />
@@ -189,7 +192,7 @@ const Header = () => {
                     </Link>
                     <Link 
                       to="/register" 
-                      className="flex items-center gap-2 text-lg font-medium"
+                      className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
                       onClick={() => setIsOpen(false)}
                     >
                       <User className="w-5 h-5" />

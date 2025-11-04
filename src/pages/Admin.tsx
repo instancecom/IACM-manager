@@ -68,137 +68,132 @@ const Admin = () => {
           </div>
           
           <Tabs defaultValue="events" className="w-full animate-scale-in">
-            {/* Mobile-First Responsive Navigation */}
-            <div className="w-full overflow-hidden">
-              {/* Mobile: Horizontal scrolling menu */}
-              <div className="md:hidden">
-                <div className="overflow-x-auto scrollbar-hide">
-                  <TabsList className="flex h-16 w-max min-w-full p-1 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg">
-                    <TabsTrigger 
-                      value="events" 
-                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                    >
-                      <Calendar className="w-4 h-4 shrink-0" />
-                      <span className="text-xs font-medium whitespace-nowrap">Eventos</span>
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="students" 
-                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                    >
-                      <Music className="w-4 h-4 shrink-0" />
-                      <span className="text-xs font-medium whitespace-nowrap">Ministério</span>
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="schedule" 
-                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                    >
-                      <Users className="w-4 h-4 shrink-0" />
-                      <span className="text-xs font-medium whitespace-nowrap">Escalas</span>
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="members" 
-                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                    >
-                      <UserPlus className="w-4 h-4 shrink-0" />
-                      <span className="text-xs font-medium whitespace-nowrap">Membros</span>
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="ministries" 
-                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                    >
-                      <Shield className="w-4 h-4 shrink-0" />
-                      <span className="text-xs font-medium whitespace-nowrap">Ministérios</span>
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="site" 
-                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                    >
-                      <Globe className="w-4 h-4 shrink-0" />
-                      <span className="text-xs font-medium whitespace-nowrap">Site</span>
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="manage" 
-                      className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                    >
-                      <Settings className="w-4 h-4 shrink-0" />
-                      <span className="text-xs font-medium whitespace-nowrap">Gerenciar</span>
-                    </TabsTrigger>
-                    {isAdmin && (
-                      <TabsTrigger 
-                        value="roles" 
-                        className="flex flex-col items-center justify-center gap-1 px-4 py-2 min-w-[70px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                      >
-                        <UserCog className="w-4 h-4 shrink-0" />
-                        <span className="text-xs font-medium whitespace-nowrap">Acessos</span>
-                      </TabsTrigger>
-                    )}
-                  </TabsList>
-                </div>
-              </div>
+            {/* Mobile: Grid 2x4 layout */}
+            <div className="md:hidden">
+              <TabsList className={`grid ${isAdmin ? 'grid-cols-2' : 'grid-cols-2'} gap-2 p-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg`}>
+                <TabsTrigger 
+                  value="events" 
+                  className="flex flex-col items-center justify-center gap-1.5 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <Calendar className="w-5 h-5 shrink-0" />
+                  <span className="text-xs font-medium">Eventos</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="members" 
+                  className="flex flex-col items-center justify-center gap-1.5 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <UserPlus className="w-5 h-5 shrink-0" />
+                  <span className="text-xs font-medium">Membros</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="ministries" 
+                  className="flex flex-col items-center justify-center gap-1.5 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <Shield className="w-5 h-5 shrink-0" />
+                  <span className="text-xs font-medium">Ministérios</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="students" 
+                  className="flex flex-col items-center justify-center gap-1.5 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <Music className="w-5 h-5 shrink-0" />
+                  <span className="text-xs font-medium">Alunos</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="schedule" 
+                  className="flex flex-col items-center justify-center gap-1.5 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <Users className="w-5 h-5 shrink-0" />
+                  <span className="text-xs font-medium">Escalas</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="site" 
+                  className="flex flex-col items-center justify-center gap-1.5 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <Globe className="w-5 h-5 shrink-0" />
+                  <span className="text-xs font-medium">Site</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="manage" 
+                  className="flex flex-col items-center justify-center gap-1.5 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <Settings className="w-5 h-5 shrink-0" />
+                  <span className="text-xs font-medium">Gerenciar</span>
+                </TabsTrigger>
+                {isAdmin && (
+                  <TabsTrigger 
+                    value="roles" 
+                    className="flex flex-col items-center justify-center gap-1.5 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md col-span-2"
+                  >
+                    <UserCog className="w-5 h-5 shrink-0" />
+                    <span className="text-xs font-medium">Acessos</span>
+                  </TabsTrigger>
+                )}
+              </TabsList>
+            </div>
 
-              {/* Desktop: Grid layout */}
-              <div className="hidden md:block">
-                <TabsList className={`grid ${isAdmin ? 'grid-cols-8' : 'grid-cols-7'} h-auto p-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg`}>
+            {/* Desktop: Grid layout */}
+            <div className="hidden md:block">
+              <TabsList className={`grid ${isAdmin ? 'grid-cols-4' : 'grid-cols-4'} h-auto p-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg`}>
+                <TabsTrigger 
+                  value="events" 
+                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <Calendar className="w-5 h-5" />
+                  <span className="text-sm font-medium">Eventos</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="members" 
+                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <UserPlus className="w-5 h-5" />
+                  <span className="text-sm font-medium">Membros</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="ministries" 
+                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <Shield className="w-5 h-5" />
+                  <span className="text-sm font-medium">Ministérios</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="students" 
+                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <Music className="w-5 h-5" />
+                  <span className="text-sm font-medium">Alunos</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="schedule" 
+                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <Users className="w-5 h-5" />
+                  <span className="text-sm font-medium">Escalas</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="site" 
+                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <Globe className="w-5 h-5" />
+                  <span className="text-sm font-medium">Site</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="manage" 
+                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                >
+                  <Settings className="w-5 h-5" />
+                  <span className="text-sm font-medium">Gerenciar</span>
+                </TabsTrigger>
+                {isAdmin && (
                   <TabsTrigger 
-                    value="events" 
+                    value="roles" 
                     className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
                   >
-                    <Calendar className="w-5 h-5" />
-                    <span className="text-sm font-medium">Eventos</span>
+                    <UserCog className="w-5 h-5" />
+                    <span className="text-sm font-medium">Acessos</span>
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="students" 
-                    className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                  >
-                    <Music className="w-5 h-5" />
-                    <span className="text-sm font-medium">Ministérios</span>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="schedule" 
-                    className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                  >
-                    <Users className="w-5 h-5" />
-                    <span className="text-sm font-medium">Escalas</span>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="members" 
-                    className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                  >
-                    <UserPlus className="w-5 h-5" />
-                    <span className="text-sm font-medium">Membros</span>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="ministries" 
-                    className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                  >
-                    <Shield className="w-5 h-5" />
-                    <span className="text-sm font-medium">Ministérios</span>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="site" 
-                    className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                  >
-                    <Globe className="w-5 h-5" />
-                    <span className="text-sm font-medium">Site</span>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="manage" 
-                    className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                  >
-                    <Settings className="w-5 h-5" />
-                    <span className="text-sm font-medium">Gerenciar</span>
-                  </TabsTrigger>
-                  {isAdmin && (
-                    <TabsTrigger 
-                      value="roles" 
-                      className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                    >
-                      <UserCog className="w-5 h-5" />
-                      <span className="text-sm font-medium">Acessos</span>
-                    </TabsTrigger>
-                  )}
-                </TabsList>
-              </div>
+                )}
+              </TabsList>
             </div>
             
             <TabsContent value="events" className="mt-4 lg:mt-8 animate-fade-in">
