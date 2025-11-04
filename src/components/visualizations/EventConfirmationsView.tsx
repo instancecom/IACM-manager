@@ -250,59 +250,65 @@ const EventConfirmationsView = () => {
                     setIsPreviewOpen(true);
                   }}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10">
-                          <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-start gap-3">
+                        <Avatar className="h-10 w-10 flex-shrink-0">
+                          <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
                             {confirmation.participant_name?.charAt(0) || 'P'}
                           </AvatarFallback>
                         </Avatar>
                         
-                        <div className="flex-1">
-                          <p className="font-medium text-card-foreground">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-card-foreground text-sm sm:text-base truncate">
                             {confirmation.participant_name || 'Sem nome'}
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
                             WhatsApp: {confirmation.whatsapp || 'Não informado'}
                           </p>
                           {confirmation.confirmed_at && (
-                            <p className="text-xs text-muted-foreground">
-                              Confirmado em: {format(new Date(confirmation.confirmed_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {format(new Date(confirmation.confirmed_at), "dd/MM/yy HH:mm", { locale: ptBR })}
                             </p>
                           )}
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-2">
-                        {canEdit && (
-                          <Button
-                            size="sm"
-                            variant={confirmation.paid ? "default" : "outline"}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openPaymentDialog(confirmation);
-                            }}
-                            className="gap-1"
-                          >
-                            <DollarSign className="h-3 w-3" />
-                            {confirmation.paid ? "Pago" : "Registrar pagamento"}
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          {confirmation.confirmed ? (
+                            <Badge className="bg-green-600 text-white hover:bg-green-700 text-xs">
+                              <Check className="h-3 w-3 mr-1" />
+                              Confirmado
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="border-red-300 text-red-600 text-xs">
+                              <X className="h-3 w-3 mr-1" />
+                              Não confirmado
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          {canEdit && (
+                            <Button
+                              size="sm"
+                              variant={confirmation.paid ? "default" : "outline"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openPaymentDialog(confirmation);
+                              }}
+                              className="gap-1 h-8 text-xs px-2 sm:px-3"
+                            >
+                              <DollarSign className="h-3 w-3" />
+                              <span className="hidden xs:inline">{confirmation.paid ? "Pago" : "Registrar pagamento"}</span>
+                              <span className="xs:hidden">{confirmation.paid ? "Pago" : "Registrar"}</span>
+                            </Button>
+                          )}
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <Eye className="h-4 w-4" />
                           </Button>
-                        )}
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {confirmation.confirmed ? (
-                          <Badge className="bg-green-600 text-white hover:bg-green-700">
-                            <Check className="h-3 w-3 mr-1" />
-                            Confirmado
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="border-red-300 text-red-600">
-                            <X className="h-3 w-3 mr-1" />
-                            Não confirmado
-                          </Badge>
-                        )}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
