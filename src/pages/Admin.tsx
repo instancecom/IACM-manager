@@ -70,63 +70,63 @@ const Admin = () => {
           <Tabs defaultValue="events" className="w-full animate-scale-in">
             {/* Mobile: Horizontal scroll */}
             <div className="md:hidden overflow-x-auto scrollbar-hide -mx-2 px-2">
-              <TabsList className="inline-flex gap-2 p-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg min-w-full w-max">
+              <TabsList className="inline-flex gap-2 p-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg min-w-full w-max h-auto">
                 <TabsTrigger 
                   value="events" 
-                  className="flex flex-col items-center justify-center gap-1.5 py-3 px-4 min-w-[90px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
                 >
-                  <Calendar className="w-5 h-5 shrink-0" />
-                  <span className="text-xs font-medium whitespace-nowrap">Eventos</span>
+                  <Calendar className="w-4 h-4 shrink-0" />
+                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Eventos</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="site" 
-                  className="flex flex-col items-center justify-center gap-1.5 py-3 px-4 min-w-[90px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
                 >
-                  <Globe className="w-5 h-5 shrink-0" />
-                  <span className="text-xs font-medium whitespace-nowrap">Site</span>
+                  <Globe className="w-4 h-4 shrink-0" />
+                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Site</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="members" 
-                  className="flex flex-col items-center justify-center gap-1.5 py-3 px-4 min-w-[90px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
                 >
-                  <UserPlus className="w-5 h-5 shrink-0" />
-                  <span className="text-xs font-medium whitespace-nowrap">Membros</span>
+                  <UserPlus className="w-4 h-4 shrink-0" />
+                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Membros</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="ministries" 
-                  className="flex flex-col items-center justify-center gap-1.5 py-3 px-4 min-w-[90px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
                 >
-                  <Shield className="w-5 h-5 shrink-0" />
-                  <span className="text-xs font-medium whitespace-nowrap">Ministérios</span>
+                  <Shield className="w-4 h-4 shrink-0" />
+                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Ministérios</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="students" 
-                  className="flex flex-col items-center justify-center gap-1.5 py-3 px-4 min-w-[90px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
                 >
-                  <Music className="w-5 h-5 shrink-0" />
-                  <span className="text-xs font-medium whitespace-nowrap">Alunos</span>
+                  <Music className="w-4 h-4 shrink-0" />
+                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Alunos</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="schedule" 
-                  className="flex flex-col items-center justify-center gap-1.5 py-3 px-4 min-w-[90px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
                 >
-                  <Users className="w-5 h-5 shrink-0" />
-                  <span className="text-xs font-medium whitespace-nowrap">Escalas</span>
+                  <Users className="w-4 h-4 shrink-0" />
+                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Escalas</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="manage" 
-                  className="flex flex-col items-center justify-center gap-1.5 py-3 px-4 min-w-[90px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
                 >
-                  <Settings className="w-5 h-5 shrink-0" />
-                  <span className="text-xs font-medium whitespace-nowrap">Gerenciar</span>
+                  <Settings className="w-4 h-4 shrink-0" />
+                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Gerenciar</span>
                 </TabsTrigger>
                 {isAdmin && (
                   <TabsTrigger 
                     value="roles" 
-                    className="flex flex-col items-center justify-center gap-1.5 py-3 px-4 min-w-[90px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
+                    className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
                   >
-                    <UserCog className="w-5 h-5 shrink-0" />
-                    <span className="text-xs font-medium whitespace-nowrap">Acessos</span>
+                    <UserCog className="w-4 h-4 shrink-0" />
+                    <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Acessos</span>
                   </TabsTrigger>
                 )}
               </TabsList>
