@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Music, Users, Search, Phone, Mail, Calendar, Loader2 } from "lucide-react";
+import { Music, Users, Search, Phone, Calendar, Loader2, Heart, BookOpen, Baby, Handshake, Megaphone, Video, Mic2, Guitar, Drum } from "lucide-react";
 import { useMinistries } from "@/hooks/useMinistries";
 
 const MinistriesView = () => {
@@ -61,6 +61,24 @@ const MinistriesView = () => {
     return date.toLocaleDateString('pt-BR');
   };
 
+  const getMinistryIcon = (ministryName: string) => {
+    const name = ministryName.toLowerCase();
+    
+    if (name.includes('louvor') || name.includes('música') || name.includes('music')) return Music;
+    if (name.includes('jovem') || name.includes('juventude')) return Users;
+    if (name.includes('infantil') || name.includes('criança') || name.includes('kid')) return Baby;
+    if (name.includes('intercessão') || name.includes('oração')) return Heart;
+    if (name.includes('ensino') || name.includes('escola') || name.includes('bíblia')) return BookOpen;
+    if (name.includes('mídia') || name.includes('comunicação')) return Video;
+    if (name.includes('marketing') || name.includes('divulgação')) return Megaphone;
+    if (name.includes('recepção') || name.includes('hospitalidade')) return Handshake;
+    if (name.includes('vocal') || name.includes('canto')) return Mic2;
+    if (name.includes('guitarra') || name.includes('violão')) return Guitar;
+    if (name.includes('bateria') || name.includes('percussão')) return Drum;
+    
+    return Music; // Ícone padrão
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -93,14 +111,16 @@ const MinistriesView = () => {
       </div>
 
       {/* Lista de Ministérios */}
-      {filteredMinistries.map((ministry) => (
-        <Card key={ministry.id}>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className={`w-12 h-12 ${ministry.color} rounded-lg flex items-center justify-center`}>
-                  <Music className="w-6 h-6 text-white" />
-                </div>
+      {filteredMinistries.map((ministry) => {
+        const MinistryIcon = getMinistryIcon(ministry.name);
+        return (
+          <Card key={ministry.id}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-12 h-12 ${ministry.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                    <MinistryIcon className="w-6 h-6 text-white" />
+                  </div>
                 <div>
                   <CardTitle className="text-xl">{ministry.name}</CardTitle>
                   <CardDescription>{ministry.description || "Sem descrição"}</CardDescription>
@@ -163,7 +183,8 @@ const MinistriesView = () => {
             )}
           </CardContent>
         </Card>
-      ))}
+      )})}
+      
 
       {filteredMinistries.length === 0 && (
         <div className="text-center py-12">
