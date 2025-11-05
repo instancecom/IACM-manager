@@ -106,9 +106,8 @@ const MinistriesView = () => {
                   <CardDescription>{ministry.description || "Sem descrição"}</CardDescription>
                 </div>
               </div>
-              <Badge variant="secondary" className="flex items-center gap-1">
-                <Users className="w-3 h-3" />
-                {ministry.members?.length || 0} membros
+              <Badge variant="secondary" className="text-sm font-semibold px-3 py-1 rounded-sm">
+                {ministry.members?.length || 0}
               </Badge>
             </div>
           </CardHeader>
