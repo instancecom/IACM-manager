@@ -19,34 +19,34 @@ const Visualizations = () => {
           <h1 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-enhanced-contrast tracking-tight">Consultar Cadastros</h1>
           
           <Tabs defaultValue="confirmations" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 bg-card border border-border p-2">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 bg-card border border-border p-2 h-auto">
               <TabsTrigger 
                 value="confirmations" 
-                className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-12 sm:h-10"
+                className="flex items-center justify-center gap-1.5 sm:gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-auto py-3 px-2 sm:px-3 sm:h-10"
               >
-                <CheckCircle className="w-4 h-4" />
-                <span>Confirmações</span>
+                <CheckCircle className="w-4 h-4 shrink-0" />
+                <span className="text-xs sm:text-sm truncate">Confirmações</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="schedules" 
-                className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-12 sm:h-10"
+                className="flex items-center justify-center gap-1.5 sm:gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-auto py-3 px-2 sm:px-3 sm:h-10"
               >
-                <Calendar className="w-4 h-4" />
-                <span>Escalas</span>
+                <Calendar className="w-4 h-4 shrink-0" />
+                <span className="text-xs sm:text-sm truncate">Escalas</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="members" 
-                className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-12 sm:h-10"
+                className="flex items-center justify-center gap-1.5 sm:gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-auto py-3 px-2 sm:px-3 sm:h-10"
               >
-                <Users className="w-4 h-4" />
-                <span>Membros</span>
+                <Users className="w-4 h-4 shrink-0" />
+                <span className="text-xs sm:text-sm truncate">Membros</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="ministries" 
-                className="flex items-center gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-12 sm:h-10"
+                className="flex items-center justify-center gap-1.5 sm:gap-2 font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground h-auto py-3 px-2 sm:px-3 sm:h-10"
               >
-                <Music className="w-4 h-4" />
-                <span>Ministérios</span>
+                <Music className="w-4 h-4 shrink-0" />
+                <span className="text-xs sm:text-sm truncate">Ministérios</span>
               </TabsTrigger>
             </TabsList>
             
