@@ -10,7 +10,7 @@
     /* Enhanced Netflix Colors for Better Visibility */
     --netflix-black: 0 0% 6%; /* #0f0f0f - darker for better contrast */
     --netflix-dark: 0 0% 10%; /* #1a1a1a - slightly lighter */
-    --netflix-red: 0 92% 50%; /* #e50914 - slightly brighter */
+    --netflix-red: 205 60% 39%; /* #286BA0 - primary brand color */
     --netflix-white: 0 0% 98%; /* #fafafa - pure white for maximum contrast */
     --netflix-gray: 0 0% 42%; /* #6b6b6b - enhanced contrast */
     --netflix-gray-light: 0 0% 58%; /* #949494 - better readability */
@@ -53,7 +53,7 @@
     --transition-enhanced: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     --shadow-enhanced: 0 8px 32px 0 rgba(0,0,0,0.8);
     --shadow-card: 0 4px 16px rgba(0,0,0,0.6);
-    --shadow-glow: 0 0 20px rgba(229, 9, 20, 0.3);
+    --shadow-glow: 0 0 20px rgba(40, 107, 160, 0.3);
     
     /* Enhanced Typography System */
     --font-weight-light: 300;
@@ -170,7 +170,7 @@
     @apply bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground;
     @apply px-8 py-3 rounded-lg font-semibold transition-all duration-200;
     @apply focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
-    box-shadow: 0 2px 8px rgba(229, 9, 20, 0.3);
+    box-shadow: 0 2px 8px rgba(40, 107, 160, 0.3);
   }
   
   .btn-netflix:hover {
