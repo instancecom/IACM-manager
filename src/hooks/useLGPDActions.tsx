@@ -52,16 +52,10 @@ export const useLGPDActions = () => {
   const deleteUserAccount = async (userId: string) => {
     setLoading(true);
     try {
-      // Deletar todos os dados relacionados
-      await Promise.all([
-        supabase.from('event_confirmations').delete().eq('user_id', userId),
-        supabase.from('consent_logs').delete().eq('user_id', userId),
-        supabase.from('user_roles').delete().eq('user_id', userId),
-        supabase.from('profiles').delete().eq('user_id', userId),
-      ]);
-
-      // Deletar conta do usuário
-      const { error } = await supabase.auth.admin.deleteUser(userId);
+      // Call secure edge function to delete user account
+      const { error } = await supabase.functions.invoke('delete-user-account', {
+        method: 'POST'
+      });
       
       if (error) throw error;
 
@@ -74,6 +68,7 @@ export const useLGPDActions = () => {
       await supabase.auth.signOut();
       window.location.href = '/';
     } catch (error) {
+      console.error('Error deleting account:', error);
       toast({
         title: "Erro ao excluir conta",
         description: "Não foi possível excluir sua conta. Entre em contato com o suporte.",
