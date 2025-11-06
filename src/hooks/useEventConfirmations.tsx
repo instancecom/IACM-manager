@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { z } from "zod";
 
 export interface EventConfirmation {
   id: string;
@@ -25,6 +26,15 @@ export interface ConfirmationData {
   guests: string[];
   userId?: string; // ID do usuário logado (opcional)
 }
+
+// Validation schema to prevent malicious input
+const confirmationSchema = z.object({
+  responsibleName: z.string().trim().min(1, "Nome do responsável é obrigatório").max(100, "Nome muito longo (máximo 100 caracteres)"),
+  participantName: z.string().trim().min(1, "Nome do participante é obrigatório").max(100, "Nome muito longo (máximo 100 caracteres)"),
+  whatsapp: z.string().regex(/^\d{10,11}$/, "WhatsApp deve ter 10 ou 11 dígitos"),
+  guests: z.array(z.string().max(100, "Nome do convidado muito longo")).max(20, "Máximo de 20 convidados permitidos"),
+  userId: z.string().uuid().optional()
+});
 
 export const useEventConfirmations = () => {
   const [confirmations, setConfirmations] = useState<EventConfirmation[]>([]);
@@ -68,6 +78,26 @@ export const useEventConfirmations = () => {
   const confirmPresence = async (eventId: string, confirmationData: ConfirmationData) => {
     try {
       setLoading(true);
+      
+      // Validate input data before processing
+      const cleanedWhatsapp = confirmationData.whatsapp.replace(/\D/g, '');
+      const validationResult = confirmationSchema.safeParse({
+        responsibleName: confirmationData.responsibleName,
+        participantName: confirmationData.participantName,
+        whatsapp: cleanedWhatsapp,
+        guests: confirmationData.guests.filter(g => g.trim() !== ''),
+        userId: confirmationData.userId
+      });
+
+      if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors[0]?.message || "Dados inválidos";
+        toast({
+          title: "Erro de validação",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        return false;
+      }
       
       // Verifica se já existe uma confirmação para este evento e usuário/whatsapp
       let existingConfirmation = null;
