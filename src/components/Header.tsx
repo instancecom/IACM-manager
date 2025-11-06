@@ -45,25 +45,25 @@ const Header = () => {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-4">
           <Link to="/">
-            <Button variant="ghost" className="text-foreground hover:text-netflix-red transition-colors font-medium">
+            <Button variant="ghost" className="font-medium">
               Início
             </Button>
           </Link>
           <Link to="/events">
-            <Button variant="ghost" className="text-muted-foreground hover:text-netflix-red transition-colors font-medium">
+            <Button variant="ghost" className="font-medium">
               Eventos
             </Button>
           </Link>
           {user && (
             <>
               <Link to="/visualizations">
-                <Button variant="ghost" className="text-muted-foreground hover:text-netflix-red transition-colors font-medium">
+                <Button variant="ghost" className="font-medium">
                   Dados
                 </Button>
               </Link>
               {canEdit && (
                 <Link to="/admin">
-                  <Button variant="ghost" className="text-muted-foreground hover:text-netflix-red transition-colors font-medium">
+                  <Button variant="ghost" className="font-medium">
                     Admin
                   </Button>
                 </Link>
