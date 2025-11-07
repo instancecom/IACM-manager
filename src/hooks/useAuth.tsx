@@ -162,27 +162,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return await signIn(emailOrPhone, password);
     }
     
-    // Se não é email, trata como telefone - busca o email correspondente no profiles
+    // Se não é email, trata como telefone - usa função segura do banco
     try {
       const cleanPhone = emailOrPhone.replace(/\D/g, ''); // remove (, ), espaços e -
 
-      // Busca o perfil pelo telefone normalizado
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_id, email')
-        .eq('phone', cleanPhone)
-        .maybeSingle();
+      // Usa a função do banco que bypassa RLS para buscar o email pelo telefone
+      const { data: email, error: rpcError } = await supabase
+        .rpc('get_email_by_phone', { phone_number: cleanPhone });
 
-      if (profileError || !profile) {
+      if (rpcError || !email) {
         return { error: { message: "Usuário não encontrado com este telefone" } };
       }
 
-      if (!profile.email) {
-        return { error: { message: "Telefone localizado, mas sem email vinculado. Entre uma vez com seu email e senha para ativar o login por telefone." } };
-      }
-
       // Faz login com o email encontrado
-      return await signIn(profile.email, password);
+      return await signIn(email, password);
       
     } catch (error) {
       return { error: { message: "Erro ao processar login com telefone" } };
