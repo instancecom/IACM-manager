@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Users, Music, UserPlus, Settings, Globe, Shield, UserCog, ShieldCheck } from "lucide-react";
-import Header from "@/components/Header";
 import EventsListPage from "@/components/admin/EventsListPage";
 import RegisterStudentForm from "@/components/admin/RegisterStudentForm";
 import CreateScheduleForm from "@/components/admin/CreateScheduleForm";
@@ -22,7 +21,6 @@ const Admin = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <main className="pt-16 lg:pt-20 container mx-auto px-2 lg:px-4 py-4 lg:py-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <p className="text-muted-foreground">Carregando...</p>
@@ -35,7 +33,6 @@ const Admin = () => {
   if (!canEdit) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <main className="pt-16 lg:pt-20 container mx-auto px-2 lg:px-4 py-4 lg:py-8">
           <Card>
             <CardContent className="pt-6">
@@ -51,8 +48,6 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
       <main className="pt-16 lg:pt-20 container mx-auto px-2 lg:px-4 py-4 lg:py-8">
         <div className="max-w-7xl mx-auto space-y-4 lg:space-y-8">
           {/* Header Section with Better Typography - Mobile Optimized */}

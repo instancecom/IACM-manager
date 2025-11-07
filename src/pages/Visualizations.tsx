@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, Users, Calendar, Music, CheckCircle } from "lucide-react";
-import Header from "@/components/Header";
 import MinistriesView from "@/components/visualizations/MinistriesView";
 import SchedulesView from "@/components/visualizations/SchedulesView";
 import MembersView from "@/components/visualizations/MembersView";
@@ -12,8 +11,6 @@ import DashboardOverview from "@/components/visualizations/DashboardOverview";
 const Visualizations = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
       <main className="pt-16 sm:pt-20 container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-2xl sm:text-3xl font-extrabold mb-6 sm:mb-8 text-enhanced-contrast tracking-tight">Consultar Cadastros</h1>

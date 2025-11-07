@@ -16,7 +16,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import Header from "@/components/Header";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useEventConfirmations } from "@/hooks/useEventConfirmations";
@@ -88,7 +87,6 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <main className="container mx-auto px-4 py-8 mt-20">
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Header do Perfil */}

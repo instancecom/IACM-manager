@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { Calendar, Users, MapPin, Search, Filter } from "lucide-react";
-import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -96,7 +95,6 @@ const Events = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <main className="pt-20 pb-8">
           <div className="container mx-auto px-4">
             <div className="text-center py-12">
@@ -110,8 +108,6 @@ const Events = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
       <main className="pt-20 pb-8">
         <div className="container mx-auto px-4">
           {/* Page Header */}

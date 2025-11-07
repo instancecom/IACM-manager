@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -14,6 +14,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Auto-logout após 30 minutos de inatividade
+const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutos em milissegundos
+const LAST_ACTIVITY_KEY = 'lastActivityTime';
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -27,6 +31,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Atualiza timestamp da última atividade
+  const updateLastActivity = useCallback(() => {
+    if (user) {
+      localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+    }
+  }, [user]);
+
+  // Verifica se deve fazer logout por inatividade
+  const checkInactivity = useCallback(async () => {
+    if (!user) return;
+
+    const lastActivity = localStorage.getItem(LAST_ACTIVITY_KEY);
+    if (!lastActivity) {
+      updateLastActivity();
+      return;
+    }
+
+    const timeSinceLastActivity = Date.now() - parseInt(lastActivity, 10);
+    
+    if (timeSinceLastActivity > INACTIVITY_TIMEOUT) {
+      console.log('Auto-logout: usuário inativo por muito tempo');
+      await supabase.auth.signOut();
+      localStorage.removeItem(LAST_ACTIVITY_KEY);
+    }
+  }, [user, updateLastActivity]);
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -34,6 +64,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Atualiza timestamp quando usuário faz login
+        if (event === 'SIGNED_IN' && session) {
+          localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+        }
+        
+        // Remove timestamp quando usuário faz logout
+        if (event === 'SIGNED_OUT') {
+          localStorage.removeItem(LAST_ACTIVITY_KEY);
+        }
       }
     );
 
@@ -46,6 +86,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Sistema de rastreamento de atividade e auto-logout
+  useEffect(() => {
+    if (!user) return;
+
+    // Verifica inatividade na inicialização
+    checkInactivity();
+
+    // Eventos de atividade do usuário
+    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    
+    const handleActivity = () => {
+      updateLastActivity();
+    };
+
+    // Adiciona listeners de atividade
+    activityEvents.forEach(event => {
+      window.addEventListener(event, handleActivity);
+    });
+
+    // Verifica inatividade a cada minuto
+    const inactivityInterval = setInterval(() => {
+      checkInactivity();
+    }, 60000); // 1 minuto
+
+    return () => {
+      // Remove listeners
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, handleActivity);
+      });
+      clearInterval(inactivityInterval);
+    };
+  }, [user, checkInactivity, updateLastActivity]);
 
   const signUp = async (email: string, password: string, metadata?: { first_name?: string; last_name?: string; phone?: string }) => {
     const redirectUrl = `${window.location.origin}/`;

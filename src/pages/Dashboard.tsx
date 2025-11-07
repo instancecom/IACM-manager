@@ -1,6 +1,5 @@
 import { Plus, Calendar, Users, Music } from "lucide-react";
 import { useState } from "react";
-import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import ContentShelf from "@/components/ContentShelf";
 import ScheduleCard from "@/components/ScheduleCard";
@@ -125,8 +124,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
       {/* Main content with top padding for fixed header */}
       <main className="pt-16 sm:pt-20">
         <HeroSection />
