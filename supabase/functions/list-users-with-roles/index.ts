@@ -5,6 +5,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Rate limiting: 10 requests per minute per user
+const rateLimiter = new Map<string, number[]>()
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -33,11 +36,41 @@ Deno.serve(async (req) => {
       .rpc('is_admin', { _user_id: user.id })
 
     if (adminError || !isAdminData) {
+      console.log(`[SECURITY] Unauthorized access attempt to list-users-with-roles by user ${user.id}`)
       return new Response(
         JSON.stringify({ error: 'Forbidden - Admin access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    // Rate limiting check: 10 requests per minute per user
+    const now = Date.now()
+    const userRequests = rateLimiter.get(user.id) || []
+    const recentRequests = userRequests.filter(timestamp => now - timestamp < 60000)
+    
+    if (recentRequests.length >= 10) {
+      console.log(`[SECURITY] Rate limit exceeded for user ${user.id}`)
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded. Maximum 10 requests per minute.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    
+    // Update rate limiter
+    recentRequests.push(now)
+    rateLimiter.set(user.id, recentRequests)
+    
+    // Cleanup old entries periodically
+    if (rateLimiter.size > 1000) {
+      for (const [userId, timestamps] of rateLimiter.entries()) {
+        const validTimestamps = timestamps.filter(t => now - t < 60000)
+        if (validTimestamps.length === 0) {
+          rateLimiter.delete(userId)
+        }
+      }
+    }
+
+    console.log(`[SECURITY] Admin ${user.id} accessing list-users-with-roles`)
 
     // Buscar todos os usuários
     const { data: { users }, error: usersError } = await supabaseAdmin.auth.admin.listUsers()
