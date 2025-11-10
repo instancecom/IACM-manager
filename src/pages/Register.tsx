@@ -64,10 +64,13 @@ const Register = () => {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
+      // Limpa o telefone para salvar apenas dígitos
+      const cleanPhone = data.phone.replace(/\D/g, '');
+      
       const { error } = await signUp(data.email, data.password, {
         first_name: data.firstName,
         last_name: data.lastName,
-        phone: data.phone,
+        phone: cleanPhone,
       });
       
       if (error) {

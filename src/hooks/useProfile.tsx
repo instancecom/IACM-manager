@@ -74,10 +74,11 @@ export const useProfile = () => {
     setLoading(true);
 
     try {
-      // Tratar campos de data vazios convertendo para null
+      // Tratar campos de data vazios convertendo para null e limpar telefone
       const cleanedUpdates = {
         ...updates,
         birth_date: updates.birth_date === "" ? null : updates.birth_date,
+        phone: updates.phone ? updates.phone.replace(/\D/g, '') : updates.phone,
       };
 
       const { data, error } = await supabase
