@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import Events from "./pages/Events";
 import Profile from "./pages/Profile";
@@ -22,7 +23,7 @@ const queryClient = new QueryClient();
 // Component to conditionally render Header
 const AppLayout = () => {
   const location = useLocation();
-  const hideHeaderRoutes = ['/login', '/register', '/forgot-password'];
+  const hideHeaderRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
   const shouldShowHeader = !hideHeaderRoutes.includes(location.pathname);
 
   return (
@@ -33,6 +34,7 @@ const AppLayout = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/admin" element={<Admin />} />
