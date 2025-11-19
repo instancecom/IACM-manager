@@ -4,8 +4,8 @@
   "description": "Plataforma de gestão interna da IACM para eventos, escalas e ministérios",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",     // azul-escuro quase preto (fica lindo com logo branca/azul)
-  "theme_color": "#1e40af",         // azul forte da identidade da IACM (ajuste se quiser outro tom)
+  "background_color": "#0f172a",     
+  "theme_color": "#1e40af",         
   "orientation": "portrait-primary",
   "icons": [
     {
