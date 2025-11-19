@@ -3,9 +3,7 @@
   "short_name": "IACM",
   "description": "Plataforma de gestão interna da IACM para eventos, escalas e ministérios",
   "start_url": "/",
-  "display": "standalone",
-  "background_color": "#0f172a",     
-  "theme_color": "#1e40af",         
+  "display": "standalone",      
   "orientation": "portrait-primary",
   "icons": [
     {
