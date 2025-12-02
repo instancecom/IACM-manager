@@ -1,1 +1,10 @@
 project_id = "gyzkhgtafwwzlvmpeqdk"
+
+[functions.delete-user-account]
+verify_jwt = true
+
+[functions.list-users-with-roles]
+verify_jwt = true
+
+[functions.send-recovery-email]
+verify_jwt = false
