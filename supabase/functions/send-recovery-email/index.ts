@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
 
     // Send email via Resend
     const { error: emailError } = await resend.emails.send({
-      from: 'AD Plenitude <noreply@resend.dev>',
+      from: 'Igreja Apostólica dos Cinco Ministérios <iacm@resend.dev>',
       to: [email],
       subject: 'Recuperação de Senha - AD Plenitude',
       html: `
@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
             </div>
             <div style="background-color: #f4f4f5; padding: 24px; text-align: center;">
               <p style="color: #a1a1aa; font-size: 12px; margin: 0;">
-                © ${new Date().getFullYear()} AD Plenitude. Todos os direitos reservados.
+                © ${new Date().getFullYear()} Igreja Apostólica dos Cinco Ministérios. Todos os direitos reservados.
               </p>
             </div>
           </div>
