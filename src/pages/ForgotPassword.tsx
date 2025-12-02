@@ -34,20 +34,32 @@ const ForgotPassword = () => {
     setIsLoading(true);
     setEmail(data.email);
     
-    const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+    try {
+      const { data: responseData, error } = await supabase.functions.invoke('send-recovery-email', {
+        body: {
+          email: data.email,
+          redirectTo: `${window.location.origin}/reset-password`,
+        },
+      });
 
-    if (error) {
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (responseData?.error) {
+        throw new Error(responseData.error);
+      }
+
+      setStep("success");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         variant: "destructive",
         title: "Erro ao enviar email",
-        description: error.message,
+        description: errorMessage,
       });
+    } finally {
       setIsLoading(false);
-    } else {
-      setIsLoading(false);
-      setStep("success");
     }
   };
 
