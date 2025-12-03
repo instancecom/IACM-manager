@@ -60,6 +60,8 @@ Deno.serve(async (req) => {
       )
     }
 
+    console.log('Recovery link generated:', recoveryLink)
+
     // Send email via Resend
     const { error: emailError } = await resend.emails.send({
       from: 'Igreja Apostólica dos Cinco Ministérios <iacm@resend.dev>',
@@ -67,12 +69,14 @@ Deno.serve(async (req) => {
       subject: 'Recuperação de Senha - AD Plenitude',
       html: `
         <!DOCTYPE html>
-        <html>
+        <html lang="pt-BR">
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          <title>Recuperação de Senha</title>
         </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5; margin: 0; padding: 20px;">
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5; margin: 0; padding: 20px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
           <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
             <div style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); padding: 32px; text-align: center;">
               <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">AD Plenitude</h1>
@@ -83,10 +87,22 @@ Deno.serve(async (req) => {
                 Recebemos uma solicitação para redefinir a senha da sua conta. Clique no botão abaixo para criar uma nova senha:
               </p>
               <div style="text-align: center; margin: 32px 0;">
-                <a href="${recoveryLink}" style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                <!--[if mso]>
+                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${recoveryLink}" style="height:48px;v-text-anchor:middle;width:200px;" arcsize="17%" strokecolor="#7c3aed" fillcolor="#7c3aed">
+                  <w:anchorlock/>
+                  <center style="color:#ffffff;font-family:sans-serif;font-size:16px;font-weight:bold;">Redefinir Senha</center>
+                </v:roundrect>
+                <![endif]-->
+                <!--[if !mso]><!-->
+                <a href="${recoveryLink}" target="_blank" style="display: inline-block; background-color: #7c3aed; background-image: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); color: #ffffff !important; text-decoration: underline; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px; mso-hide: all;">
                   Redefinir Senha
                 </a>
+                <!--<![endif]-->
               </div>
+              <p style="color: #52525b; font-size: 13px; line-height: 1.6; margin: 24px 0 0; word-break: break-all;">
+                Caso o botão não funcione, copie e cole este link no navegador:<br>
+                <a href="${recoveryLink}" target="_blank" style="color: #7c3aed; text-decoration: underline;">${recoveryLink}</a>
+              </p>
               <p style="color: #71717a; font-size: 14px; line-height: 1.6; margin: 24px 0 0;">
                 Se você não solicitou esta recuperação de senha, pode ignorar este email com segurança.
               </p>
