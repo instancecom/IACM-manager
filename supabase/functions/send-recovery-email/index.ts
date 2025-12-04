@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
 
     // Send email via Resend
     const { error: emailError } = await resend.emails.send({
-      from: 'Igreja Apostólica dos Cinco Ministérios <iacm@resend.mail>',
+      from: 'Igreja Apostólica dos Cinco Ministérios <onboarding@resend.dev>',
       to: [email],
       subject: 'Recuperação de Senha - Igreja Apostólica',
       html: `
