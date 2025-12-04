@@ -35,19 +35,12 @@ const ForgotPassword = () => {
     setEmail(data.email);
     
     try {
-      const { data: responseData, error } = await supabase.functions.invoke('send-recovery-email', {
-        body: {
-          email: data.email,
-          redirectTo: `${window.location.origin}/reset-password`,
-        },
+      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) {
         throw new Error(error.message);
-      }
-
-      if (responseData?.error) {
-        throw new Error(responseData.error);
       }
 
       setStep("success");
