@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMinistries } from "@/hooks/useMinistries";
-import { useMembers } from "@/hooks/useMembers";
+import { useProfiles } from "@/hooks/useProfiles";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -28,23 +28,23 @@ const newMemberSchema = z.object({
   role: z.string().min(1, "Função é obrigatória"),
 });
 
-// Schema for existing member selection
-const existingMemberSchema = z.object({
-  memberId: z.string().min(1, "Selecione um membro"),
+// Schema for existing user selection
+const existingUserSchema = z.object({
+  userId: z.string().min(1, "Selecione um usuário"),
   ministryId: z.string().min(1, "Ministério é obrigatório"),
   role: z.string().min(1, "Função é obrigatória"),
 });
 
 type NewMemberFormData = z.infer<typeof newMemberSchema>;
-type ExistingMemberFormData = z.infer<typeof existingMemberSchema>;
+type ExistingUserFormData = z.infer<typeof existingUserSchema>;
 
 const RegisterStudentForm = () => {
   const [photo, setPhoto] = useState<File | null>(null);
   const [activeTab, setActiveTab] = useState<string>("existing");
-  const [memberSearchOpen, setMemberSearchOpen] = useState(false);
+  const [userSearchOpen, setUserSearchOpen] = useState(false);
   
   const { ministries, loading: loadingMinistries, fetchMinistries } = useMinistries();
-  const { members, loading: loadingMembers, refetch: refetchMembers } = useMembers();
+  const { profiles, loading: loadingProfiles, refetch: refetchProfiles } = useProfiles();
 
   // Form for new member
   const newMemberForm = useForm<NewMemberFormData>({
@@ -58,11 +58,11 @@ const RegisterStudentForm = () => {
     },
   });
 
-  // Form for existing member
-  const existingMemberForm = useForm<ExistingMemberFormData>({
-    resolver: zodResolver(existingMemberSchema),
+  // Form for existing user
+  const existingUserForm = useForm<ExistingUserFormData>({
+    resolver: zodResolver(existingUserSchema),
     defaultValues: {
-      memberId: "",
+      userId: "",
       ministryId: "",
       role: "",
     },
@@ -74,7 +74,7 @@ const RegisterStudentForm = () => {
     }
   };
 
-  // Submit for new member
+  // Submit for new member (manual registration)
   const onNewMemberSubmit = async (data: NewMemberFormData) => {
     try {
       // First, create the member
@@ -123,7 +123,6 @@ const RegisterStudentForm = () => {
       });
       newMemberForm.reset();
       setPhoto(null);
-      refetchMembers();
       fetchMinistries();
     } catch (error) {
       toast({
@@ -134,14 +133,72 @@ const RegisterStudentForm = () => {
     }
   };
 
-  // Submit for existing member
-  const onExistingMemberSubmit = async (data: ExistingMemberFormData) => {
+  // Submit for existing user (user with account)
+  const onExistingUserSubmit = async (data: ExistingUserFormData) => {
     try {
+      const selectedProfile = profiles.find(p => p.user_id === data.userId);
+      
+      if (!selectedProfile) {
+        toast({
+          title: "Erro",
+          description: "Usuário não encontrado.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // First check if user already has a member record
+      const { data: existingMember, error: checkMemberError } = await supabase
+        .from('members')
+        .select('id')
+        .eq('user_id', data.userId)
+        .maybeSingle();
+
+      if (checkMemberError) {
+        toast({
+          title: "Erro ao verificar",
+          description: checkMemberError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      let memberId: string;
+
+      if (existingMember) {
+        // Use existing member record
+        memberId = existingMember.id;
+      } else {
+        // Create a new member record linked to the user
+        const { data: newMember, error: createMemberError } = await supabase
+          .from('members')
+          .insert({
+            user_id: data.userId,
+            first_name: selectedProfile.first_name || 'Sem nome',
+            last_name: selectedProfile.last_name || '',
+            whatsapp: selectedProfile.phone || '',
+            birth_date: '2000-01-01', // Default date, can be updated later
+          })
+          .select()
+          .single();
+
+        if (createMemberError) {
+          toast({
+            title: "Erro ao criar registro",
+            description: createMemberError.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        memberId = newMember.id;
+      }
+
       // Check if member is already in this ministry
       const { data: existingEntry, error: checkError } = await supabase
         .from('ministry_members')
         .select('id')
-        .eq('member_id', data.memberId)
+        .eq('member_id', memberId)
         .eq('ministry_id', data.ministryId)
         .maybeSingle();
 
@@ -156,8 +213,8 @@ const RegisterStudentForm = () => {
 
       if (existingEntry) {
         toast({
-          title: "Membro já cadastrado",
-          description: "Este membro já está cadastrado neste ministério.",
+          title: "Usuário já cadastrado",
+          description: "Este usuário já está cadastrado neste ministério.",
           variant: "destructive",
         });
         return;
@@ -167,7 +224,7 @@ const RegisterStudentForm = () => {
       const { error: ministryError } = await supabase
         .from('ministry_members')
         .insert({
-          member_id: data.memberId,
+          member_id: memberId,
           ministry_id: data.ministryId,
           role: data.role,
         });
@@ -181,14 +238,13 @@ const RegisterStudentForm = () => {
         return;
       }
 
-      const selectedMember = members.find(m => m.id === data.memberId);
       const selectedMinistry = ministries.find(m => m.id === data.ministryId);
       
       toast({
-        title: "Membro adicionado com sucesso!",
-        description: `${selectedMember?.first_name} ${selectedMember?.last_name} foi adicionado ao ministério ${selectedMinistry?.name} como ${data.role}.`,
+        title: "Usuário adicionado com sucesso!",
+        description: `${selectedProfile.first_name || ''} ${selectedProfile.last_name || ''} foi adicionado ao ministério ${selectedMinistry?.name} como ${data.role}.`,
       });
-      existingMemberForm.reset();
+      existingUserForm.reset();
       fetchMinistries();
     } catch (error) {
       toast({
@@ -199,78 +255,83 @@ const RegisterStudentForm = () => {
     }
   };
 
-  const selectedMemberId = existingMemberForm.watch("memberId");
-  const selectedMember = members.find(m => m.id === selectedMemberId);
+  const selectedUserId = existingUserForm.watch("userId");
+  const selectedUser = profiles.find(p => p.user_id === selectedUserId);
+
+  const getDisplayName = (profile: typeof profiles[0]) => {
+    const name = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    return name || profile.email || 'Usuário sem nome';
+  };
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="grid w-full grid-cols-2 mb-6">
         <TabsTrigger value="existing" className="flex items-center gap-2">
           <Users className="h-4 w-4" />
-          Membro Existente
+          Usuário com Conta
         </TabsTrigger>
         <TabsTrigger value="new" className="flex items-center gap-2">
           <UserPlus className="h-4 w-4" />
-          Novo Membro
+          Cadastro Manual
         </TabsTrigger>
       </TabsList>
 
       {/* Existing Member Tab */}
       <TabsContent value="existing">
-        <Form {...existingMemberForm}>
-          <form onSubmit={existingMemberForm.handleSubmit(onExistingMemberSubmit)} className="space-y-6">
+        <Form {...existingUserForm}>
+          <form onSubmit={existingUserForm.handleSubmit(onExistingUserSubmit)} className="space-y-6">
             <FormField
-              control={existingMemberForm.control}
-              name="memberId"
+              control={existingUserForm.control}
+              name="userId"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Selecionar Membro</FormLabel>
-                  <Popover open={memberSearchOpen} onOpenChange={setMemberSearchOpen}>
+                  <FormLabel>Selecionar Usuário</FormLabel>
+                  <Popover open={userSearchOpen} onOpenChange={setUserSearchOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
                           variant="outline"
                           role="combobox"
-                          aria-expanded={memberSearchOpen}
+                          aria-expanded={userSearchOpen}
                           className={cn(
                             "w-full justify-between",
                             !field.value && "text-muted-foreground"
                           )}
                         >
-                          {selectedMember
-                            ? `${selectedMember.first_name} ${selectedMember.last_name}`
-                            : "Buscar membro..."}
+                          {selectedUser
+                            ? getDisplayName(selectedUser)
+                            : "Buscar usuário..."}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0" align="start">
                       <Command>
-                        <CommandInput placeholder="Buscar por nome..." />
+                        <CommandInput placeholder="Buscar por nome ou email..." />
                         <CommandList>
                           <CommandEmpty>
-                            {loadingMembers ? "Carregando..." : "Nenhum membro encontrado."}
+                            {loadingProfiles ? "Carregando..." : "Nenhum usuário encontrado."}
                           </CommandEmpty>
                           <CommandGroup>
-                            {members.map((member) => (
+                            {profiles.map((profile) => (
                               <CommandItem
-                                key={member.id}
-                                value={`${member.first_name} ${member.last_name}`}
+                                key={profile.user_id}
+                                value={`${profile.first_name || ''} ${profile.last_name || ''} ${profile.email || ''}`}
                                 onSelect={() => {
-                                  field.onChange(member.id);
-                                  setMemberSearchOpen(false);
+                                  field.onChange(profile.user_id);
+                                  setUserSearchOpen(false);
                                 }}
                               >
                                 <Check
                                   className={cn(
                                     "mr-2 h-4 w-4",
-                                    field.value === member.id ? "opacity-100" : "opacity-0"
+                                    field.value === profile.user_id ? "opacity-100" : "opacity-0"
                                   )}
                                 />
                                 <div className="flex flex-col">
-                                  <span>{member.first_name} {member.last_name}</span>
+                                  <span>{getDisplayName(profile)}</span>
                                   <span className="text-xs text-muted-foreground">
-                                    {member.whatsapp}
+                                    {profile.email || profile.phone || 'Sem contato'}
                                   </span>
                                 </div>
                               </CommandItem>
@@ -287,7 +348,7 @@ const RegisterStudentForm = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
-                control={existingMemberForm.control}
+                control={existingUserForm.control}
                 name="ministryId"
                 render={({ field }) => (
                   <FormItem>
@@ -312,7 +373,7 @@ const RegisterStudentForm = () => {
               />
 
               <FormField
-                control={existingMemberForm.control}
+                control={existingUserForm.control}
                 name="role"
                 render={({ field }) => (
                   <FormItem>
@@ -336,8 +397,12 @@ const RegisterStudentForm = () => {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loadingMinistries || loadingMembers}>
-              {loadingMinistries || loadingMembers ? "Carregando..." : "Adicionar ao Ministério"}
+            <p className="text-sm text-muted-foreground">
+              💡 Selecione um usuário que já criou conta na plataforma para adicioná-lo ao ministério.
+            </p>
+
+            <Button type="submit" className="w-full" disabled={loadingMinistries || loadingProfiles}>
+              {loadingMinistries || loadingProfiles ? "Carregando..." : "Adicionar ao Ministério"}
             </Button>
           </form>
         </Form>
@@ -479,7 +544,7 @@ const RegisterStudentForm = () => {
             </div>
 
             <p className="text-sm text-muted-foreground">
-              💡 <strong>Dica:</strong> Ao cadastrar um novo membro manualmente, quando essa pessoa criar uma conta na plataforma, o administrador poderá vincular o cadastro dela ao usuário.
+              💡 <strong>Cadastro manual:</strong> Use esta opção para pessoas que ainda não têm conta na plataforma. Quando criarem uma conta, o administrador poderá vincular o cadastro.
             </p>
 
             <Button type="submit" className="w-full" disabled={loadingMinistries}>
