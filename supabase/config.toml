@@ -5,3 +5,6 @@ verify_jwt = true
 
 [functions.list-users-with-roles]
 verify_jwt = true
+
+[functions.list-profiles]
+verify_jwt = true
