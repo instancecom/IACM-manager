@@ -7,17 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, User } from "lucide-react";
+import { Eye, EyeOff, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
+import { DateInput } from "@/components/ui/date-input";
+import { format } from "date-fns";
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "Nome é obrigatório"),
   lastName: z.string().min(1, "Sobrenome é obrigatório"),
   email: z.string().email("Email inválido"),
   phone: z.string().min(10, "Número de telefone é obrigatório"),
+  birthDate: z.date({ required_error: "Data de nascimento é obrigatória" }),
   password: z.string()
     .min(6, "Senha deve ter pelo menos 6 caracteres"),
   confirmPassword: z.string(),
@@ -66,11 +69,13 @@ const Register = () => {
     try {
       // Limpa o telefone para salvar apenas dígitos
       const cleanPhone = data.phone.replace(/\D/g, '');
+      const birthDateStr = format(data.birthDate, 'yyyy-MM-dd');
       
       const { error } = await signUp(data.email, data.password, {
         first_name: data.firstName,
         last_name: data.lastName,
         phone: cleanPhone,
+        birth_date: birthDateStr,
       });
       
       if (error) {
@@ -208,6 +213,25 @@ const Register = () => {
                         <Input
                           placeholder="(11) 99999-9999"
                           {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="birthDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Data de Nascimento</FormLabel>
+                      <FormControl>
+                        <DateInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="dd/mm/aaaa"
+                          disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                         />
                       </FormControl>
                       <FormMessage />
