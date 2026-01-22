@@ -240,7 +240,7 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Ministérios</Label>
+                  <Label>Ministérios e Funções</Label>
                   <div className="flex flex-wrap gap-2">
                     {ministriesLoading ? (
                       <span className="text-sm text-muted-foreground">Carregando...</span>
@@ -251,6 +251,7 @@ const Profile = () => {
                           className="px-2 py-1 bg-netflix-red/20 text-netflix-red rounded-md text-xs"
                         >
                           {ministry.ministry_name}
+                          {ministry.role && ` (${ministry.role})`}
                         </span>
                       ))
                     ) : (
