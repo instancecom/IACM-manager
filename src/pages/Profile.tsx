@@ -22,6 +22,7 @@ import { useEventConfirmations } from "@/hooks/useEventConfirmations";
 import { useEvents } from "@/hooks/useEvents";
 import { useLGPDActions } from "@/hooks/useLGPDActions";
 import { useUserMinistries } from "@/hooks/useUserMinistries";
+import { useRoles } from "@/hooks/useRoles";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Link } from "react-router-dom";
@@ -33,6 +34,18 @@ const Profile = () => {
   const { events } = useEvents();
   const { exportUserData, deleteUserAccount, loading: lgpdLoading } = useLGPDActions();
   const { ministries: userMinistries, loading: ministriesLoading } = useUserMinistries();
+  const { userRoles, loading: rolesLoading } = useRoles();
+
+  // Função para formatar o nome do cargo
+  const getRoleDisplayName = (role: string) => {
+    const roleNames: Record<string, string> = {
+      admin: "Administrador",
+      editor: "Editor",
+      reader: "Leitor",
+      user: "Membro"
+    };
+    return roleNames[role] || role;
+  };
   
   const [formData, setFormData] = useState({
     first_name: "",
@@ -247,7 +260,15 @@ const Profile = () => {
                 </div>
                 <div className="space-y-2">
                   <Label>Cargo</Label>
-                  <div className="text-muted-foreground">Membro</div>
+                  <div className="text-muted-foreground">
+                    {rolesLoading ? (
+                      "Carregando..."
+                    ) : userRoles.length > 0 ? (
+                      userRoles.map(role => getRoleDisplayName(role)).join(", ")
+                    ) : (
+                      "Membro"
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
