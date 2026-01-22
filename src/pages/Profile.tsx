@@ -21,10 +21,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEventConfirmations } from "@/hooks/useEventConfirmations";
 import { useEvents } from "@/hooks/useEvents";
 import { useLGPDActions } from "@/hooks/useLGPDActions";
+import { useUserMinistries } from "@/hooks/useUserMinistries";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Link } from "react-router-dom";
-
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { profile, loading, updateProfile, getFullName, getInitials } = useProfile();
@@ -32,6 +32,7 @@ const Profile = () => {
   const { confirmations } = useEventConfirmations();
   const { events } = useEvents();
   const { exportUserData, deleteUserAccount, loading: lgpdLoading } = useLGPDActions();
+  const { ministries: userMinistries, loading: ministriesLoading } = useUserMinistries();
   
   const [formData, setFormData] = useState({
     first_name: "",
@@ -228,12 +229,20 @@ const Profile = () => {
                 <div className="space-y-2">
                   <Label>Ministérios</Label>
                   <div className="flex flex-wrap gap-2">
-                    <span className="px-2 py-1 bg-netflix-red/20 text-netflix-red rounded-md text-xs">
-                      Louvor
-                    </span>
-                    <span className="px-2 py-1 bg-netflix-red/20 text-netflix-red rounded-md text-xs">
-                      Jovens
-                    </span>
+                    {ministriesLoading ? (
+                      <span className="text-sm text-muted-foreground">Carregando...</span>
+                    ) : userMinistries.length > 0 ? (
+                      userMinistries.map((ministry) => (
+                        <span 
+                          key={ministry.id}
+                          className="px-2 py-1 bg-netflix-red/20 text-netflix-red rounded-md text-xs"
+                        >
+                          {ministry.ministry_name}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-sm text-muted-foreground">Nenhum ministério vinculado</span>
+                    )}
                   </div>
                 </div>
                 <div className="space-y-2">
