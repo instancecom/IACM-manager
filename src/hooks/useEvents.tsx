@@ -44,18 +44,24 @@ export const useEvents = () => {
         return;
       }
 
-      // Buscar contagem de confirmações para cada evento
+      // Buscar contagem de pessoas confirmadas para cada evento (participante + convidados)
       const eventsWithConfirmations = await Promise.all(
         (eventsData || []).map(async (event) => {
-          const { count } = await supabase
+          const { data: confirmations } = await supabase
             .from('event_confirmations')
-            .select('*', { count: 'exact', head: true })
+            .select('id, guests')
             .eq('event_id', event.id)
             .eq('confirmed', true);
 
+          // Calcular total de pessoas: cada confirmação = 1 participante + número de guests
+          const totalPeople = (confirmations || []).reduce((total, confirmation) => {
+            const guestsCount = confirmation.guests?.length || 0;
+            return total + 1 + guestsCount; // 1 (participante) + guests
+          }, 0);
+
           return {
             ...event,
-            confirmations_count: count || 0
+            confirmations_count: totalPeople
           };
         })
       );
