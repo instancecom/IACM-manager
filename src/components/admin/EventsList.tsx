@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Switch } from "@/components/ui/switch";
 import { format } from "date-fns";
 import { Edit, Trash2, Eye } from "lucide-react";
 import { getEventStatus, formatEventDateTimeRange } from "@/lib/eventUtils";
@@ -38,7 +39,8 @@ const EventsList = () => {
       end_date: editingEvent.end_date,
       end_time: editingEvent.end_time,
       description: editingEvent.description,
-    });
+      allow_guests: (editingEvent as any).allow_guests,
+    } as any);
 
     if (success) {
       setIsEditDialogOpen(false);
@@ -245,6 +247,17 @@ const EventsList = () => {
                   value={editingEvent.description}
                   onChange={(e) => setEditingEvent({...editingEvent, description: e.target.value})}
                   rows={3}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <Label>Permitir Convidados</Label>
+                  <p className="text-sm text-muted-foreground">Participantes podem adicionar convidados</p>
+                </div>
+                <Switch
+                  checked={(editingEvent as any).allow_guests !== false}
+                  onCheckedChange={(checked) => setEditingEvent({...editingEvent, allow_guests: checked} as any)}
                 />
               </div>
               
