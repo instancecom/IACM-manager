@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { CalendarIcon, Upload } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +33,7 @@ interface CreateEventFormProps {
 
 const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
   const [banner, setBanner] = useState<File | null>(null);
+  const [allowGuests, setAllowGuests] = useState(true);
 
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
@@ -94,7 +96,8 @@ const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
           end_time: data.endTime,
           created_by: user?.id,
           banner_url: bannerUrl,
-        });
+          allow_guests: allowGuests,
+        } as any);
 
       if (error) {
         toast({
@@ -111,7 +114,8 @@ const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
       });
       form.reset();
       setBanner(null);
-      onEventCreated?.(); // Notifica o componente pai
+      setAllowGuests(true);
+      onEventCreated?.();
     } catch (error) {
       toast({
         title: "Erro inesperado",
@@ -265,6 +269,19 @@ const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
         </div>
 
         <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div>
+              <label className="block text-sm font-medium">Permitir Convidados</label>
+              <p className="text-sm text-muted-foreground">
+                Se desativado, os participantes não poderão adicionar convidados
+              </p>
+            </div>
+            <Switch
+              checked={allowGuests}
+              onCheckedChange={setAllowGuests}
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium mb-2">Banner do Evento</label>
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">

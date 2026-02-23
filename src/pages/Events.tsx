@@ -32,7 +32,7 @@ const Events = () => {
       date: dateTimeRange,
       time: `${event.start_time} - ${event.end_time}`,
       location: event.address,
-      attendees: Math.floor(Math.random() * 200) + 20, // Mock para agora
+      attendees: event.confirmations_count || 0,
       image: event.banner_url || musicImage, // Usar banner real ou fallback
       description: event.description,
       organizer: "Igreja", // Mock para agora
@@ -43,7 +43,8 @@ const Events = () => {
       startDate: event.start_date,
       startTime: event.start_time,
       endDate: event.end_date,
-      endTime: event.end_time
+      endTime: event.end_time,
+      allowGuests: (event as any).allow_guests !== false
     };
   });
 

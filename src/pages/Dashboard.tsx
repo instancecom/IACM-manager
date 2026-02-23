@@ -63,6 +63,7 @@ const Dashboard = () => {
       startTime: event.start_time,
       endDate: event.end_date,
       endTime: event.end_time,
+      allowGuests: (event as any).allow_guests !== false,
       event // Original event data for modal
     };
   });

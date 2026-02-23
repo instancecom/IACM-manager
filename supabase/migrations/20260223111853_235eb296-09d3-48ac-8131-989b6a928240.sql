@@ -1,0 +1,1 @@
+ALTER TABLE public.events ADD COLUMN allow_guests boolean NOT NULL DEFAULT true;
