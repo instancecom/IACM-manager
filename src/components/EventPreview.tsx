@@ -27,6 +27,7 @@ interface EventPreviewProps {
     startTime?: string;
     endDate?: string;
     endTime?: string;
+    allowGuests?: boolean;
     event?: any;
   } | null;
 }
@@ -187,6 +188,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
           onConfirm={handleFormConfirm}
           eventTitle={event?.title || ""}
           eventId={event?.id || ""}
+          allowGuests={event?.allowGuests !== false}
         />
       </>
     );
@@ -313,6 +315,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
         onConfirm={handleFormConfirm}
         eventTitle={event?.title || ""}
         eventId={event?.id || ""}
+        allowGuests={event?.allowGuests !== false}
       />
     </>
   );

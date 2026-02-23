@@ -13,9 +13,10 @@ interface ConfirmPresenceFormProps {
   onConfirm: (data: any) => Promise<boolean>;
   eventTitle: string;
   eventId: string;
+  allowGuests?: boolean;
 }
 
-const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId }: ConfirmPresenceFormProps) => {
+const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId, allowGuests = true }: ConfirmPresenceFormProps) => {
   const { user } = useAuth();
   const { profile } = useProfile();
   
@@ -189,49 +190,51 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId }
             </div>
 
             {/* Convidados */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-netflix-white font-medium flex items-center gap-2">
-                  <Plus className="h-4 w-4 text-netflix-red" />
-                  Convidados (Opcional)
-                </Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addGuest}
-                  className="border-netflix-red text-netflix-red hover:bg-netflix-red hover:text-white"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Adicionar
-                </Button>
-              </div>
-
+            {allowGuests && (
               <div className="space-y-3">
-                {formData.guests.map((guest, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <Input
-                      type="text"
-                      value={guest}
-                      onChange={(e) => updateGuest(index, e.target.value)}
-                      className="bg-netflix-gray-dark border-netflix-gray text-netflix-white placeholder:text-netflix-gray focus:border-netflix-red"
-                      placeholder={`Nome do convidado ${index + 1}`}
-                    />
-                    {formData.guests.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeGuest(index)}
-                        className="text-netflix-gray-light hover:text-netflix-red hover:bg-netflix-red/10"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
+                <div className="flex items-center justify-between">
+                  <Label className="text-netflix-white font-medium flex items-center gap-2">
+                    <Plus className="h-4 w-4 text-netflix-red" />
+                    Convidados (Opcional)
+                  </Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addGuest}
+                    className="border-netflix-red text-netflix-red hover:bg-netflix-red hover:text-white"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Adicionar
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  {formData.guests.map((guest, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Input
+                        type="text"
+                        value={guest}
+                        onChange={(e) => updateGuest(index, e.target.value)}
+                        className="bg-netflix-gray-dark border-netflix-gray text-netflix-white placeholder:text-netflix-gray focus:border-netflix-red"
+                        placeholder={`Nome do convidado ${index + 1}`}
+                      />
+                      {formData.guests.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeGuest(index)}
+                          className="text-netflix-gray-light hover:text-netflix-red hover:bg-netflix-red/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </form>
         </div>
 

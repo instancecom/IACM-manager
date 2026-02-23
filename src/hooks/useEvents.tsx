@@ -16,6 +16,7 @@ export interface Event {
   updated_at: string;
   created_by?: string;
   confirmations_count?: number;
+  allow_guests?: boolean;
 }
 
 export const useEvents = () => {
