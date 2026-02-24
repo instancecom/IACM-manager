@@ -234,6 +234,38 @@ export const useEventConfirmations = () => {
     }
   };
 
+  const deleteConfirmation = async (confirmationId: string) => {
+    try {
+      setLoading(true);
+
+      const { error } = await supabase
+        .from('event_confirmations')
+        .delete()
+        .eq('id', confirmationId);
+
+      if (error) throw error;
+
+      await fetchConfirmations();
+
+      toast({
+        title: "Confirmação excluída",
+        description: "A confirmação foi removida com sucesso.",
+      });
+
+      return true;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Erro inesperado";
+      toast({
+        title: "Erro ao excluir confirmação",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     confirmations,
     loading,
@@ -243,5 +275,6 @@ export const useEventConfirmations = () => {
     checkUserConfirmation,
     updatePaymentStatus,
     updateTotalAmount,
+    deleteConfirmation,
   };
 };
