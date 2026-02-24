@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, Users, CalendarDays, Check, X, Eye, UserCheck, DollarSign, Trash2, Plus } from "lucide-react";
 import { useEventConfirmations } from "@/hooks/useEventConfirmations";
+import { useToast } from "@/hooks/use-toast";
 import { useEventPayments } from "@/hooks/useEventPayments";
 import { useEvents } from "@/hooks/useEvents";
 import { useRoles } from "@/hooks/useRoles";
@@ -31,9 +32,10 @@ interface EventConfirmationData {
 
 const EventConfirmationsView = () => {
   const { events, loading: eventsLoading } = useEvents();
-  const { updateTotalAmount } = useEventConfirmations();
+  const { updateTotalAmount, deleteConfirmation } = useEventConfirmations();
   const { payments, fetchPayments, addPayment, deletePayment } = useEventPayments();
   const { canEdit } = useRoles();
+  const { toast } = useToast();
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [confirmations, setConfirmations] = useState<EventConfirmationData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -291,19 +293,37 @@ const EventConfirmationsView = () => {
                         
                         <div className="flex items-center gap-2">
                           {canEdit && (
-                            <Button
-                              size="sm"
-                              variant={confirmation.paid ? "default" : "outline"}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openPaymentDialog(confirmation);
-                              }}
-                              className="gap-1 h-8 text-xs px-2 sm:px-3"
-                            >
-                              <DollarSign className="h-3 w-3" />
-                              <span className="hidden xs:inline">{confirmation.paid ? "Pago" : "Registrar pagamento"}</span>
-                              <span className="xs:hidden">{confirmation.paid ? "Pago" : "Registrar"}</span>
-                            </Button>
+                            <>
+                              <Button
+                                size="sm"
+                                variant={confirmation.paid ? "default" : "outline"}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openPaymentDialog(confirmation);
+                                }}
+                                className="gap-1 h-8 text-xs px-2 sm:px-3"
+                              >
+                                <DollarSign className="h-3 w-3" />
+                                <span className="hidden xs:inline">{confirmation.paid ? "Pago" : "Registrar pagamento"}</span>
+                                <span className="xs:hidden">{confirmation.paid ? "Pago" : "Registrar"}</span>
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm('Tem certeza que deseja excluir esta confirmação?')) {
+                                    deleteConfirmation(confirmation.id).then(() => {
+                                      fetchEventConfirmations(selectedEventId);
+                                    });
+                                  }
+                                }}
+                                className="gap-1 h-8 text-xs px-2"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                                <span className="hidden sm:inline">Excluir</span>
+                              </Button>
+                            </>
                           )}
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                             <Eye className="h-4 w-4" />
@@ -422,6 +442,26 @@ const EventConfirmationsView = () => {
                     <p className="text-xs text-muted-foreground">
                       {format(new Date(selectedEvent.start_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })} às {selectedEvent.start_time}
                     </p>
+                  </div>
+                )}
+
+                {canEdit && (
+                  <div className="pt-3 border-t">
+                    <Button
+                      variant="destructive"
+                      className="w-full gap-2"
+                      onClick={() => {
+                        if (window.confirm('Tem certeza que deseja excluir esta confirmação?')) {
+                          deleteConfirmation(selectedConfirmation.id).then(() => {
+                            setIsPreviewOpen(false);
+                            fetchEventConfirmations(selectedEventId);
+                          });
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Excluir Confirmação
+                    </Button>
                   </div>
                 )}
               </div>
