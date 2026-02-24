@@ -32,6 +32,7 @@ export const useRoles = () => {
       setUserRoles([]);
       setIsAdmin(false);
       setCanEdit(false);
+      setCanRead(false);
       setLoading(false);
       return;
     }
