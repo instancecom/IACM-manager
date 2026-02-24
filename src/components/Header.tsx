@@ -56,11 +56,13 @@ const Header = () => {
           </Link>
           {user && (
             <>
-              <Link to="/visualizations">
-                <Button variant="ghost" className="font-medium">
-                  Dados
-                </Button>
-              </Link>
+              {canRead && (
+                <Link to="/visualizations">
+                  <Button variant="ghost" className="font-medium">
+                    Dados
+                  </Button>
+                </Link>
+              )}
               {canEdit && (
                 <Link to="/admin">
                   <Button variant="ghost" className="font-medium">
