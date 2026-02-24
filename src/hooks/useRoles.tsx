@@ -146,6 +146,7 @@ export const useRoles = () => {
     loading,
     isAdmin,
     canEdit,
+    canRead,
     fetchUserRoles,
     fetchAllUsersWithRoles,
     assignRole,
