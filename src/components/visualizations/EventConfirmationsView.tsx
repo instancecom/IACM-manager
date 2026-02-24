@@ -32,9 +32,10 @@ interface EventConfirmationData {
 
 const EventConfirmationsView = () => {
   const { events, loading: eventsLoading } = useEvents();
-  const { updateTotalAmount } = useEventConfirmations();
+  const { updateTotalAmount, deleteConfirmation } = useEventConfirmations();
   const { payments, fetchPayments, addPayment, deletePayment } = useEventPayments();
   const { canEdit } = useRoles();
+  const { toast } = useToast();
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [confirmations, setConfirmations] = useState<EventConfirmationData[]>([]);
   const [loading, setLoading] = useState(false);
