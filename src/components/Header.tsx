@@ -11,7 +11,7 @@ import { toast } from "@/hooks/use-toast";
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { canEdit } = useRoles();
+  const { canEdit, canRead } = useRoles();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
