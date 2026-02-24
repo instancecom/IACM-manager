@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Loader2, Users, CalendarDays, Check, X, Eye, UserCheck, DollarSign, Trash2, Plus } from "lucide-react";
 import { useEventConfirmations } from "@/hooks/useEventConfirmations";
+import { useToast } from "@/hooks/use-toast";
 import { useEventPayments } from "@/hooks/useEventPayments";
 import { useEvents } from "@/hooks/useEvents";
 import { useRoles } from "@/hooks/useRoles";
