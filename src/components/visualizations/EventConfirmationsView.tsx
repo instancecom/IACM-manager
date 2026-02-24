@@ -444,6 +444,26 @@ const EventConfirmationsView = () => {
                     </p>
                   </div>
                 )}
+
+                {canEdit && (
+                  <div className="pt-3 border-t">
+                    <Button
+                      variant="destructive"
+                      className="w-full gap-2"
+                      onClick={() => {
+                        if (window.confirm('Tem certeza que deseja excluir esta confirmação?')) {
+                          deleteConfirmation(selectedConfirmation.id).then(() => {
+                            setIsPreviewOpen(false);
+                            fetchEventConfirmations(selectedEventId);
+                          });
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Excluir Confirmação
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           )}
