@@ -90,6 +90,16 @@ const EventConfirmationsView = () => {
     }
   }, [selectedEventId]);
 
+  // Keep paymentConfirmation in sync with latest confirmations data
+  useEffect(() => {
+    if (paymentConfirmation) {
+      const updated = confirmations.find(c => c.id === paymentConfirmation.id);
+      if (updated) {
+        setPaymentConfirmation(updated);
+      }
+    }
+  }, [confirmations]);
+
   const openPaymentDialog = async (confirmation: EventConfirmationData) => {
     setPaymentConfirmation(confirmation);
     setNewPaymentType("");
