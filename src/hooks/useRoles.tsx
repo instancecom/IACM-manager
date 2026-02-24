@@ -49,6 +49,7 @@ export const useRoles = () => {
       setUserRoles(roles);
       setIsAdmin(roles.includes('admin'));
       setCanEdit(roles.includes('admin') || roles.includes('editor'));
+      setCanRead(roles.includes('admin') || roles.includes('editor') || roles.includes('reader'));
     } catch (error) {
       console.error('Error fetching user roles:', error);
       setUserRoles([]);
