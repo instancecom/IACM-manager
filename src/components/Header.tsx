@@ -141,14 +141,16 @@ const Header = () => {
                 </Link>
                 {user && (
                   <>
-                    <Link 
-                      to="/visualizations" 
-                      className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <BarChart3 className="w-5 h-5" />
-                      Dados
-                    </Link>
+                    {canRead && (
+                      <Link 
+                        to="/visualizations" 
+                        className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <BarChart3 className="w-5 h-5" />
+                        Dados
+                      </Link>
+                    )}
                     {canEdit && (
                       <Link 
                         to="/admin" 
