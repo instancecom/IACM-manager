@@ -25,12 +25,14 @@ export const useRoles = () => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
+  const [canRead, setCanRead] = useState(false);
 
   const fetchUserRoles = async () => {
     if (!user) {
       setUserRoles([]);
       setIsAdmin(false);
       setCanEdit(false);
+      setCanRead(false);
       setLoading(false);
       return;
     }
@@ -47,11 +49,13 @@ export const useRoles = () => {
       setUserRoles(roles);
       setIsAdmin(roles.includes('admin'));
       setCanEdit(roles.includes('admin') || roles.includes('editor'));
+      setCanRead(roles.includes('admin') || roles.includes('editor') || roles.includes('reader'));
     } catch (error) {
       console.error('Error fetching user roles:', error);
       setUserRoles([]);
       setIsAdmin(false);
       setCanEdit(false);
+      setCanRead(false);
     } finally {
       setLoading(false);
     }
@@ -142,6 +146,7 @@ export const useRoles = () => {
     loading,
     isAdmin,
     canEdit,
+    canRead,
     fetchUserRoles,
     fetchAllUsersWithRoles,
     assignRole,

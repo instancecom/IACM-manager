@@ -11,7 +11,7 @@ import { toast } from "@/hooks/use-toast";
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
-  const { canEdit } = useRoles();
+  const { canEdit, canRead } = useRoles();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -56,11 +56,13 @@ const Header = () => {
           </Link>
           {user && (
             <>
-              <Link to="/visualizations">
-                <Button variant="ghost" className="font-medium">
-                  Dados
-                </Button>
-              </Link>
+              {canRead && (
+                <Link to="/visualizations">
+                  <Button variant="ghost" className="font-medium">
+                    Dados
+                  </Button>
+                </Link>
+              )}
               {canEdit && (
                 <Link to="/admin">
                   <Button variant="ghost" className="font-medium">
@@ -139,14 +141,16 @@ const Header = () => {
                 </Link>
                 {user && (
                   <>
-                    <Link 
-                      to="/visualizations" 
-                      className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <BarChart3 className="w-5 h-5" />
-                      Dados
-                    </Link>
+                    {canRead && (
+                      <Link 
+                        to="/visualizations" 
+                        className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <BarChart3 className="w-5 h-5" />
+                        Dados
+                      </Link>
+                    )}
                     {canEdit && (
                       <Link 
                         to="/admin" 
