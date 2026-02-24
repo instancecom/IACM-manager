@@ -140,7 +140,9 @@ const EventConfirmationsView = () => {
     if (!paymentConfirmation || !totalAmountInput) return;
 
     try {
-      await updateTotalAmount(paymentConfirmation.id, parseFloat(totalAmountInput));
+      const newAmount = parseFloat(totalAmountInput);
+      await updateTotalAmount(paymentConfirmation.id, newAmount);
+      setPaymentConfirmation(prev => prev ? { ...prev, total_amount: newAmount } : null);
       setIsTotalAmountDialogOpen(false);
       await fetchEventConfirmations(selectedEventId!);
     } catch (error) {
