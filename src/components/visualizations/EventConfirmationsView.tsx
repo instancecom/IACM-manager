@@ -293,19 +293,37 @@ const EventConfirmationsView = () => {
                         
                         <div className="flex items-center gap-2">
                           {canEdit && (
-                            <Button
-                              size="sm"
-                              variant={confirmation.paid ? "default" : "outline"}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openPaymentDialog(confirmation);
-                              }}
-                              className="gap-1 h-8 text-xs px-2 sm:px-3"
-                            >
-                              <DollarSign className="h-3 w-3" />
-                              <span className="hidden xs:inline">{confirmation.paid ? "Pago" : "Registrar pagamento"}</span>
-                              <span className="xs:hidden">{confirmation.paid ? "Pago" : "Registrar"}</span>
-                            </Button>
+                            <>
+                              <Button
+                                size="sm"
+                                variant={confirmation.paid ? "default" : "outline"}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openPaymentDialog(confirmation);
+                                }}
+                                className="gap-1 h-8 text-xs px-2 sm:px-3"
+                              >
+                                <DollarSign className="h-3 w-3" />
+                                <span className="hidden xs:inline">{confirmation.paid ? "Pago" : "Registrar pagamento"}</span>
+                                <span className="xs:hidden">{confirmation.paid ? "Pago" : "Registrar"}</span>
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm('Tem certeza que deseja excluir esta confirmação?')) {
+                                    deleteConfirmation(confirmation.id).then(() => {
+                                      fetchEventConfirmations(selectedEventId);
+                                    });
+                                  }
+                                }}
+                                className="gap-1 h-8 text-xs px-2"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                                <span className="hidden sm:inline">Excluir</span>
+                              </Button>
+                            </>
                           )}
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                             <Eye className="h-4 w-4" />
