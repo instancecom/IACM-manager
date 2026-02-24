@@ -90,6 +90,16 @@ const EventConfirmationsView = () => {
     }
   }, [selectedEventId]);
 
+  // Keep paymentConfirmation in sync with latest confirmations data
+  useEffect(() => {
+    if (paymentConfirmation) {
+      const updated = confirmations.find(c => c.id === paymentConfirmation.id);
+      if (updated) {
+        setPaymentConfirmation(updated);
+      }
+    }
+  }, [confirmations]);
+
   const openPaymentDialog = async (confirmation: EventConfirmationData) => {
     setPaymentConfirmation(confirmation);
     setNewPaymentType("");
@@ -140,7 +150,9 @@ const EventConfirmationsView = () => {
     if (!paymentConfirmation || !totalAmountInput) return;
 
     try {
-      await updateTotalAmount(paymentConfirmation.id, parseFloat(totalAmountInput));
+      const newAmount = parseFloat(totalAmountInput);
+      await updateTotalAmount(paymentConfirmation.id, newAmount);
+      setPaymentConfirmation(prev => prev ? { ...prev, total_amount: newAmount } : null);
       setIsTotalAmountDialogOpen(false);
       await fetchEventConfirmations(selectedEventId!);
     } catch (error) {
