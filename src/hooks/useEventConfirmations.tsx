@@ -99,62 +99,25 @@ export const useEventConfirmations = () => {
         return false;
       }
       
-      // Verifica se já existe uma confirmação para este evento e usuário/whatsapp
-      let existingConfirmation = null;
-      
-      if (confirmationData.userId) {
-        // Se o usuário está logado, busca por user_id
-        const { data } = await supabase
-          .from('event_confirmations')
-          .select('id')
-          .eq('event_id', eventId)
-          .eq('user_id', confirmationData.userId)
-          .maybeSingle();
-        
-        existingConfirmation = data;
-      } else {
-        // Se não está logado, busca por whatsapp
-        const { data } = await supabase
-          .from('event_confirmations')
-          .select('id')
-          .eq('event_id', eventId)
-          .eq('whatsapp', confirmationData.whatsapp.replace(/\D/g, ''))
-          .maybeSingle();
-        
-        existingConfirmation = data;
-      }
-
+      // Sempre cria uma nova confirmação (permite múltiplas por pessoa/evento)
       const confirmationPayload = {
         event_id: eventId,
         user_id: confirmationData.userId || null,
         responsible_name: confirmationData.responsibleName,
         participant_name: confirmationData.participantName,
         whatsapp: confirmationData.whatsapp.replace(/\D/g, ''),
-        guests: confirmationData.guests.filter(g => g.trim() !== ''), // Remove guests vazios
+        guests: confirmationData.guests.filter(g => g.trim() !== ''),
         confirmed: true,
         confirmed_at: new Date().toISOString(),
-        member_id: null // Não usamos mais member_id
+        member_id: null
       };
 
-      if (existingConfirmation) {
-        // Atualiza a confirmação existente
-        const { error: updateError } = await supabase
-          .from('event_confirmations')
-          .update(confirmationPayload)
-          .eq('id', existingConfirmation.id);
+      const { error: confirmationError } = await supabase
+        .from('event_confirmations')
+        .insert(confirmationPayload);
 
-        if (updateError) {
-          throw updateError;
-        }
-      } else {
-        // Cria uma nova confirmação
-        const { error: confirmationError } = await supabase
-          .from('event_confirmations')
-          .insert(confirmationPayload);
-
-        if (confirmationError) {
-          throw confirmationError;
-        }
+      if (confirmationError) {
+        throw confirmationError;
       }
 
       await fetchConfirmations();
