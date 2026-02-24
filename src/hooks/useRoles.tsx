@@ -25,6 +25,7 @@ export const useRoles = () => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
+  const [canRead, setCanRead] = useState(false);
 
   const fetchUserRoles = async () => {
     if (!user) {
