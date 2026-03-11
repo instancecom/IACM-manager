@@ -147,6 +147,7 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId, 
                 id="responsibleName"
                 type="text"
                 required
+                maxLength={100}
                 value={formData.responsibleName}
                 onChange={(e) => setFormData(prev => ({ ...prev, responsibleName: e.target.value }))}
                 className="bg-netflix-gray-dark border-netflix-gray text-netflix-white placeholder:text-netflix-gray focus:border-netflix-red"
