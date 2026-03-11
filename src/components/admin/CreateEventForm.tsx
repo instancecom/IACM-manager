@@ -16,13 +16,13 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const eventSchema = z.object({
-  title: z.string().min(1, "Título é obrigatório"),
-  address: z.string().min(1, "Endereço é obrigatório"),
+  title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título muito longo (máximo 200 caracteres)"),
+  address: z.string().trim().min(1, "Endereço é obrigatório").max(500, "Endereço muito longo (máximo 500 caracteres)"),
   startDate: z.date({ required_error: "Data de início é obrigatória" }),
   startTime: z.string().min(1, "Hora de início é obrigatória"),
   endDate: z.date({ required_error: "Data de término é obrigatória" }),
   endTime: z.string().min(1, "Hora de término é obrigatória"),
-  description: z.string().min(1, "Descrição é obrigatória"),
+  description: z.string().trim().min(1, "Descrição é obrigatória").max(2000, "Descrição muito longa (máximo 2000 caracteres)"),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;

@@ -221,6 +221,7 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId, 
                       <Input
                         type="text"
                         value={guest}
+                        maxLength={100}
                         onChange={(e) => updateGuest(index, e.target.value)}
                         className="bg-netflix-gray-dark border-netflix-gray text-netflix-white placeholder:text-netflix-gray focus:border-netflix-red"
                         placeholder={`Nome do convidado ${index + 1}`}

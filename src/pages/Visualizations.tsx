@@ -1,14 +1,46 @@
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Users, Calendar, Music, CheckCircle } from "lucide-react";
+import { Users, Calendar, Music, CheckCircle, ShieldAlert } from "lucide-react";
 import MinistriesView from "@/components/visualizations/MinistriesView";
 import SchedulesView from "@/components/visualizations/SchedulesView";
 import MembersView from "@/components/visualizations/MembersView";
 import EventConfirmationsView from "@/components/visualizations/EventConfirmationsView";
 import DashboardOverview from "@/components/visualizations/DashboardOverview";
+import { useRoles } from "@/hooks/useRoles";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Visualizations = () => {
+  const { canRead, loading: rolesLoading } = useRoles();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  if (authLoading || rolesLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!user || !canRead) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="max-w-md w-full">
+          <CardContent className="flex flex-col items-center gap-4 pt-6">
+            <ShieldAlert className="h-12 w-12 text-destructive" />
+            <h2 className="text-xl font-bold text-foreground">Acesso Negado</h2>
+            <p className="text-muted-foreground text-center">
+              Você não tem permissão para acessar esta página.
+            </p>
+            <Button onClick={() => navigate('/')}>Voltar ao Início</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <main className="pt-16 sm:pt-20 container mx-auto px-4 sm:px-6 py-6 sm:py-8">
