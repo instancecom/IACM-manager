@@ -45,24 +45,15 @@ export const useEvents = () => {
         return;
       }
 
-      // Buscar contagem de pessoas confirmadas para cada evento (participante + convidados)
+      // Buscar contagem de pessoas confirmadas usando função segura (sem expor PII)
       const eventsWithConfirmations = await Promise.all(
         (eventsData || []).map(async (event) => {
-          const { data: confirmations } = await supabase
-            .from('event_confirmations')
-            .select('id, guests')
-            .eq('event_id', event.id)
-            .eq('confirmed', true);
-
-          // Calcular total de pessoas: cada confirmação = 1 participante + número de guests
-          const totalPeople = (confirmations || []).reduce((total, confirmation) => {
-            const guestsCount = confirmation.guests?.length || 0;
-            return total + 1 + guestsCount; // 1 (participante) + guests
-          }, 0);
+          const { data: count } = await supabase
+            .rpc('get_event_confirmation_count', { _event_id: event.id });
 
           return {
             ...event,
-            confirmations_count: totalPeople
+            confirmations_count: count || 0
           };
         })
       );

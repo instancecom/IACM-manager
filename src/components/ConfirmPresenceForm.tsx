@@ -41,7 +41,10 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId, 
     }
   }, [user, profile, isOpen]);
 
+  const MAX_GUESTS = 20;
+
   const addGuest = () => {
+    if (formData.guests.length >= MAX_GUESTS) return;
     setFormData(prev => ({
       ...prev,
       guests: [...prev.guests, ""]
@@ -144,6 +147,7 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId, 
                 id="responsibleName"
                 type="text"
                 required
+                maxLength={100}
                 value={formData.responsibleName}
                 onChange={(e) => setFormData(prev => ({ ...prev, responsibleName: e.target.value }))}
                 className="bg-netflix-gray-dark border-netflix-gray text-netflix-white placeholder:text-netflix-gray focus:border-netflix-red"
@@ -161,6 +165,7 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId, 
                 id="participantName"
                 type="text"
                 required
+                maxLength={100}
                 value={formData.participantName}
                 onChange={(e) => setFormData(prev => ({ ...prev, participantName: e.target.value }))}
                 className="bg-netflix-gray-dark border-netflix-gray text-netflix-white placeholder:text-netflix-gray focus:border-netflix-red"
@@ -202,10 +207,11 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId, 
                     variant="outline"
                     size="sm"
                     onClick={addGuest}
+                    disabled={formData.guests.length >= MAX_GUESTS}
                     className="border-netflix-red text-netflix-red hover:bg-netflix-red hover:text-white"
                   >
                     <Plus className="h-4 w-4 mr-1" />
-                    Adicionar
+                    Adicionar ({formData.guests.length}/{MAX_GUESTS})
                   </Button>
                 </div>
 
@@ -215,6 +221,7 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId, 
                       <Input
                         type="text"
                         value={guest}
+                        maxLength={100}
                         onChange={(e) => updateGuest(index, e.target.value)}
                         className="bg-netflix-gray-dark border-netflix-gray text-netflix-white placeholder:text-netflix-gray focus:border-netflix-red"
                         placeholder={`Nome do convidado ${index + 1}`}

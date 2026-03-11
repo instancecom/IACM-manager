@@ -470,6 +470,10 @@ export type Database = {
     Functions: {
       can_edit: { Args: { _user_id: string }; Returns: boolean }
       get_email_by_phone: { Args: { phone_number: string }; Returns: string }
+      get_event_confirmation_count: {
+        Args: { _event_id: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
