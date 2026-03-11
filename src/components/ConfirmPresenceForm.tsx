@@ -41,7 +41,10 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId, 
     }
   }, [user, profile, isOpen]);
 
+  const MAX_GUESTS = 20;
+
   const addGuest = () => {
+    if (formData.guests.length >= MAX_GUESTS) return;
     setFormData(prev => ({
       ...prev,
       guests: [...prev.guests, ""]
