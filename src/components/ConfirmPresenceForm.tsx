@@ -207,10 +207,11 @@ const ConfirmPresenceForm = ({ isOpen, onClose, onConfirm, eventTitle, eventId, 
                     variant="outline"
                     size="sm"
                     onClick={addGuest}
+                    disabled={formData.guests.length >= MAX_GUESTS}
                     className="border-netflix-red text-netflix-red hover:bg-netflix-red hover:text-white"
                   >
                     <Plus className="h-4 w-4 mr-1" />
-                    Adicionar
+                    Adicionar ({formData.guests.length}/{MAX_GUESTS})
                   </Button>
                 </div>
 
