@@ -18,6 +18,7 @@ import Visualizations from "./pages/Visualizations";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 
+
 const queryClient = new QueryClient();
 
 // Component to conditionally render Header
