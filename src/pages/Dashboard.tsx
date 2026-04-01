@@ -6,6 +6,7 @@ import ScheduleCard from "@/components/ScheduleCard";
 import EventCard from "@/components/EventCard";
 import ActionCard from "@/components/ActionCard";
 import EventPreview from "@/components/EventPreview";
+import LandingPage from "@/components/LandingPage";
 import { useEvents } from "@/hooks/useEvents";
 import { format, parseISO, isAfter, isBefore, subDays, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -218,6 +219,9 @@ const Dashboard = () => {
             </p>
           </div>
         )}
+
+        {/* Landing Page - Quem Somos, Cultos, Redes, Mapa */}
+        <LandingPage />
       </main>
 
       {/* Event Preview Modal */}
