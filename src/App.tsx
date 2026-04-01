@@ -23,7 +23,7 @@ const queryClient = new QueryClient();
 // Component to conditionally render Header
 const AppLayout = () => {
   const location = useLocation();
-  const hideHeaderRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
+  const hideHeaderRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password'];
   const shouldShowHeader = !hideHeaderRoutes.includes(location.pathname);
 
   return (

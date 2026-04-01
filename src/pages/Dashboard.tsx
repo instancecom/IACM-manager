@@ -220,8 +220,6 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Landing Page - Quem Somos, Cultos, Redes, Mapa */}
-        <LandingPage />
       </main>
 
       {/* Event Preview Modal */}
