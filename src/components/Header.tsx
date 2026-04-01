@@ -44,7 +44,7 @@ const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-4">
-          <Link to="/">
+          <Link to="/dashboard">
             <Button variant="ghost" className="font-medium">
               Início
             </Button>
