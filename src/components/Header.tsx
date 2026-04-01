@@ -124,7 +124,7 @@ const Header = () => {
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <nav className="flex flex-col gap-4">
                 <Link 
-                  to="/" 
+                  to="/dashboard" 
                   className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
