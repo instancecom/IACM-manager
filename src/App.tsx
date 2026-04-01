@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -24,7 +23,7 @@ const queryClient = new QueryClient();
 // Component to conditionally render Header
 const AppLayout = () => {
   const location = useLocation();
-  const hideHeaderRoutes = ['/', '/login', '/register', '/forgot-password', '/reset-password'];
+  const hideHeaderRoutes = ['/login', '/register', '/forgot-password', '/reset-password'];
   const shouldShowHeader = !hideHeaderRoutes.includes(location.pathname);
 
   return (
@@ -32,7 +31,6 @@ const AppLayout = () => {
       {shouldShowHeader && <Header />}
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
