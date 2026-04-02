@@ -53,30 +53,22 @@ const LandingVerseStrip = () => {
           }
         }
 
-        const response = await fetch("https://www.abibliadigital.com.br/api/verses/nvi/random");
+        // Using bible-api.com for the daily random verse (more robust)
+        const response = await fetch("https://bible-api.com/data/almeida/random");
         
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);
         }
         
         const data = await response.json();
+        const mainVerse = data.verses[0];
         
-        // Robust abbreviation extraction
-        let abbrev = "sl"; 
-        if (data.book && data.book.abbrev) {
-          if (typeof data.book.abbrev === 'string') {
-            abbrev = data.book.abbrev;
-          } else if (data.book.abbrev.pt) {
-            abbrev = data.book.abbrev.pt;
-          }
-        }
-
         const verseData = {
-          text: data.text,
-          book: data.book?.name || "Salmos",
-          bookAbbrev: abbrev,
-          chapter: data.chapter,
-          number: data.number
+          text: mainVerse.text.trim(),
+          book: mainVerse.book_name,
+          bookAbbrev: "", // bible-api.com doesn't explicitly need abbrev for chapters anymore
+          chapter: mainVerse.chapter,
+          number: mainVerse.verse
         };
 
         localStorage.setItem("daily_verse", JSON.stringify({ date: today, data: verseData }));
