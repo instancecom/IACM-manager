@@ -97,15 +97,27 @@ const LandingVerseStrip = () => {
     
     setIsChapterLoading(true);
     try {
+      // Switched to bible-api.com for better stability as abibliadigital is unstable for chapters
+      // Uses the 'almeida' translation for high quality Portuguese text
+      const bookQuery = verse.book.replace(/\s/g, "+");
       const response = await fetch(
-        `https://www.abibliadigital.com.br/api/verses/nvi/${verse.bookAbbrev}/${verse.chapter}`
+        `https://bible-api.com/${bookQuery}+${verse.chapter}?translation=almeida`
       );
-      if (!response.ok) throw new Error("Erro ao buscar capítulo");
+      
+      if (!response.ok) throw new Error("Erro ao buscar capítulo na fonte secundária");
+      
       const data = await response.json();
-      setFullChapter(data.verses);
+      
+      // bible-api.com returns 'verse' instead of 'number'
+      const mappedVerses: ChapterVerse[] = data.verses.map((v: any) => ({
+        number: v.verse,
+        text: v.text.trim()
+      }));
+
+      setFullChapter(mappedVerses);
     } catch (error) {
       console.error("Error fetching chapter:", error);
-      toast.error("Não foi possível carregar o capítulo completo.");
+      toast.error("Não foi possível carregar o capítulo completo. Tente novamente mais tarde.");
     } finally {
       setIsChapterLoading(false);
     }
