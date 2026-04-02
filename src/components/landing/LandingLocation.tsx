@@ -9,13 +9,12 @@ export const LandingLocation = () => {
 
         <div className="max-w-6xl mx-auto overflow-hidden rounded-3xl border border-netflix-white/10 shadow-glow bg-netflix-gray-dark h-[500px]">
           <iframe 
-            src="https://www.google.com/maps/embed?pb=!4v1775061287786!6m8!1m7!1s7zl63JiyKPhww86rSyyN_A!2m2!1d-23.50624950480002!2d-46.19236443013188!3f80.87688008508347!4f-1.5368878851865446!5f0.7820865974627469" 
+            src="https://maps.google.com/maps?q=-23.5062495,-46.1923644&z=17&output=embed" 
             width="100%" 
             height="100%" 
             style={{ border: 0 }} 
             allowFullScreen={true} 
-            loading="lazy" 
-            referrerPolicy="no-referrer-when-downgrade"
+            loading="lazy"
           />
         </div>
       </div>
