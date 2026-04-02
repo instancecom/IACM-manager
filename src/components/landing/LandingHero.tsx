@@ -8,7 +8,7 @@ const LandingHero = () => {
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
       <div 
-        className="absolute inset-0 z-0 bg-cover bg-center transition-transform duration-10000 hover:scale-110"
+        className="absolute inset-0 z-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${heroImg})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80 z-10" />
@@ -42,12 +42,12 @@ const LandingHero = () => {
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 animate-bounce cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
+      <div className="absolute bottom-10 inset-x-0 flex justify-center z-20 animate-bounce cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
         <div 
           onClick={() => document.getElementById('quem-somos')?.scrollIntoView({ behavior: 'smooth' })}
-          className="flex flex-col items-center text-netflix-white"
+          className="flex flex-col items-center text-netflix-white text-center"
         >
-          <span className="text-xs uppercase tracking-widest mb-2 font-bold">Conheça Mais</span>
+          <span className="text-xs uppercase tracking-[0.3em] mb-2 font-bold whitespace-nowrap">Conheça Mais</span>
           <ChevronDown className="w-6 h-6" />
         </div>
       </div>
