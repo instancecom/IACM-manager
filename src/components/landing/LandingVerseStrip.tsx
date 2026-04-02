@@ -33,7 +33,7 @@ const LandingVerseStrip = () => {
   const fallbackVerse: VerseData = {
     text: "O Senhor é o meu pastor; de nada terei falta.",
     book: "Salmos",
-    bookAbbrev: "ps",
+    bookAbbrev: "sl",
     chapter: 23,
     number: 1
   };
@@ -61,10 +61,20 @@ const LandingVerseStrip = () => {
         
         const data = await response.json();
         
+        // Robust abbreviation extraction
+        let abbrev = "sl"; 
+        if (data.book && data.book.abbrev) {
+          if (typeof data.book.abbrev === 'string') {
+            abbrev = data.book.abbrev;
+          } else if (data.book.abbrev.pt) {
+            abbrev = data.book.abbrev.pt;
+          }
+        }
+
         const verseData = {
           text: data.text,
-          book: data.book.name,
-          bookAbbrev: data.book.abbrev.pt,
+          book: data.book?.name || "Salmos",
+          bookAbbrev: abbrev,
           chapter: data.chapter,
           number: data.number
         };
