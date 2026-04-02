@@ -1,8 +1,8 @@
 import { Clock, CalendarDays } from "lucide-react";
-import tercaMulheres from "@/assets/terca-mulheres.png";
-import quartaPalavra from "@/assets/quarta-palavra.png";
-import domingoManha from "@/assets/domingo-manha.png";
-import domingoNoite from "@/assets/domingo-noite.png";
+import cultoTerca from "@/assets/culto-terca.png";
+import cultoQuarta from "@/assets/culto-quarta.png";
+import cultoDomingoManha from "@/assets/culto-domingo-manha.png";
+import cultoDomingoNoite from "@/assets/culto-domingo-noite.png";
 
 export const LandingSchedule = () => {
   const schedules = [
@@ -11,28 +11,28 @@ export const LandingSchedule = () => {
       time: "15:00", 
       title: "TITULO AQUI", 
       type: "Culto de Mulheres / Tarde de Bênçãos",
-      image: tercaMulheres
+      image: cultoTerca
     },
     { 
       day: "Quarta-feira", 
       time: "19:30", 
       title: "TITULO AQUI", 
       type: "Culto de Palavra e Oração",
-      image: quartaPalavra
+      image: cultoQuarta
     },
     { 
       day: "Domingo", 
       time: "09:00", 
       title: "TITULO AQUI", 
       type: "Escola de Maturidade",
-      image: domingoManha
+      image: cultoDomingoManha
     },
     { 
       day: "Domingo", 
       time: "18:00", 
       title: "TITULO AQUI", 
       type: "Celebrando ao Rei",
-      image: domingoNoite
+      image: cultoDomingoNoite
     }
   ];
 
