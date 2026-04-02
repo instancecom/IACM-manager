@@ -66,18 +66,15 @@ export const LandingSchedule = () => {
 
               {/* Content Overlay */}
               <div className="absolute inset-0 p-6 flex flex-col justify-end transform transition-transform duration-500 group-hover:translate-y-[-8px]">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="bg-netflix-red p-1 rounded">
-                    <Clock className="w-4 h-4 text-white" />
-                  </div>
-                  <span className="text-netflix-red font-black text-xl">{item.time}</span>
+                <div className="mb-1">
+                  <span className="text-netflix-white/60 font-black text-sm uppercase tracking-[0.2em]">{item.day}</span>
                 </div>
                 
-                <h3 className="text-2xl font-black text-white leading-tight uppercase mb-1">{item.title}</h3>
-                <div className="flex items-center gap-2 text-netflix-gray-light text-sm font-bold uppercase tracking-wider">
-                  <span>{item.day}</span>
-                  <span className="w-1 h-1 bg-netflix-gray-light rounded-full"></span>
-                  <span className="line-clamp-1">{item.type}</span>
+                <div className="flex items-center gap-3">
+                  <div className="bg-netflix-red p-1.5 rounded">
+                    <Clock className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-white font-black text-4xl tracking-tighter">{item.time}</span>
                 </div>
               </div>
               
