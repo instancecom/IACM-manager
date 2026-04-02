@@ -1,4 +1,5 @@
 import { Users } from "lucide-react";
+import logoGlass from "../../assets/logo-3d-glass.png";
 
 export const LandingAbout = () => {
   return (
@@ -35,7 +36,15 @@ export const LandingAbout = () => {
              <div className="absolute -inset-4 bg-gradient-to-tr from-netflix-red to-blue-600 rounded-3xl opacity-20 blur-2xl group-hover:opacity-30 transition-opacity duration-500" />
              <div className="relative aspect-video rounded-3xl bg-netflix-gray-dark overflow-hidden border border-netflix-white/10 shadow-2xl">
                <div className="absolute inset-0 flex items-center justify-center">
-                 <div className="p-8 text-center bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl max-w-sm">
+                 <div className="p-8 text-center bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl max-w-sm flex flex-col items-center">
+                   <div className="relative mb-4 group-hover:scale-110 transition-transform duration-500">
+                     <div className="absolute -inset-2 bg-netflix-red/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                     <img 
+                       src={logoGlass} 
+                       alt="Logo IACM" 
+                       className="w-32 h-32 object-contain relative z-10 drop-shadow-[0_0_15px_rgba(229,9,20,0.3)]"
+                     />
+                   </div>
                    <h3 className="text-2xl font-bold text-netflix-white mb-2 italic">Cultos Presenciais</h3>
                    <p className="text-netflix-gray-light">Crescendo juntos na Presença.</p>
                  </div>
