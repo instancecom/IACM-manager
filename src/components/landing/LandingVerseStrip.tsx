@@ -80,7 +80,7 @@ const LandingVerseStrip = () => {
   if (!verse) return null;
 
   return (
-    <div className="relative z-40 bg-black/90 border-b border-netflix-red/30 backdrop-blur-md overflow-hidden">
+    <div className="relative z-40 bg-[#070707] border-b border-netflix-red/20 overflow-hidden">
       {/* Animated subtle background glow */}
       <div className="absolute inset-0 bg-gradient-to-r from-netflix-red/10 via-transparent to-netflix-red/10 animate-pulse-slow" />
       
