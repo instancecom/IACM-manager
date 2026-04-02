@@ -2,9 +2,10 @@ import { Clock, CalendarDays } from "lucide-react";
 
 export const LandingSchedule = () => {
   const schedules = [
-    { day: "Quarta", time: "19:30", type: "Culto de Palavra e Oração" },
-    { day: "Domingo", time: "09:00", type: "Escola de Maturidade" },
-    { day: "Domingo", time: "18:00", type: "Celebrando ao Rei" }
+    { day: "Terça-feira", time: "15:00", type: "Culto de Mulheres / Tarde de Bênçãos" },
+    { day: "Quarta-feira", time: "19:30", type: "Culto de Palavra e Oração" },
+    { day: "Domingo", time: "09:00", type: "Escola de Maturidade (Manhã)" },
+    { day: "Domingo", time: "18:00", type: "Celebrando ao Rei (Noite)" }
   ];
 
   return (
@@ -17,7 +18,7 @@ export const LandingSchedule = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {schedules.map((item, idx) => (
             <div 
               key={idx} 
