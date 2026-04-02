@@ -12,7 +12,7 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <main className="pt-28 md:pt-32">
+      <main className="pt-[96px]">
         <LandingHero />
         <LandingAbout />
         <LandingSchedule />
