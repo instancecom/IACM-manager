@@ -1,18 +1,20 @@
 import { Search, Bell, User, Menu, X, LogOut, LogIn, Settings, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/useAuth";
 import { useRoles } from "@/hooks/useRoles";
 import { toast } from "@/hooks/use-toast";
+import LandingVerseStrip from "./landing/LandingVerseStrip";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { canEdit, canRead } = useRoles();
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
 
   const handleSignOut = async () => {
@@ -31,6 +33,8 @@ const Header = () => {
       navigate('/');
     }
   };
+
+  const isHome = location.pathname === "/";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-netflix-gray-dark">
@@ -209,6 +213,13 @@ const Header = () => {
           </Sheet>
         </div>
       </div>
+      
+      {/* Word of the Day Strip at the bottom of the Header on Home page */}
+      {isHome && (
+        <div className="border-t border-netflix-gray-dark/40">
+           <LandingVerseStrip />
+        </div>
+      )}
     </header>
   );
 };

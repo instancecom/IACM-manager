@@ -13,8 +13,16 @@ const LandingVerseStrip = () => {
   const [verse, setVerse] = useState<VerseData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fallbackVerse: VerseData = {
+    text: "O Senhor é o meu pastor; de nada terei falta.",
+    book: "Salmos",
+    chapter: 23,
+    number: 1
+  };
+
   useEffect(() => {
     const fetchDailyVerse = async () => {
+      console.log("Fetching Daily Verse...");
       try {
         const today = new Date().toISOString().split("T")[0];
         const cached = localStorage.getItem("daily_verse");
@@ -22,17 +30,19 @@ const LandingVerseStrip = () => {
         if (cached) {
           const { date, data } = JSON.parse(cached);
           if (date === today) {
+            console.log("Using cached verse:", data);
             setVerse(data);
             setLoading(false);
             return;
           }
         }
 
-        // Fetch a random verse from the API
-        // Note: To make it truly "same for everyone" without a backend, 
-        // we'd need a deterministic selection. For now, we'll use random
-        // with 24h caching per user.
         const response = await fetch("https://www.abibliadigital.com.br/api/verses/nvi/random");
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         const verseData = {
@@ -45,7 +55,8 @@ const LandingVerseStrip = () => {
         localStorage.setItem("daily_verse", JSON.stringify({ date: today, data: verseData }));
         setVerse(verseData);
       } catch (error) {
-        console.error("Error fetching verse:", error);
+        console.error("Error fetching verse, using fallback:", error);
+        setVerse(fallbackVerse);
       } finally {
         setLoading(false);
       }
@@ -58,14 +69,18 @@ const LandingVerseStrip = () => {
     if (verse) {
       const text = `"${verse.text}" - ${verse.book} ${verse.chapter}:${verse.number} #PalavraDoDia #IACM`;
       navigator.clipboard.writeText(text);
-      toast.success("Versículo copiado para a área de transferência!");
+      toast.success("Versículo copiado!");
     }
   };
 
-  if (loading || !verse) return null;
+  if (loading) return (
+    <div className="bg-black/90 h-10 border-b border-netflix-red/30 animate-pulse" />
+  );
+
+  if (!verse) return null;
 
   return (
-    <div className="relative z-50 bg-black/90 border-b border-netflix-red/30 backdrop-blur-md overflow-hidden">
+    <div className="relative z-40 bg-black/90 border-b border-netflix-red/30 backdrop-blur-md overflow-hidden">
       {/* Animated subtle background glow */}
       <div className="absolute inset-0 bg-gradient-to-r from-netflix-red/10 via-transparent to-netflix-red/10 animate-pulse-slow" />
       

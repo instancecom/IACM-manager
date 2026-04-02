@@ -1,5 +1,4 @@
 import LandingHero from "@/components/landing/LandingHero";
-import LandingVerseStrip from "@/components/landing/LandingVerseStrip";
 import LandingAbout from "@/components/landing/LandingAbout";
 import LandingSchedule from "@/components/landing/LandingSchedule";
 import LandingSocial from "@/components/landing/LandingSocial";
@@ -13,8 +12,7 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <main>
-        <LandingVerseStrip />
+      <main className="pt-28 md:pt-32">
         <LandingHero />
         <LandingAbout />
         <LandingSchedule />
