@@ -61,12 +61,12 @@ const LandingVerseStrip = () => {
         }
         
         const data = await response.json();
-        const mainVerse = data.verses[0];
+        const mainVerse = data.random_verse;
         
         const verseData = {
           text: mainVerse.text.trim(),
-          book: mainVerse.book_name,
-          bookAbbrev: "", // bible-api.com doesn't explicitly need abbrev for chapters anymore
+          book: mainVerse.book,
+          bookAbbrev: mainVerse.book_id || "", 
           chapter: mainVerse.chapter,
           number: mainVerse.verse
         };
@@ -91,7 +91,7 @@ const LandingVerseStrip = () => {
     try {
       // Switched to bible-api.com for better stability as abibliadigital is unstable for chapters
       // Uses the 'almeida' translation for high quality Portuguese text
-      const bookQuery = verse.book.replace(/\s/g, "+");
+      const bookQuery = (verse.bookAbbrev || verse.book).replace(/\s/g, "+");
       const response = await fetch(
         `https://bible-api.com/${bookQuery}+${verse.chapter}?translation=almeida`
       );
