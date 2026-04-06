@@ -107,34 +107,45 @@ const Register = () => {
           },
         ]);
 
-        // Vinculação automática de membro por WhatsApp
-        const { data: existingMember } = await supabase
+        // Vinculação automática ou criação de registro de membro oficial
+        const { data: memberRecord } = await supabase
           .from('members')
           .select('*')
           .eq('whatsapp', cleanPhone)
-          .is('user_id', null)
           .maybeSingle();
 
-        if (existingMember) {
-          // 1. Vincula o membro ao novo usuário
-          await supabase
-            .from('members')
-            .update({ user_id: newUser.id })
-            .eq('id', existingMember.id);
-          
-          // 2. Sincroniza os dados do membro para o perfil do usuário
-          await supabase
-            .from('profiles')
-            .update({
-              first_name: existingMember.first_name,
-              last_name: existingMember.last_name,
-              phone: existingMember.whatsapp,
-              birth_date: existingMember.birth_date,
-              avatar_url: existingMember.photo_url,
-            })
-            .eq('user_id', newUser.id);
-          
-          console.log(`Membro ${existingMember.id} vinculado e perfil sincronizado para o usuário ${newUser.id}`);
+        if (memberRecord) {
+          if (!memberRecord.user_id) {
+            // 1. Vincula o membro ao novo usuário
+            await supabase
+              .from('members')
+              .update({ user_id: newUser.id })
+              .eq('id', memberRecord.id);
+            
+            // 2. Sincroniza os dados do membro para o perfil do usuário
+            await supabase
+              .from('profiles')
+              .update({
+                first_name: memberRecord.first_name,
+                last_name: memberRecord.last_name,
+                phone: memberRecord.whatsapp,
+                birth_date: memberRecord.birth_date,
+                avatar_url: memberRecord.photo_url,
+              })
+              .eq('user_id', newUser.id);
+            
+            console.log(`Membro ${memberRecord.id} vinculado ao novo usuário ${newUser.id}`);
+          }
+        } else {
+          // 3. Se não existia cadastro, cria um membro oficial automaticamente
+          await supabase.from('members').insert({
+            user_id: newUser.id,
+            first_name: data.firstName,
+            last_name: data.lastName,
+            whatsapp: cleanPhone,
+            birth_date: birthDateStr,
+          });
+          console.log(`Novo membro oficial criado para o usuário ${newUser.id}`);
         }
 
         toast({

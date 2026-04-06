@@ -90,49 +90,61 @@ const SchedulesView = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {schedulesByDate[dateKey].map((schedule) => (
-                <div key={schedule.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-10 w-10">
+                <div key={schedule.id} className="border border-border/50 rounded-xl p-5 bg-card/50 hover:bg-card hover:shadow-lg transition-all duration-200 group">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-4">
+                      <Avatar className="h-12 w-12 border-2 border-primary/10 group-hover:border-primary/30 transition-colors">
                         <AvatarImage src={schedule.members?.photo_url} />
                         <AvatarFallback>
-                          <div className={`w-10 h-10 ${scheduleColors[schedule.schedule_type as keyof typeof scheduleColors]} rounded-lg flex items-center justify-center`}>
-                            <User className="w-5 h-5 text-white" />
+                          <div className={`w-12 h-12 ${scheduleColors[schedule.schedule_type as keyof typeof scheduleColors]} rounded-lg flex items-center justify-center shadow-inner`}>
+                            <User className="w-6 h-6 text-white" />
                           </div>
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <h4 className="font-semibold">
-                          {schedule.members?.first_name} {schedule.members?.last_name}
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          {scheduleLabels[schedule.schedule_type as keyof typeof scheduleLabels]}
-                        </p>
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-lg text-foreground leading-tight">
+                            {schedule.members ? `${schedule.members.first_name} ${schedule.members.last_name}` : (schedule.external_person_name || "Pessoa não identificada")}
+                          </h4>
+                          {!schedule.members?.user_id && schedule.member_id && (
+                            <Badge variant="outline" className="text-[10px] h-4 bg-muted/30 text-muted-foreground border-muted-foreground/20">
+                              Sem conta
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <div className={`w-2.5 h-2.5 rounded-full ${scheduleColors[schedule.schedule_type as keyof typeof scheduleColors]}`} />
+                          <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                            {scheduleLabels[schedule.schedule_type as keyof typeof scheduleLabels]}
+                          </p>
+                        </div>
                       </div>
                     </div>
                     {getStatusBadge(schedule.date)}
                   </div>
                   
-                  <div className="space-y-2 text-sm">
-                    {schedule.members?.whatsapp && (
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
-                        <a 
-                          href={`https://wa.me/55${schedule.members.whatsapp.replace(/\D/g, '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-green-600 hover:text-green-800 hover:underline cursor-pointer"
-                        >
-                          {schedule.members.whatsapp}
-                        </a>
-                      </div>
-                    )}
-                    {schedule.notes && (
-                      <div className="text-xs text-muted-foreground">
-                        <strong>Observações:</strong> {schedule.notes}
-                      </div>
-                    )}
-                  </div>
+                  {(schedule.members?.whatsapp || schedule.notes) && (
+                    <div className="mt-4 pt-4 border-t border-border/50 space-y-2 text-sm">
+                      {schedule.members?.whatsapp && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-primary" />
+                          <a 
+                            href={`https://wa.me/55${schedule.members.whatsapp.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline font-medium"
+                          >
+                            {schedule.members.whatsapp}
+                          </a>
+                        </div>
+                      )}
+                      {schedule.notes && (
+                        <div className="bg-muted/50 p-2 rounded-md text-xs text-muted-foreground">
+                          <strong>Observações:</strong> {schedule.notes}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

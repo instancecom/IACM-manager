@@ -15,6 +15,7 @@ export interface Schedule {
     last_name: string;
     whatsapp: string;
     photo_url?: string;
+    user_id?: string | null;
   } | null;
 }
 
@@ -43,7 +44,8 @@ export const useSchedules = () => {
             first_name,
             last_name,
             whatsapp,
-            photo_url
+            photo_url,
+            user_id
           )
         `)
         .order('date', { ascending: true });
