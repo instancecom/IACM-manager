@@ -11,7 +11,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMinistries } from "@/hooks/useMinistries";
-import { useProfiles } from "@/hooks/useProfiles";
+import { useUnifiedProfiles, UnifiedProfile } from "@/hooks/useUnifiedProfiles";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -30,7 +31,7 @@ const newMemberSchema = z.object({
 
 // Schema for existing user selection
 const existingUserSchema = z.object({
-  userId: z.string().min(1, "Selecione um usuário"),
+  selectedId: z.string().min(1, "Selecione uma pessoa"),
   ministryId: z.string().min(1, "Ministério é obrigatório"),
   role: z.string().min(1, "Função é obrigatória"),
 });
@@ -44,7 +45,7 @@ const RegisterStudentForm = () => {
   const [userSearchOpen, setUserSearchOpen] = useState(false);
   
   const { ministries, loading: loadingMinistries, fetchMinistries } = useMinistries();
-  const { profiles, loading: loadingProfiles, refetch: refetchProfiles } = useProfiles();
+  const { profiles, loading: loadingProfiles, refetch: refetchProfiles } = useUnifiedProfiles();
 
   // Form for new member
   const newMemberForm = useForm<NewMemberFormData>({
@@ -62,7 +63,7 @@ const RegisterStudentForm = () => {
   const existingUserForm = useForm<ExistingUserFormData>({
     resolver: zodResolver(existingUserSchema),
     defaultValues: {
-      userId: "",
+      selectedId: "",
       ministryId: "",
       role: "",
     },
@@ -136,31 +137,15 @@ const RegisterStudentForm = () => {
     }
   };
 
-  // Submit for existing user (user with account)
+  // Submit for existing person (user with account or manual member)
   const onExistingUserSubmit = async (data: ExistingUserFormData) => {
     try {
-      const selectedProfile = profiles.find(p => p.user_id === data.userId);
+      const selectedItem = profiles.find(p => p.id === data.selectedId);
       
-      if (!selectedProfile) {
+      if (!selectedItem) {
         toast({
           title: "Erro",
-          description: "Usuário não encontrado.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // First check if user already has a member record
-      const { data: existingMember, error: checkMemberError } = await supabase
-        .from('members')
-        .select('id')
-        .eq('user_id', data.userId)
-        .maybeSingle();
-
-      if (checkMemberError) {
-        toast({
-          title: "Erro ao verificar",
-          description: checkMemberError.message,
+          description: "Pessoa não encontrada.",
           variant: "destructive",
         });
         return;
@@ -168,33 +153,53 @@ const RegisterStudentForm = () => {
 
       let memberId: string;
 
-      if (existingMember) {
-        // Use existing member record
-        memberId = existingMember.id;
+      if (selectedItem.isManual) {
+        // Se for manual, já temos o ID do membro
+        memberId = selectedItem.id;
       } else {
-        // Create a new member record linked to the user
-        const { data: newMember, error: createMemberError } = await supabase
+        // Se for usuário com conta, verifica se já tem registro de membro ou cria um
+        const { data: existingMember, error: checkMemberError } = await supabase
           .from('members')
-          .insert({
-            user_id: data.userId,
-            first_name: selectedProfile.first_name || 'Sem nome',
-            last_name: selectedProfile.last_name || '',
-            whatsapp: selectedProfile.phone || '',
-            birth_date: '2000-01-01', // Default date, can be updated later
-          })
-          .select()
-          .single();
+          .select('id')
+          .eq('user_id', selectedItem.user_id)
+          .maybeSingle();
 
-        if (createMemberError) {
+        if (checkMemberError) {
           toast({
-            title: "Erro ao criar registro",
-            description: createMemberError.message,
+            title: "Erro ao verificar",
+            description: checkMemberError.message,
             variant: "destructive",
           });
           return;
         }
 
-        memberId = newMember.id;
+        if (existingMember) {
+          memberId = existingMember.id;
+        } else {
+          // Cria um novo registro de membro vinculado ao usuário
+          const { data: newMember, error: createMemberError } = await supabase
+            .from('members')
+            .insert({
+              user_id: selectedItem.user_id,
+              first_name: selectedItem.first_name || 'Sem nome',
+              last_name: selectedItem.last_name || '',
+              whatsapp: selectedItem.phone || '',
+              birth_date: '2000-01-01',
+            })
+            .select()
+            .single();
+
+          if (createMemberError) {
+            toast({
+              title: "Erro ao criar registro",
+              description: createMemberError.message,
+              variant: "destructive",
+            });
+            return;
+          }
+
+          memberId = newMember.id;
+        }
       }
 
       // Check if member is already in this ministry
@@ -244,8 +249,8 @@ const RegisterStudentForm = () => {
       const selectedMinistry = ministries.find(m => m.id === data.ministryId);
       
       toast({
-        title: "Usuário adicionado com sucesso!",
-        description: `${selectedProfile.first_name || ''} ${selectedProfile.last_name || ''} foi adicionado ao ministério ${selectedMinistry?.name} como ${data.role}.`,
+        title: "Vínculo realizado com sucesso!",
+        description: `${selectedItem.first_name || ''} ${selectedItem.last_name || ''} foi adicionado ao ministério ${selectedMinistry?.name} como ${data.role}.`,
       });
       existingUserForm.reset();
       fetchMinistries();
@@ -258,12 +263,9 @@ const RegisterStudentForm = () => {
     }
   };
 
-  const selectedUserId = existingUserForm.watch("userId");
-  const selectedUser = profiles.find(p => p.user_id === selectedUserId);
-
-  const getDisplayName = (profile: typeof profiles[0]) => {
+  const getDisplayName = (profile: UnifiedProfile) => {
     const name = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
-    return name || profile.email || 'Usuário sem nome';
+    return name || profile.email || profile.phone || 'Usuário sem nome';
   };
 
   return (
@@ -271,11 +273,11 @@ const RegisterStudentForm = () => {
       <TabsList className="grid w-full grid-cols-2 mb-6">
         <TabsTrigger value="existing" className="flex items-center gap-2">
           <Users className="h-4 w-4" />
-          Usuário com Conta
+          Pessoas Cadastradas
         </TabsTrigger>
         <TabsTrigger value="new" className="flex items-center gap-2">
           <UserPlus className="h-4 w-4" />
-          Cadastro Manual
+          Cadastro Rápido
         </TabsTrigger>
       </TabsList>
 
@@ -285,10 +287,10 @@ const RegisterStudentForm = () => {
           <form onSubmit={existingUserForm.handleSubmit(onExistingUserSubmit)} className="space-y-6">
             <FormField
               control={existingUserForm.control}
-              name="userId"
+              name="selectedId"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Selecionar Usuário</FormLabel>
+                  <FormLabel>Selecionar Pessoa</FormLabel>
                   <Popover open={userSearchOpen} onOpenChange={setUserSearchOpen}>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -301,40 +303,48 @@ const RegisterStudentForm = () => {
                             !field.value && "text-muted-foreground"
                           )}
                         >
-                          {selectedUser
-                            ? getDisplayName(selectedUser)
-                            : "Buscar usuário..."}
+                          {(() => {
+                            const selected = profiles.find(p => p.id === field.value);
+                            return selected ? getDisplayName(selected) : "Buscar por nome ou telefone...";
+                          })()}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0" align="start">
                       <Command>
-                        <CommandInput placeholder="Buscar por nome ou email..." />
+                        <CommandInput placeholder="Digite o nome ou telefone..." />
                         <CommandList>
                           <CommandEmpty>
-                            {loadingProfiles ? "Carregando..." : "Nenhum usuário encontrado."}
+                            {loadingProfiles ? "Carregando..." : "Nenhum cadastro encontrado."}
                           </CommandEmpty>
                           <CommandGroup>
                             {profiles.map((profile) => (
                               <CommandItem
-                                key={profile.user_id}
-                                value={`${profile.first_name || ''} ${profile.last_name || ''} ${profile.email || ''}`}
+                                key={profile.id}
+                                value={`${profile.first_name || ''} ${profile.last_name || ''} ${profile.email || ''} ${profile.phone || ''}`}
                                 onSelect={() => {
-                                  field.onChange(profile.user_id);
+                                  field.onChange(profile.id);
                                   setUserSearchOpen(false);
                                 }}
                               >
                                 <Check
                                   className={cn(
                                     "mr-2 h-4 w-4",
-                                    field.value === profile.user_id ? "opacity-100" : "opacity-0"
+                                    field.value === profile.id ? "opacity-100" : "opacity-0"
                                   )}
                                 />
-                                <div className="flex flex-col">
-                                  <span>{getDisplayName(profile)}</span>
+                                <div className="flex flex-col flex-1">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium text-foreground">{getDisplayName(profile)}</span>
+                                    {profile.isManual && (
+                                      <Badge variant="outline" className="text-[10px] h-4 bg-muted/30 text-muted-foreground border-muted-foreground/20">
+                                        Sem conta
+                                      </Badge>
+                                    )}
+                                  </div>
                                   <span className="text-xs text-muted-foreground">
-                                    {profile.email || profile.phone || 'Sem contato'}
+                                    {profile.phone || profile.email || 'Sem contato'}
                                   </span>
                                 </div>
                               </CommandItem>
@@ -401,7 +411,7 @@ const RegisterStudentForm = () => {
             </div>
 
             <p className="text-sm text-muted-foreground">
-              💡 Selecione um usuário que já criou conta na plataforma para adicioná-lo ao ministério.
+              💡 Você pode buscar por membros já cadastrados ou usuários que já possuem conta ativa. Registros marcados como <strong>"Sem conta"</strong> são apenas manuais.
             </p>
 
             <Button type="submit" className="w-full" disabled={loadingMinistries || loadingProfiles}>
