@@ -108,6 +108,24 @@ const Register = () => {
               consent_given: true,
             },
           ]);
+
+          // Vinculação automática de membro por WhatsApp
+          const cleanPhone = data.phone.replace(/\D/g, '');
+          const { data: existingMember } = await supabase
+            .from('members')
+            .select('id')
+            .eq('whatsapp', cleanPhone)
+            .is('user_id', null)
+            .maybeSingle();
+
+          if (existingMember) {
+            await supabase
+              .from('members')
+              .update({ user_id: user.id })
+              .eq('id', existingMember.id);
+            
+            console.log(`Membro ${existingMember.id} vinculado ao novo usuário ${user.id}`);
+          }
         }
 
         toast({

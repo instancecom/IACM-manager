@@ -39,13 +39,16 @@ const RegisterMemberForm = () => {
 
   const onSubmit = async (data: MemberFormData) => {
     try {
+      // Limpa o WhatsApp para salvar apenas dígitos
+      const cleanWhatsapp = data.whatsapp.replace(/\D/g, '');
+
       const { error } = await supabase
         .from('members')
         .insert({
           first_name: data.firstName,
           last_name: data.lastName,
           birth_date: data.birthDate.toISOString().split('T')[0],
-          whatsapp: data.whatsapp,
+          whatsapp: cleanWhatsapp,
           // TODO: Upload photo to storage if provided
         });
 

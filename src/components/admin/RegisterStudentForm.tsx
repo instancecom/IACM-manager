@@ -77,6 +77,9 @@ const RegisterStudentForm = () => {
   // Submit for new member (manual registration)
   const onNewMemberSubmit = async (data: NewMemberFormData) => {
     try {
+      // Limpa o WhatsApp para salvar apenas dígitos
+      const cleanWhatsapp = data.whatsapp.replace(/\D/g, '');
+
       // First, create the member
       const { data: memberData, error: memberError } = await supabase
         .from('members')
@@ -84,7 +87,7 @@ const RegisterStudentForm = () => {
           first_name: data.firstName,
           last_name: data.lastName,
           birth_date: data.birthDate.toISOString().split('T')[0],
-          whatsapp: data.whatsapp,
+          whatsapp: cleanWhatsapp,
         })
         .select()
         .single();
