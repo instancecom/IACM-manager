@@ -62,8 +62,13 @@ export const useUnifiedProfiles = () => {
           member_id: m.id
         }));
 
-      // 4. Combina as listas
-      const combined = [...accountProfiles, ...manualMembers].sort((a, b) => 
+      // 4. Combina as listas e remove duplicados
+      // Se um membro manual tem o mesmo telefone de uma conta, ocultamos o manual
+      const accountPhones = new Set(accountProfiles.map(p => p.phone).filter(Boolean));
+      
+      const filteredManualMembers = manualMembers.filter(m => !accountPhones.has(m.phone));
+
+      const combined = [...accountProfiles, ...filteredManualMembers].sort((a, b) => 
         (a.first_name || '').localeCompare(b.first_name || '')
       );
 

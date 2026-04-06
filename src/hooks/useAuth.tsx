@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string; phone?: string; birth_date?: string }) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, metadata?: { first_name?: string; last_name?: string; phone?: string; birth_date?: string }) => Promise<{ user: User | null; error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signInWithEmailOrPhone: (emailOrPhone: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
@@ -123,16 +123,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string, metadata?: { first_name?: string; last_name?: string; phone?: string; birth_date?: string }) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      phone: metadata?.phone, // Passa o telefone diretamente para o auth.users
+      phone: metadata?.phone,
       options: {
         emailRedirectTo: redirectUrl,
         data: metadata
       }
     });
-    return { error };
+    return { user: data.user, error };
   };
 
   const signIn = async (email: string, password: string) => {

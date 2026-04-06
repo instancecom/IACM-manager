@@ -71,7 +71,7 @@ const Register = () => {
       const cleanPhone = data.phone.replace(/\D/g, '');
       const birthDateStr = format(data.birthDate, 'yyyy-MM-dd');
       
-      const { error } = await signUp(data.email, data.password, {
+      const { user: newUser, error } = await signUp(data.email, data.password, {
         first_name: data.firstName,
         last_name: data.lastName,
         phone: cleanPhone,
@@ -84,68 +84,64 @@ const Register = () => {
           description: error.message,
           variant: "destructive",
         });
-      } else {
+      } else if (newUser) {
         // Registrar consentimentos LGPD
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const now = new Date().toISOString();
-          await supabase.from('profiles').update({
-            privacy_consent_given_at: now,
-            terms_accepted_at: now,
-            data_processing_consent: true,
-          }).eq('user_id', user.id);
+        const now = new Date().toISOString();
+        await supabase.from('profiles').update({
+          privacy_consent_given_at: now,
+          terms_accepted_at: now,
+          data_processing_consent: true,
+        }).eq('user_id', newUser.id);
 
-          // Log de consentimentos para auditoria
-          await supabase.from('consent_logs').insert([
-            {
-              user_id: user.id,
-              consent_type: 'privacy_policy',
-              consent_given: true,
-            },
-            {
-              user_id: user.id,
-              consent_type: 'terms_of_service',
-              consent_given: true,
-            },
-          ]);
+        // Log de consentimentos para auditoria
+        await supabase.from('consent_logs').insert([
+          {
+            user_id: newUser.id,
+            consent_type: 'privacy_policy',
+            consent_given: true,
+          },
+          {
+            user_id: newUser.id,
+            consent_type: 'terms_of_service',
+            consent_given: true,
+          },
+        ]);
 
-          // Vinculação automática de membro por WhatsApp
-          const cleanPhone = data.phone.replace(/\D/g, '');
-          const { data: existingMember } = await supabase
+        // Vinculação automática de membro por WhatsApp
+        const { data: existingMember } = await supabase
+          .from('members')
+          .select('*')
+          .eq('whatsapp', cleanPhone)
+          .is('user_id', null)
+          .maybeSingle();
+
+        if (existingMember) {
+          // 1. Vincula o membro ao novo usuário
+          await supabase
             .from('members')
-            .select('*')
-            .eq('whatsapp', cleanPhone)
-            .is('user_id', null)
-            .maybeSingle();
-
-          if (existingMember) {
-            // 1. Vincula o membro ao novo usuário
-            await supabase
-              .from('members')
-              .update({ user_id: user.id })
-              .eq('id', existingMember.id);
-            
-            // 2. Sincroniza os dados do membro para o perfil do usuário
-            await supabase
-              .from('profiles')
-              .update({
-                first_name: existingMember.first_name,
-                last_name: existingMember.last_name,
-                phone: existingMember.whatsapp,
-                birth_date: existingMember.birth_date,
-                avatar_url: existingMember.photo_url,
-              })
-              .eq('user_id', user.id);
-            
-            console.log(`Membro ${existingMember.id} vinculado e perfil sincronizado para o usuário ${user.id}`);
-          }
+            .update({ user_id: newUser.id })
+            .eq('id', existingMember.id);
+          
+          // 2. Sincroniza os dados do membro para o perfil do usuário
+          await supabase
+            .from('profiles')
+            .update({
+              first_name: existingMember.first_name,
+              last_name: existingMember.last_name,
+              phone: existingMember.whatsapp,
+              birth_date: existingMember.birth_date,
+              avatar_url: existingMember.photo_url,
+            })
+            .eq('user_id', newUser.id);
+          
+          console.log(`Membro ${existingMember.id} vinculado e perfil sincronizado para o usuário ${newUser.id}`);
         }
 
         toast({
-          title: "Conta criada com sucesso!",
-          description: "Verifique seu email para confirmar a conta.",
+          title: "Conta criada!",
+          description: "Sua conta foi criada com sucesso.",
         });
-        navigate('/login');
+        navigate("/login");
       }
     } catch (error) {
       toast({
