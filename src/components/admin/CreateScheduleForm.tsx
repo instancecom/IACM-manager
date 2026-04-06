@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -12,11 +13,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useUnifiedProfiles, UnifiedProfile } from "@/hooks/useUnifiedProfiles";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
+import { Check, ChevronsUpDown } from "lucide-react";
 
 const scheduleSchema = z.object({
   scheduleType: z.string().min(1, "Tipo de escala é obrigatório"),
   date: z.date({ required_error: "Data é obrigatória" }),
-  personName: z.string().min(1, "Nome da pessoa é obrigatório"),
+  personName: z.string().min(1, "Pessoa é obrigatória"),
+  memberId: z.string().optional(),
 });
 
 type ScheduleFormData = z.infer<typeof scheduleSchema>;
@@ -29,38 +35,27 @@ const scheduleTypes = [
 ];
 
 const CreateScheduleForm = () => {
+  const { profiles, loading: loadingProfiles } = useUnifiedProfiles();
+  const [open, setOpen] = useState(false);
+
   const form = useForm<ScheduleFormData>({
     resolver: zodResolver(scheduleSchema),
     defaultValues: {
       scheduleType: "",
       personName: "",
+      memberId: "",
     },
   });
 
   const onSubmit = async (data: ScheduleFormData) => {
     try {
-      // First, find the member by name (you might want to use a select instead)
-      const { data: members, error: memberError } = await supabase
-        .from('members')
-        .select('id')
-        .ilike('first_name', `%${data.personName.split(' ')[0]}%`)
-        .limit(1);
-
-      if (memberError || !members || members.length === 0) {
-        toast({
-          title: "Membro não encontrado",
-          description: "Certifique-se de que o membro está cadastrado no sistema.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const { error } = await supabase
         .from('schedules')
         .insert({
           schedule_type: data.scheduleType as any,
           date: data.date.toISOString().split('T')[0],
-          member_id: members[0].id,
+          member_id: data.memberId || null,
+          external_person_name: !data.memberId ? data.personName : null,
         });
 
       if (error) {
@@ -164,11 +159,77 @@ const CreateScheduleForm = () => {
           control={form.control}
           name="personName"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome da Pessoa</FormLabel>
-              <FormControl>
-                <Input placeholder="Digite o nome da pessoa escalada" {...field} />
-              </FormControl>
+            <FormItem className="flex flex-col">
+              <FormLabel>Pessoa Escalada</FormLabel>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={open}
+                      className={cn(
+                        "w-full justify-between",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value || "Buscar pessoa ou digitar novo nome..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput 
+                      placeholder="Buscar pessoa..." 
+                      onValueChange={(val) => {
+                        // Se não encontrar na lista, permite usar o que foi digitado
+                        field.onChange(val);
+                        form.setValue("memberId", "");
+                      }}
+                    />
+                    <CommandList>
+                      <CommandEmpty>
+                        Nenhum cadastro encontrado. Pressione Enter para usar "<strong>{field.value}</strong>" como convidado externo.
+                      </CommandEmpty>
+                      <CommandGroup heading="Pessoas Cadastradas">
+                        {profiles.map((profile) => (
+                          <CommandItem
+                            key={profile.member_id || profile.id}
+                            value={`${profile.first_name} ${profile.last_name}`}
+                            onSelect={() => {
+                              const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+                              field.onChange(fullName);
+                              form.setValue("memberId", profile.member_id);
+                              setOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                form.getValues("memberId") === profile.member_id ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            <div className="flex flex-col flex-1">
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium">{profile.first_name} {profile.last_name}</span>
+                                {profile.isManual && (
+                                  <Badge variant="outline" className="text-[10px] h-4 bg-muted/30 text-muted-foreground border-muted-foreground/20">
+                                    Sem conta
+                                  </Badge>
+                                )}
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {profile.phone || profile.email || 'Sem contato'}
+                              </span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               <FormMessage />
             </FormItem>
           )}

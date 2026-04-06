@@ -29,35 +29,40 @@ export const useUnifiedProfiles = () => {
       if (profilesError) throw new Error(profilesError.message);
       if (profilesData?.error) throw new Error(profilesData.error);
 
-      const accountProfiles: UnifiedProfile[] = (profilesData?.profiles || []).map((p: any) => ({
-        ...p,
-        isManual: false,
-        member_id: '' // Será preenchido se encontrarmos o membro correspondente, mas para usuários com conta focamos no user_id
-      }));
-
-      // 2. Busca membros manuais (quem NÃO tem conta)
+      // 2. Busca todos os membros para fazer o de-para de IDs
       const { data: membersData, error: membersError } = await supabase
         .from('members')
-        .select('*')
-        .is('user_id', null);
+        .select('*');
 
       if (membersError) throw new Error(membersError.message);
 
-      const manualMembers: UnifiedProfile[] = (membersData || []).map((m: any) => ({
-        id: m.id,
-        user_id: null,
-        first_name: m.first_name,
-        last_name: m.last_name,
-        phone: m.whatsapp,
-        email: null,
-        avatar_url: m.photo_url,
-        isManual: true,
-        member_id: m.id
-      }));
+      const accountProfiles: UnifiedProfile[] = (profilesData?.profiles || []).map((p: any) => {
+        // Tenta encontrar o membro correspondente a este usuário para pegar o member_id
+        const matchedMember = (membersData || []).find(m => m.user_id === p.user_id);
+        
+        return {
+          ...p,
+          isManual: false,
+          member_id: matchedMember?.id || ''
+        };
+      });
 
-      // 3. Combina as listas
-      // Nota: Usuários com conta que JÁ estão na tabela members serão tratados pelo fluxo normal de Alunos.
-      // Aqui o objetivo é mostrar Membros que AINDA não tem conta na mesma lista.
+      // 3. Busca membros manuais (quem NÃO tem conta) para adicionar separadamente
+      const manualMembers: UnifiedProfile[] = (membersData || [])
+        .filter(m => !m.user_id)
+        .map((m: any) => ({
+          id: m.id,
+          user_id: null,
+          first_name: m.first_name,
+          last_name: m.last_name,
+          phone: m.whatsapp,
+          email: null,
+          avatar_url: m.photo_url,
+          isManual: true,
+          member_id: m.id
+        }));
+
+      // 4. Combina as listas
       const combined = [...accountProfiles, ...manualMembers].sort((a, b) => 
         (a.first_name || '').localeCompare(b.first_name || '')
       );
