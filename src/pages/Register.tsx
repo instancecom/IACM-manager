@@ -113,18 +113,31 @@ const Register = () => {
           const cleanPhone = data.phone.replace(/\D/g, '');
           const { data: existingMember } = await supabase
             .from('members')
-            .select('id')
+            .select('*')
             .eq('whatsapp', cleanPhone)
             .is('user_id', null)
             .maybeSingle();
 
           if (existingMember) {
+            // 1. Vincula o membro ao novo usuário
             await supabase
               .from('members')
               .update({ user_id: user.id })
               .eq('id', existingMember.id);
             
-            console.log(`Membro ${existingMember.id} vinculado ao novo usuário ${user.id}`);
+            // 2. Sincroniza os dados do membro para o perfil do usuário
+            await supabase
+              .from('profiles')
+              .update({
+                first_name: existingMember.first_name,
+                last_name: existingMember.last_name,
+                phone: existingMember.whatsapp,
+                birth_date: existingMember.birth_date,
+                avatar_url: existingMember.photo_url,
+              })
+              .eq('user_id', user.id);
+            
+            console.log(`Membro ${existingMember.id} vinculado e perfil sincronizado para o usuário ${user.id}`);
           }
         }
 
