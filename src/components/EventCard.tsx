@@ -21,7 +21,7 @@ interface EventCardProps {
 }
 
 const EventCard = ({ title, date, location, attendees, image, onClick, startDate, startTime, endDate, endTime }: EventCardProps) => {
-  const eventStatus = startDate && startTime && endDate && endTime 
+  const eventStatus = startDate 
     ? getEventStatus(startDate, startTime, endDate, endTime)
     : null;
 

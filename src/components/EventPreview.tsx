@@ -40,7 +40,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
 
   if (!event) return null;
 
-  const eventStatus = event.startDate && event.startTime && event.endDate && event.endTime
+  const eventStatus = event.startDate
     ? getEventStatus(event.startDate, event.startTime, event.endDate, event.endTime)
     : null;
   
@@ -103,7 +103,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                 <div className="flex-1">
                   <div className="text-sm sm:text-base font-medium text-netflix-white mb-1">Data e Horário</div>
                   <div className="text-sm sm:text-base">
-                    {event.startDate && event.startTime && event.endDate && event.endTime 
+                    {event.startDate
                       ? formatEventDateTimeRange(event.startDate, event.startTime, event.endDate, event.endTime)
                       : event.date
                     }
@@ -238,7 +238,7 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                       <div className="flex-1">
                         <div className="text-sm font-medium text-netflix-white mb-1">Data e Horário</div>
                         <div className="text-sm">
-                          {event.startDate && event.startTime && event.endDate && event.endTime 
+                          {event.startDate
                             ? formatEventDateTimeRange(event.startDate, event.startTime, event.endDate, event.endTime)
                             : event.date
                           }

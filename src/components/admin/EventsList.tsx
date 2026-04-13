@@ -48,7 +48,7 @@ const EventsList = () => {
     }
   };
 
-  const getStatusBadge = (startDate: string, startTime: string, endDate: string, endTime: string) => {
+  const getStatusBadge = (startDate: string, startTime?: string, endDate?: string, endTime?: string) => {
     const eventStatus = getEventStatus(startDate, startTime, endDate, endTime);
     
     const variantMap = {
@@ -114,10 +114,16 @@ const EventsList = () => {
                             <strong>Endereço:</strong> {selectedEvent.address}
                           </div>
                           <div>
-                            <strong>Data/Hora Início:</strong> {format(new Date(`${selectedEvent.start_date}T${selectedEvent.start_time}`), "dd/MM/yyyy 'às' HH:mm")}
+                            <strong>Data/Hora Início:</strong> {selectedEvent.start_time 
+                              ? format(new Date(`${selectedEvent.start_date}T${selectedEvent.start_time}`), "dd/MM/yyyy 'às' HH:mm")
+                              : format(new Date(`${selectedEvent.start_date}T00:00:00`), "dd/MM/yyyy")
+                            }
                           </div>
                           <div>
-                            <strong>Data/Hora Fim:</strong> {format(new Date(`${selectedEvent.end_date}T${selectedEvent.end_time}`), "dd/MM/yyyy 'às' HH:mm")}
+                            <strong>Data/Hora Fim:</strong> {selectedEvent.end_time
+                              ? format(new Date(`${selectedEvent.end_date || selectedEvent.start_date}T${selectedEvent.end_time}`), "dd/MM/yyyy 'às' HH:mm")
+                              : format(new Date(`${selectedEvent.end_date || selectedEvent.start_date}T23:59:59`), "dd/MM/yyyy")
+                            }
                           </div>
                           <div>
                             <strong>Descrição:</strong> {selectedEvent.description}
