@@ -202,6 +202,7 @@ export type Database = {
           start_time: string
           title: string
           updated_at: string | null
+          categories: string[] | null
         }
         Insert: {
           address: string
@@ -217,6 +218,7 @@ export type Database = {
           start_time: string
           title: string
           updated_at?: string | null
+          categories?: string[] | null
         }
         Update: {
           address?: string
@@ -232,6 +234,7 @@ export type Database = {
           start_time?: string
           title?: string
           updated_at?: string | null
+          categories?: string[] | null
         }
         Relationships: []
       }

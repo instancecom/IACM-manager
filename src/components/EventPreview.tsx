@@ -28,7 +28,7 @@ interface EventPreviewProps {
     endDate?: string;
     endTime?: string;
     allowGuests?: boolean;
-    category?: string;
+    categories?: string[];
     event?: any;
   } | null;
 }
@@ -95,10 +95,14 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
               <h2 className="text-xl sm:text-3xl font-bold text-netflix-white mb-2">
                 {event.title}
               </h2>
-              {event.category && (
-                <Badge variant="default" className="bg-netflix-red text-netflix-white border-none mt-1">
-                  {event.category}
-                </Badge>
+              {event.categories && event.categories.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {event.categories.map((cat) => (
+                    <Badge key={cat} variant="default" className="bg-netflix-red text-netflix-white border-none">
+                      {cat}
+                    </Badge>
+                  ))}
+                </div>
               )}
             </div>
 
@@ -232,10 +236,14 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                   <DialogTitle className="text-2xl font-bold text-netflix-white">
                     {event.title}
                   </DialogTitle>
-                  {event.category && (
-                    <Badge variant="default" className="bg-netflix-red text-netflix-white border-none w-fit">
-                      {event.category}
-                    </Badge>
+                  {event.categories && event.categories.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {event.categories.map((cat) => (
+                        <Badge key={cat} variant="default" className="bg-netflix-red text-netflix-white border-none">
+                          {cat}
+                        </Badge>
+                      ))}
+                    </div>
                   )}
                 </DialogHeader>
               </div>

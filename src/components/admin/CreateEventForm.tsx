@@ -24,7 +24,7 @@ const eventSchema = z.object({
   endDate: z.date().optional(),
   endTime: z.string().optional(),
   description: z.string().trim().min(1, "Descrição é obrigatória").max(2000, "Descrição muito longa (máximo 2000 caracteres)"),
-  category: z.string().min(1, "Selecione uma categoria"),
+  categories: z.array(z.string()).min(1, "Selecione pelo menos um ministério"),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
@@ -45,7 +45,7 @@ const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
       startTime: "",
       endTime: "",
       description: "",
-      category: "Livre",
+      categories: ["Livre"],
     },
   });
 
@@ -100,7 +100,7 @@ const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
           created_by: user?.id,
           banner_url: bannerUrl,
           allow_guests: allowGuests,
-          category: data.category,
+          categories: data.categories,
         } as any);
 
       if (error) {
@@ -149,23 +149,30 @@ const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
 
           <FormField
             control={form.control}
-            name="category"
+            name="categories"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="space-y-3">
                 <FormLabel>Público-alvo / Ministério</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o público" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Juniores">Juniores</SelectItem>
-                    <SelectItem value="Adolescentes">Adolescentes</SelectItem>
-                    <SelectItem value="Jovens">Jovens</SelectItem>
-                    <SelectItem value="Livre">Livre</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {["Juniores", "Adolescentes", "Jovens", "Livre"].map((cat) => (
+                    <Button
+                      key={cat}
+                      type="button"
+                      variant={field.value?.includes(cat) ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-full"
+                      onClick={() => {
+                        const current = field.value || [];
+                        const updated = current.includes(cat)
+                          ? current.filter((c) => c !== cat)
+                          : [...current, cat];
+                        field.onChange(updated);
+                      }}
+                    >
+                      {cat}
+                    </Button>
+                  ))}
+                </div>
                 <FormMessage />
               </FormItem>
             )}

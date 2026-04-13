@@ -41,7 +41,7 @@ const EventsList = () => {
       end_time: (editingEvent.end_time && editingEvent.end_time.trim() !== "") ? editingEvent.end_time : null,
       description: editingEvent.description,
       allow_guests: (editingEvent as any).allow_guests,
-      category: (editingEvent as any).category,
+      categories: (editingEvent as any).categories,
     } as any);
 
     if (success) {
@@ -92,7 +92,17 @@ const EventsList = () => {
               </TableCell>
               <TableCell>{event.address}</TableCell>
               <TableCell>
-                <Badge variant="outline">{event.category || "Livre"}</Badge>
+                <div className="flex flex-wrap gap-1">
+                  {(event.categories && event.categories.length > 0) ? (
+                    event.categories.map((cat) => (
+                      <Badge key={cat} variant="outline" className="text-[10px] px-2 py-0">
+                        {cat}
+                      </Badge>
+                    ))
+                  ) : (
+                    <Badge variant="outline">Livre</Badge>
+                  )}
+                </div>
               </TableCell>
               <TableCell>{getStatusBadge(event.start_date, event.start_time, event.end_date, event.end_time)}</TableCell>
               <TableCell>
@@ -263,21 +273,27 @@ const EventsList = () => {
               </div>
 
               <div>
-                <Label htmlFor="edit-category">Público-alvo / Ministério</Label>
-                <Select 
-                  value={editingEvent.category || "Livre"} 
-                  onValueChange={(value) => setEditingEvent({...editingEvent, category: value})}
-                >
-                  <SelectTrigger id="edit-category">
-                    <SelectValue placeholder="Selecione o público" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Juniores">Juniores</SelectItem>
-                    <SelectItem value="Adolescentes">Adolescentes</SelectItem>
-                    <SelectItem value="Jovens">Jovens</SelectItem>
-                    <SelectItem value="Livre">Livre</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Público-alvo / Ministério</Label>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {["Juniores", "Adolescentes", "Jovens", "Livre"].map((cat) => (
+                    <Button
+                      key={cat}
+                      type="button"
+                      variant={editingEvent.categories?.includes(cat) ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-full h-8"
+                      onClick={() => {
+                        const current = editingEvent.categories || [];
+                        const updated = current.includes(cat)
+                          ? current.filter((c) => c !== cat)
+                          : [...current, cat];
+                        setEditingEvent({...editingEvent, categories: updated});
+                      }}
+                    >
+                      {cat}
+                    </Button>
+                  ))}
+                </div>
               </div>
 
               <div className="flex items-center justify-between p-3 border rounded-lg">
