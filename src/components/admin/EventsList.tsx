@@ -35,9 +35,9 @@ const EventsList = () => {
       title: editingEvent.title,
       address: editingEvent.address,
       start_date: editingEvent.start_date,
-      start_time: editingEvent.start_time,
+      start_time: editingEvent.start_time || null,
       end_date: editingEvent.end_date,
-      end_time: editingEvent.end_time,
+      end_time: editingEvent.end_time || null,
       description: editingEvent.description,
       allow_guests: (editingEvent as any).allow_guests,
     } as any);
@@ -220,7 +220,7 @@ const EventsList = () => {
                 <Input
                   id="edit-start-time"
                   type="time"
-                  value={editingEvent.start_time}
+                  value={editingEvent.start_time || ""}
                   onChange={(e) => setEditingEvent({...editingEvent, start_time: e.target.value})}
                 />
               </div>
@@ -240,7 +240,7 @@ const EventsList = () => {
                 <Input
                   id="edit-end-time"
                   type="time"
-                  value={editingEvent.end_time}
+                  value={editingEvent.end_time || ""}
                   onChange={(e) => setEditingEvent({...editingEvent, end_time: e.target.value})}
                 />
               </div>
