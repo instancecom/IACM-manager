@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useEvents, type Event } from "@/hooks/useEvents";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const EventsList = () => {
   const { events, loading, fetchEvents, deleteEvent, updateEvent } = useEvents();
@@ -40,6 +41,7 @@ const EventsList = () => {
       end_time: (editingEvent.end_time && editingEvent.end_time.trim() !== "") ? editingEvent.end_time : null,
       description: editingEvent.description,
       allow_guests: (editingEvent as any).allow_guests,
+      category: (editingEvent as any).category,
     } as any);
 
     if (success) {
@@ -76,6 +78,7 @@ const EventsList = () => {
             <TableHead>Título</TableHead>
             <TableHead>Data/Hora</TableHead>
             <TableHead>Local</TableHead>
+            <TableHead>Público</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Ações</TableHead>
           </TableRow>
@@ -88,6 +91,9 @@ const EventsList = () => {
                 {formatEventDateTimeRange(event.start_date, event.start_time, event.end_date, event.end_time)}
               </TableCell>
               <TableCell>{event.address}</TableCell>
+              <TableCell>
+                <Badge variant="outline">{event.category || "Livre"}</Badge>
+              </TableCell>
               <TableCell>{getStatusBadge(event.start_date, event.start_time, event.end_date, event.end_time)}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
@@ -254,6 +260,24 @@ const EventsList = () => {
                   onChange={(e) => setEditingEvent({...editingEvent, description: e.target.value})}
                   rows={3}
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-category">Público-alvo / Ministério</Label>
+                <Select 
+                  value={editingEvent.category || "Livre"} 
+                  onValueChange={(value) => setEditingEvent({...editingEvent, category: value})}
+                >
+                  <SelectTrigger id="edit-category">
+                    <SelectValue placeholder="Selecione o público" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Juniores">Juniores</SelectItem>
+                    <SelectItem value="Adolescentes">Adolescentes</SelectItem>
+                    <SelectItem value="Jovens">Jovens</SelectItem>
+                    <SelectItem value="Livre">Livre</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex items-center justify-between p-3 border rounded-lg">

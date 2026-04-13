@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const eventSchema = z.object({
   title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título muito longo (máximo 200 caracteres)"),
@@ -23,6 +24,7 @@ const eventSchema = z.object({
   endDate: z.date().optional(),
   endTime: z.string().optional(),
   description: z.string().trim().min(1, "Descrição é obrigatória").max(2000, "Descrição muito longa (máximo 2000 caracteres)"),
+  category: z.string().min(1, "Selecione uma categoria"),
 });
 
 type EventFormData = z.infer<typeof eventSchema>;
@@ -43,6 +45,7 @@ const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
       startTime: "",
       endTime: "",
       description: "",
+      category: "Livre",
     },
   });
 
@@ -97,6 +100,7 @@ const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
           created_by: user?.id,
           banner_url: bannerUrl,
           allow_guests: allowGuests,
+          category: data.category,
         } as any);
 
       if (error) {
@@ -138,6 +142,30 @@ const CreateEventForm = ({ onEventCreated }: CreateEventFormProps) => {
                 <FormControl>
                   <Input placeholder="Digite o título do evento" {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Público-alvo / Ministério</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o público" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Juniores">Juniores</SelectItem>
+                    <SelectItem value="Adolescentes">Adolescentes</SelectItem>
+                    <SelectItem value="Jovens">Jovens</SelectItem>
+                    <SelectItem value="Livre">Livre</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

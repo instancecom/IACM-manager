@@ -28,6 +28,7 @@ interface EventPreviewProps {
     endDate?: string;
     endTime?: string;
     allowGuests?: boolean;
+    category?: string;
     event?: any;
   } | null;
 }
@@ -94,6 +95,11 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
               <h2 className="text-xl sm:text-3xl font-bold text-netflix-white mb-2">
                 {event.title}
               </h2>
+              {event.category && (
+                <Badge variant="default" className="bg-netflix-red text-netflix-white border-none mt-1">
+                  {event.category}
+                </Badge>
+              )}
             </div>
 
             {/* Event Details */}
@@ -226,6 +232,11 @@ const EventPreview = ({ isOpen, onClose, event }: EventPreviewProps) => {
                   <DialogTitle className="text-2xl font-bold text-netflix-white">
                     {event.title}
                   </DialogTitle>
+                  {event.category && (
+                    <Badge variant="default" className="bg-netflix-red text-netflix-white border-none w-fit">
+                      {event.category}
+                    </Badge>
+                  )}
                 </DialogHeader>
               </div>
 

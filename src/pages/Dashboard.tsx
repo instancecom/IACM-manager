@@ -65,6 +65,7 @@ const Dashboard = () => {
       endDate: event.end_date,
       endTime: event.end_time,
       allowGuests: (event as any).allow_guests !== false,
+      category: event.category,
       event // Original event data for modal
     };
   });
@@ -155,6 +156,7 @@ const Dashboard = () => {
                 startTime={event.startTime}
                 endDate={event.endDate}
                 endTime={event.endTime}
+                category={event.category}
                 onClick={() => handleEventClick(event)}
               />
             ))}
@@ -179,6 +181,7 @@ const Dashboard = () => {
                 startTime={event.startTime}
                 endDate={event.endDate}
                 endTime={event.endTime}
+                category={event.category}
                 onClick={() => handleEventClick(event)}
               />
             ))}
@@ -203,6 +206,7 @@ const Dashboard = () => {
                 startTime={event.startTime}
                 endDate={event.endDate}
                 endTime={event.endTime}
+                category={event.category}
                 onClick={() => handleEventClick(event)}
               />
             ))}

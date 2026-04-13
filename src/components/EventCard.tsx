@@ -18,9 +18,10 @@ interface EventCardProps {
   startTime?: string;
   endDate?: string;
   endTime?: string;
+  category?: string;
 }
 
-const EventCard = ({ title, date, location, attendees, image, onClick, startDate, startTime, endDate, endTime }: EventCardProps) => {
+const EventCard = ({ title, date, location, attendees, image, onClick, startDate, startTime, endDate, endTime, category }: EventCardProps) => {
   const eventStatus = startDate 
     ? getEventStatus(startDate, startTime, endDate, endTime)
     : null;
@@ -41,6 +42,15 @@ const EventCard = ({ title, date, location, attendees, image, onClick, startDate
           <div className="absolute top-3 right-3 z-20">
             <Badge variant="secondary" className="bg-netflix-gray-dark/90 text-netflix-white border-none">
               Finalizado
+            </Badge>
+          </div>
+        )}
+        
+        {/* Category Badge - Top Left Corner */}
+        {category && (
+          <div className="absolute top-3 left-3 z-20">
+            <Badge variant="default" className="bg-netflix-red text-netflix-white border-none text-[10px] sm:text-xs">
+              {category}
             </Badge>
           </div>
         )}

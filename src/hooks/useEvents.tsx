@@ -12,6 +12,7 @@ export interface Event {
   end_date: string;
   end_time: string | null;
   banner_url?: string;
+  category?: string;
   created_at: string;
   updated_at: string;
   created_by?: string;
