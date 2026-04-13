@@ -8,9 +8,9 @@ export interface Event {
   description: string;
   address: string;
   start_date: string;
-  start_time: string;
+  start_time: string | null;
   end_date: string;
-  end_time: string;
+  end_time: string | null;
   banner_url?: string;
   created_at: string;
   updated_at: string;
@@ -106,9 +106,14 @@ export const useEvents = () => {
 
   const updateEvent = async (id: string, updates: Partial<Event>) => {
     try {
+      // Garantir que strings vazias sejam convertidas para null para os campos de hora
+      const cleanedUpdates = { ...updates };
+      if (cleanedUpdates.start_time === "") cleanedUpdates.start_time = null;
+      if (cleanedUpdates.end_time === "") cleanedUpdates.end_time = null;
+
       const { error } = await supabase
         .from('events')
-        .update(updates)
+        .update(cleanedUpdates as any)
         .eq('id', id);
 
       if (error) {
