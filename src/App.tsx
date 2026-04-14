@@ -13,6 +13,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import Events from "./pages/Events";
+import Bible from "./pages/Bible";
 import Profile from "./pages/Profile";
 import Visualizations from "./pages/Visualizations";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -40,6 +41,7 @@ const AppLayout = () => {
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/events" element={<Events />} />
+        <Route path="/bible" element={<Bible />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/visualizations" element={<Visualizations />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

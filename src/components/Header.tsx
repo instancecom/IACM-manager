@@ -1,4 +1,4 @@
-import { Search, Bell, User, Menu, X, LogOut, LogIn, Settings, BarChart3 } from "lucide-react";
+import { Search, Bell, User, Menu, X, LogOut, LogIn, Settings, BarChart3, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -56,6 +56,11 @@ const Header = () => {
           <Link to="/events">
             <Button variant="ghost" className="font-medium">
               Eventos
+            </Button>
+          </Link>
+          <Link to="/bible">
+            <Button variant="ghost" className="font-medium">
+              Bíblia
             </Button>
           </Link>
           {user && (
@@ -142,6 +147,14 @@ const Header = () => {
                 >
                   <Bell className="w-5 h-5" />
                   Eventos
+                </Link>
+                <Link 
+                  to="/bible" 
+                  className="flex items-center gap-2 text-lg font-medium hover:text-primary transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <BookOpen className="w-5 h-5" />
+                  Bíblia
                 </Link>
                 {user && (
                   <>
