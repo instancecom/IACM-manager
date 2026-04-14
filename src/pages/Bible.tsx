@@ -511,48 +511,13 @@ const Bible = () => {
                     </div>
                     ))}
                     
-                    {/* Navigation Buttons at the bottom */}
-                    <div className="pt-20 flex justify-between items-center border-t border-netflix-white/5">
-                        <Button 
-                            variant="ghost" 
-                            className="text-netflix-gray-light hover:text-white"
-                            onClick={() => navigateChapter('prev')}
-                        >
-                            <ChevronLeft className="w-4 h-4 mr-2" />
-                            Anterior
-                        </Button>
-                        <div className="text-netflix-gray-light text-xs font-bold uppercase tracking-widest opacity-30">
-                            {selectedBook.name} {selectedChapter}
-                        </div>
-                        <Button 
-                            variant="ghost" 
-                            className="text-netflix-gray-light hover:text-white"
-                            onClick={() => navigateChapter('next')}
-                        >
-                            Próximo
-                            <ChevronRight className="w-4 h-4 ml-2" />
-                        </Button>
-                    </div>
+
                 </div>
             )}
           </div>
         </div>
 
-        {/* Floating current position indicator for mobile - redesigned for premium UX */}
-        <Sheet open={isSelectionOpen} onOpenChange={setIsSelectionOpen}>
-          <SheetTrigger asChild>
-            <button className="md:hidden absolute bottom-10 left-1/2 -translate-x-1/2 px-8 py-3.5 rounded-2xl bg-netflix-black/90 border border-white/10 backdrop-blur-xl text-white shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-3 active:scale-95 transition-all z-20 group">
-                <div className="flex flex-col items-start">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-netflix-red group-hover:animate-pulse">Navegando em</span>
-                    <span className="text-sm font-black italic uppercase tracking-tighter">
-                        {selectedBook.name} <span className="text-netflix-red opacity-80">{selectedChapter}</span>
-                    </span>
-                </div>
-                <div className="h-8 w-[1px] bg-white/10 mx-1" />
-                <Settings2 className="w-5 h-5 text-netflix-red" />
-            </button>
-          </SheetTrigger>
-        </Sheet>
+
       </main>
     </div>
   );
