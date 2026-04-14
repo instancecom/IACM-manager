@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { BookOpen, ChevronLeft, ChevronRight, Search, Loader2, Quote, Share2, Copy } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, Search, Loader2, Quote, Share2, Copy, Settings2, ChevronDown, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
@@ -209,13 +209,16 @@ const Bible = () => {
                   <button
                     key={book.id}
                     onClick={() => setSelectedBook(book)}
-                    className={`text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                    className={`text-left px-3 py-2 rounded-lg text-sm transition-all duration-300 flex items-center justify-between group/book ${
                       selectedBook.id === book.id 
-                        ? 'bg-netflix-red text-white font-bold shadow-lg shadow-netflix-red/20' 
+                        ? 'bg-netflix-red text-white font-bold shadow-lg shadow-netflix-red/30' 
                         : 'text-netflix-gray-light hover:bg-white/5 hover:text-white'
                     }`}
                   >
-                    {book.name}
+                    <span>{book.name}</span>
+                    {selectedBook.id === book.id && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                    )}
                   </button>
                 ))}
               </div>
@@ -228,13 +231,16 @@ const Bible = () => {
                   <button
                     key={book.id}
                     onClick={() => setSelectedBook(book)}
-                    className={`text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                    className={`text-left px-3 py-2 rounded-lg text-sm transition-all duration-300 flex items-center justify-between group/book ${
                       selectedBook.id === book.id 
-                        ? 'bg-netflix-red text-white font-bold shadow-lg shadow-netflix-red/20' 
+                        ? 'bg-netflix-red text-white font-bold shadow-lg shadow-netflix-red/30' 
                         : 'text-netflix-gray-light hover:bg-white/5 hover:text-white'
                     }`}
                   >
-                    {book.name}
+                    <span>{book.name}</span>
+                    {selectedBook.id === book.id && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                    )}
                   </button>
                 ))}
               </div>
@@ -251,8 +257,8 @@ const Bible = () => {
           <div className="flex items-center gap-2">
             <Sheet>
               <SheetTrigger asChild>
-                <button className="md:hidden p-2 rounded-lg hover:bg-white/5 text-netflix-white">
-                    <BookOpen className="w-5 h-5" />
+                <button className="md:hidden p-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-netflix-white shadow-lg active:scale-95 transition-all">
+                    <BookOpen className="w-5 h-5 text-netflix-red" />
                 </button>
               </SheetTrigger>
               <SheetContent side="left" className="w-[300px] bg-netflix-black border-r border-netflix-white/10 p-0">
@@ -319,20 +325,24 @@ const Bible = () => {
               </SheetContent>
             </Sheet>
 
-          <div className="flex flex-col items-end">
-            <h2 className="text-lg md:text-2xl font-black text-white italic uppercase tracking-tighter text-right">
-              {selectedBook.name} <span className="text-netflix-red">{selectedChapter}{selectedVerse ? `:${selectedVerse}` : ''}</span>
-            </h2>
-          </div>
-            
             <Sheet open={isSelectionOpen} onOpenChange={(open) => {
               setIsSelectionOpen(open);
               if (!open) setSelectionStep('chapter');
             }}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 text-netflix-gray-light hover:text-white hover:bg-white/5 text-[10px] font-bold uppercase tracking-widest ml-2">
-                    {selectionStep === 'chapter' ? 'Alterar Ref.' : 'Alterar Vers.'}
-                </Button>
+                <button className="flex flex-col items-end group transition-all hover:scale-[1.02] active:scale-95">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 group-hover:bg-white/10 group-hover:border-netflix-red/50 transition-all shadow-lg">
+                    <h2 className="text-lg md:text-2xl font-black text-white italic uppercase tracking-tighter text-right">
+                      {selectedBook.name} <span className="text-netflix-red">{selectedChapter}{selectedVerse ? `:${selectedVerse}` : ''}</span>
+                    </h2>
+                    <div className="flex flex-col items-center justify-center bg-netflix-red/20 rounded-full p-1 group-hover:bg-netflix-red transition-colors shadow-glow">
+                      <ChevronDown className="w-3 h-3 md:w-4 md:h-4 text-white" />
+                    </div>
+                  </div>
+                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-netflix-gray-light mt-1 mr-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                    Alterar Referência
+                  </span>
+                </button>
               </SheetTrigger>
               <SheetContent side="top" className="h-auto max-h-[85vh] bg-netflix-black border-b border-netflix-white/10 p-6">
                 <SheetHeader className="mb-4">
@@ -345,9 +355,10 @@ const Bible = () => {
                   </SheetTitle>
                   {selectionStep === 'verse' && (
                     <Button 
-                      variant="link" 
+                      variant="outline" 
+                      size="sm"
                       onClick={() => setSelectionStep('chapter')}
-                      className="text-netflix-red p-0 h-auto font-black uppercase text-[10px] tracking-widest"
+                      className="bg-netflix-red/10 border-netflix-red/30 text-netflix-red hover:bg-netflix-red hover:text-white font-black uppercase text-[10px] tracking-widest h-8"
                     >
                       ← Voltar para capítulos
                     </Button>
@@ -485,10 +496,15 @@ const Bible = () => {
           </div>
         </div>
 
-        {/* Floating current position indicator for mobile */}
-        <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-netflix-red/90 backdrop-blur-sm text-white text-[10px] font-black uppercase tracking-widest shadow-2xl z-20 pointer-events-none">
-            {selectedBook.name} {selectedChapter}
-        </div>
+        {/* Floating current position indicator for mobile - now interactive */}
+        <Sheet open={isSelectionOpen} onOpenChange={setIsSelectionOpen}>
+          <SheetTrigger asChild>
+            <button className="md:hidden absolute bottom-8 left-1/2 -translate-x-1/2 px-6 py-2.5 rounded-full bg-netflix-red text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-glow flex items-center gap-2 active:scale-95 transition-all z-20">
+                <span>{selectedBook.name} {selectedChapter}</span>
+                <Edit3 className="w-3 h-3 text-white/80" />
+            </button>
+          </SheetTrigger>
+        </Sheet>
       </main>
     </div>
   );
