@@ -60,7 +60,7 @@ const Bible = () => {
   const [loading, setLoading] = useState(false);
   const [chaptersLoading, setChaptersLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectionStep, setSelectionStep] = useState<'chapter' | 'verse'>('chapter');
+  const [selectionStep, setSelectionStep] = useState<'book' | 'chapter' | 'verse'>('book');
   const [isSelectionOpen, setIsSelectionOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const verseRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
@@ -123,6 +123,12 @@ const Bible = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBookSelect = (book: Book) => {
+    setSelectedBook(book);
+    setSelectedVerse(null);
+    setSelectionStep('chapter');
   };
 
   const handleChapterSelect = (ch: number) => {
@@ -254,149 +260,185 @@ const Bible = () => {
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Sticky Sub-Header */}
         <div className="flex-shrink-0 bg-netflix-black/80 backdrop-blur-md border-b border-netflix-white/5 p-4 flex items-center justify-between z-10">
-          <div className="flex items-center gap-2">
-            <Sheet>
-              <SheetTrigger asChild>
-                <button className="md:hidden p-2.5 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-netflix-white shadow-lg active:scale-95 transition-all">
-                    <BookOpen className="w-5 h-5 text-netflix-red" />
-                </button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] bg-netflix-black border-r border-netflix-white/10 p-0">
-                <SheetHeader className="p-6 border-b border-netflix-white/5 text-left">
-                    <SheetTitle className="text-2xl font-black text-white italic uppercase">Bíblia <span className="text-netflix-red">Online</span></SheetTitle>
-                </SheetHeader>
-                <div className="p-4">
-                  <div className="relative mb-4">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-netflix-gray-light" />
-                    <input
-                      className="w-full bg-white/5 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm text-netflix-white"
-                      placeholder="Buscar livro..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                  <ScrollArea className="h-[calc(100vh-180px)]">
-                    <div className="space-y-6 pb-20">
-                        <div>
-                        <h3 className="text-[10px] font-black uppercase text-netflix-red tracking-widest mb-3 opacity-70">Antigo Testamento</h3>
-                        <div className="grid grid-cols-1 gap-1">
-                            {filteredBooksOld.map(book => (
-                            <button
-                                key={book.id}
-                                onClick={() => {
-                                    setSelectedBook(book);
-                                    setSelectedVerse(null);
-                                }}
-                                className={`text-left px-3 py-2 rounded-lg text-sm ${
-                                selectedBook.id === book.id 
-                                    ? 'bg-netflix-red text-white' 
-                                    : 'text-netflix-gray-light'
-                                }`}
-                            >
-                                {book.name}
-                            </button>
-                            ))}
-                        </div>
-                        </div>
-                        <div>
-                        <h3 className="text-[10px] font-black uppercase text-netflix-red tracking-widest mb-3 opacity-70">Novo Testamento</h3>
-                        <div className="grid grid-cols-1 gap-1">
-                            {filteredBooksNew.map(book => (
-                            <button
-                                key={book.id}
-                                onClick={() => {
-                                    setSelectedBook(book);
-                                    setSelectedVerse(null);
-                                }}
-                                className={`text-left px-3 py-2 rounded-lg text-sm ${
-                                selectedBook.id === book.id 
-                                    ? 'bg-netflix-red text-white' 
-                                    : 'text-netflix-gray-light'
-                                }`}
-                            >
-                                {book.name}
-                            </button>
-                            ))}
-                        </div>
-                        </div>
-                    </div>
-                  </ScrollArea>
-                </div>
-              </SheetContent>
-            </Sheet>
-
+          <div className="flex items-center gap-3">
             <Sheet open={isSelectionOpen} onOpenChange={(open) => {
               setIsSelectionOpen(open);
-              if (!open) setSelectionStep('chapter');
+              if (!open) setSelectionStep('book');
             }}>
               <SheetTrigger asChild>
-                <button className="flex flex-col items-end group transition-all hover:scale-[1.02] active:scale-95">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 group-hover:bg-white/10 group-hover:border-netflix-red/50 transition-all shadow-lg">
-                    <h2 className="text-lg md:text-2xl font-black text-white italic uppercase tracking-tighter text-right">
-                      {selectedBook.name} <span className="text-netflix-red">{selectedChapter}{selectedVerse ? `:${selectedVerse}` : ''}</span>
-                    </h2>
-                    <div className="flex flex-col items-center justify-center bg-netflix-red/20 rounded-full p-1 group-hover:bg-netflix-red transition-colors shadow-glow">
-                      <ChevronDown className="w-3 h-3 md:w-4 md:h-4 text-white" />
+                <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-netflix-red/50 transition-all shadow-xl group">
+                    <div className="p-1.5 rounded-lg bg-netflix-red/10 group-hover:bg-netflix-red transition-colors">
+                        <BookOpen className="w-4 h-4 text-netflix-red group-hover:text-white" />
                     </div>
-                  </div>
-                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-netflix-gray-light mt-1 mr-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                    Alterar Referência
-                  </span>
+                    <div className="flex items-center gap-1.5 h-6">
+                        <span className="text-sm md:text-base font-black text-white uppercase italic tracking-tighter">
+                            {selectedBook.name}
+                        </span>
+                        <span className="text-white/20 select-none">/</span>
+                        <span className="text-sm md:text-base font-black text-netflix-red italic tabular-nums">
+                            {selectedChapter}
+                        </span>
+                        {selectedVerse && (
+                            <>
+                                <span className="text-netflix-red/30 select-none">:</span>
+                                <span className="text-sm md:text-base font-black text-netflix-red italic tabular-nums">
+                                    {selectedVerse}
+                                </span>
+                            </>
+                        )}
+                    </div>
+                    <ChevronDown className="w-4 h-4 text-netflix-gray-light group-hover:text-white transition-colors ml-1" />
                 </button>
               </SheetTrigger>
-              <SheetContent side="top" className="h-auto max-h-[85vh] bg-netflix-black border-b border-netflix-white/10 p-6">
-                <SheetHeader className="mb-4">
-                  <SheetTitle className="text-xl font-black text-white uppercase tracking-tighter">
-                    {selectionStep === 'chapter' ? (
-                      <>Capítulos de <span className="text-netflix-red">{selectedBook.name}</span></>
-                    ) : (
-                      <>Versículos de <span className="text-netflix-red">{selectedBook.name} {selectedChapter}</span></>
-                    )}
-                  </SheetTitle>
-                  {selectionStep === 'verse' && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setSelectionStep('chapter')}
-                      className="bg-netflix-red/10 border-netflix-red/30 text-netflix-red hover:bg-netflix-red hover:text-white font-black uppercase text-[10px] tracking-widest h-8"
-                    >
-                      ← Voltar para capítulos
-                    </Button>
-                  )}
-                </SheetHeader>
-                <ScrollArea className="h-full">
-                  <div className="grid grid-cols-5 sm:grid-cols-10 md:grid-cols-15 gap-2 pb-12">
-                    {selectionStep === 'chapter' ? (
-                      chaptersCount.map(ch => (
-                        <button
-                          key={ch}
-                          onClick={() => handleChapterSelect(ch)}
-                          className={`h-10 w-10 rounded-lg flex items-center justify-center font-bold text-sm transition-all ${
-                            selectedChapter === ch 
-                              ? 'bg-netflix-red text-white' 
-                              : 'bg-white/5 text-netflix-gray-light hover:bg-white/10 hover:text-white'
-                          }`}
+              <SheetContent side="top" className="h-[90vh] bg-netflix-black border-b border-netflix-white/10 p-0 flex flex-col">
+                <SheetHeader className="p-6 border-b border-netflix-white/5 bg-netflix-black/50 backdrop-blur-xl">
+                  <div className="flex items-center justify-between gap-4">
+                    <SheetTitle className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-2">
+                        <div className="w-1.5 h-8 bg-netflix-red rounded-full" />
+                        {selectionStep === 'book' && 'Selecionar Livro'}
+                        {selectionStep === 'chapter' && `Capítulos de ${selectedBook.name}`}
+                        {selectionStep === 'verse' && `Versículos de ${selectedBook.name} ${selectedChapter}`}
+                    </SheetTitle>
+                    <div className="flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/5">
+                        <button 
+                            onClick={() => setSelectionStep('book')}
+                            className={`px-3 py-1 rounded text-[10px] font-black uppercase transition-all ${selectionStep === 'book' ? 'bg-netflix-red text-white shadow-lg' : 'text-netflix-gray-light hover:text-white'}`}
                         >
-                          {ch}
+                            Livro
                         </button>
-                      ))
-                    ) : (
-                      verses.map(v => (
-                        <button
-                          key={v.number}
-                          onClick={() => handleVerseSelect(v.number)}
-                          className={`h-10 w-10 rounded-lg flex items-center justify-center font-bold text-sm transition-all ${
-                            selectedVerse === v.number 
-                              ? 'bg-netflix-red text-white shadow-lg' 
-                              : 'bg-white/5 text-netflix-gray-light hover:bg-white/10 hover:text-white'
-                          }`}
+                        <button 
+                            disabled={selectionStep === 'book'}
+                            onClick={() => setSelectionStep('chapter')}
+                            className={`px-3 py-1 rounded text-[10px] font-black uppercase transition-all disabled:opacity-30 ${selectionStep === 'chapter' ? 'bg-netflix-red text-white shadow-lg' : 'text-netflix-gray-light hover:text-white'}`}
                         >
-                          {v.number}
+                            Cap.
                         </button>
-                      ))
-                    )}
+                        <button 
+                            disabled={selectionStep !== 'verse'}
+                            onClick={() => setSelectionStep('verse')}
+                            className={`px-3 py-1 rounded text-[10px] font-black uppercase transition-all disabled:opacity-30 ${selectionStep === 'verse' ? 'bg-netflix-red text-white shadow-lg' : 'text-netflix-gray-light hover:text-white'}`}
+                        >
+                            Vers.
+                        </button>
+                    </div>
                   </div>
-                </ScrollArea>
+                </SheetHeader>
+
+                <div className="flex-1 overflow-hidden flex flex-col">
+                    {selectionStep === 'book' && (
+                        <div className="p-4 flex flex-col h-full">
+                            <div className="relative mb-4 px-2">
+                                <Search className="absolute left-5 top-2.5 h-4 w-4 text-netflix-gray-light" />
+                                <input
+                                    className="w-full bg-white/5 border border-white/10 rounded-full py-2 pl-12 pr-4 text-sm text-netflix-white focus:outline-none focus:ring-1 focus:ring-netflix-red"
+                                    placeholder="Buscar livro..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <ScrollArea className="flex-1">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 p-2 pb-20">
+                                    <div className="col-span-full">
+                                        <h3 className="text-[10px] font-black uppercase text-netflix-red tracking-widest mb-4 opacity-70 px-2 flex items-center gap-2">
+                                            <div className="w-4 h-[1px] bg-netflix-red opacity-30" />
+                                            Antigo Testamento
+                                        </h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                            {filteredBooksOld.map(book => (
+                                                <button
+                                                    key={book.id}
+                                                    onClick={() => handleBookSelect(book)}
+                                                    className={`text-left px-4 py-3 rounded-xl text-sm transition-all border ${
+                                                        selectedBook.id === book.id 
+                                                            ? 'bg-netflix-red border-netflix-red text-white font-bold shadow-lg shadow-netflix-red/20 scale-[0.98]' 
+                                                            : 'bg-white/5 border-white/5 text-netflix-gray-light hover:bg-white/10 hover:border-white/10 hover:text-white'
+                                                    }`}
+                                                >
+                                                    {book.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="col-span-full mt-6">
+                                        <h3 className="text-[10px] font-black uppercase text-netflix-red tracking-widest mb-4 opacity-70 px-2 flex items-center gap-2">
+                                            <div className="w-4 h-[1px] bg-netflix-red opacity-30" />
+                                            Novo Testamento
+                                        </h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                                            {filteredBooksNew.map(book => (
+                                                <button
+                                                    key={book.id}
+                                                    onClick={() => handleBookSelect(book)}
+                                                    className={`text-left px-4 py-3 rounded-xl text-sm transition-all border ${
+                                                        selectedBook.id === book.id 
+                                                            ? 'bg-netflix-red border-netflix-red text-white font-bold shadow-lg shadow-netflix-red/20 scale-[0.98]' 
+                                                            : 'bg-white/5 border-white/5 text-netflix-gray-light hover:bg-white/10 hover:border-white/10 hover:text-white'
+                                                    }`}
+                                                >
+                                                    {book.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </ScrollArea>
+                        </div>
+                    )}
+
+                    {(selectionStep === 'chapter' || selectionStep === 'verse') && (
+                        <ScrollArea className="flex-1">
+                            <div className="p-6">
+                                <div className="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-3 pb-32">
+                                    {selectionStep === 'chapter' ? (
+                                        chaptersCount.map(ch => (
+                                            <button
+                                                key={ch}
+                                                onClick={() => handleChapterSelect(ch)}
+                                                className={`h-14 rounded-2xl flex items-center justify-center font-black text-base transition-all border ${
+                                                    selectedChapter === ch 
+                                                        ? 'bg-netflix-red border-netflix-red text-white shadow-lg' 
+                                                        : 'bg-white/5 border-white/10 text-netflix-gray-light hover:bg-white/10 hover:border-white/20 hover:text-white'
+                                                }`}
+                                            >
+                                                {ch}
+                                            </button>
+                                        ))
+                                    ) : (
+                                        verses.map(v => (
+                                            <button
+                                                key={v.number}
+                                                onClick={() => handleVerseSelect(v.number)}
+                                                className={`h-14 rounded-2xl flex items-center justify-center font-black text-base transition-all border ${
+                                                    selectedVerse === v.number 
+                                                        ? 'bg-netflix-red border-netflix-red text-white shadow-lg' 
+                                                        : 'bg-white/5 border-white/10 text-netflix-gray-light hover:bg-white/10 hover:border-white/20 hover:text-white'
+                                                }`}
+                                            >
+                                                {v.number}
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </ScrollArea>
+                    )}
+                </div>
+                
+                {(selectionStep === 'chapter' || selectionStep === 'verse') && (
+                    <div className="p-4 border-t border-white/5 bg-netflix-black flex justify-between items-center sm:px-8">
+                        <Button 
+                            variant="ghost" 
+                            onClick={() => setSelectionStep(selectionStep === 'verse' ? 'chapter' : 'book')}
+                            className="text-netflix-gray-light hover:text-white font-black uppercase text-[10px] tracking-widest"
+                        >
+                            <ChevronLeft className="w-4 h-4 mr-2" />
+                            Voltar
+                        </Button>
+                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">
+                            {selectedBook.name} {selectionStep === 'verse' ? `· ${selectedChapter}` : ''}
+                        </div>
+                    </div>
+                )}
               </SheetContent>
             </Sheet>
           </div>
@@ -496,12 +538,18 @@ const Bible = () => {
           </div>
         </div>
 
-        {/* Floating current position indicator for mobile - now interactive */}
+        {/* Floating current position indicator for mobile - redesigned for premium UX */}
         <Sheet open={isSelectionOpen} onOpenChange={setIsSelectionOpen}>
           <SheetTrigger asChild>
-            <button className="md:hidden absolute bottom-8 left-1/2 -translate-x-1/2 px-6 py-2.5 rounded-full bg-netflix-red text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-glow flex items-center gap-2 active:scale-95 transition-all z-20">
-                <span>{selectedBook.name} {selectedChapter}</span>
-                <Edit3 className="w-3 h-3 text-white/80" />
+            <button className="md:hidden absolute bottom-10 left-1/2 -translate-x-1/2 px-8 py-3.5 rounded-2xl bg-netflix-black/90 border border-white/10 backdrop-blur-xl text-white shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-3 active:scale-95 transition-all z-20 group">
+                <div className="flex flex-col items-start">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-netflix-red group-hover:animate-pulse">Navegando em</span>
+                    <span className="text-sm font-black italic uppercase tracking-tighter">
+                        {selectedBook.name} <span className="text-netflix-red opacity-80">{selectedChapter}</span>
+                    </span>
+                </div>
+                <div className="h-8 w-[1px] bg-white/10 mx-1" />
+                <Settings2 className="w-5 h-5 text-netflix-red" />
             </button>
           </SheetTrigger>
         </Sheet>
