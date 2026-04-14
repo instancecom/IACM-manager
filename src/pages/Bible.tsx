@@ -54,12 +54,16 @@ const BIBLE_BOOKS = {
 const Bible = () => {
   const [selectedBook, setSelectedBook] = useState(BIBLE_BOOKS.old[0]);
   const [selectedChapter, setSelectedChapter] = useState(1);
+  const [selectedVerse, setSelectedVerse] = useState<number | null>(null);
   const [chaptersCount, setChaptersCount] = useState<number[]>([]);
   const [verses, setVerses] = useState<Verse[]>([]);
   const [loading, setLoading] = useState(false);
   const [chaptersLoading, setChaptersLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectionStep, setSelectionStep] = useState<'chapter' | 'verse'>('chapter');
+  const [isSelectionOpen, setIsSelectionOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const verseRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
   useEffect(() => {
     fetchChaptersCount();
@@ -67,10 +71,18 @@ const Bible = () => {
 
   useEffect(() => {
     fetchVerses();
-    if (scrollRef.current) {
+    if (!selectedVerse && scrollRef.current) {
         scrollRef.current.scrollTop = 0;
     }
   }, [selectedBook, selectedChapter]);
+
+  useEffect(() => {
+    if (selectedVerse && verseRefs.current[selectedVerse]) {
+      setTimeout(() => {
+        verseRefs.current[selectedVerse]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 500);
+    }
+  }, [verses, selectedVerse]);
 
   const fetchChaptersCount = async () => {
     setChaptersLoading(true);
@@ -113,7 +125,20 @@ const Bible = () => {
     }
   };
 
+  const handleChapterSelect = (ch: number) => {
+    setSelectedChapter(ch);
+    setSelectedVerse(null);
+    setSelectionStep('verse');
+  };
+
+  const handleVerseSelect = (v: number) => {
+    setSelectedVerse(v);
+    setIsSelectionOpen(false);
+    setSelectionStep('chapter');
+  };
+
   const navigateChapter = (direction: 'next' | 'prev') => {
+    setSelectedVerse(null);
     if (direction === 'next') {
       if (selectedChapter < chaptersCount.length) {
         setSelectedChapter(prev => prev + 1);
@@ -254,6 +279,7 @@ const Bible = () => {
                                 key={book.id}
                                 onClick={() => {
                                     setSelectedBook(book);
+                                    setSelectedVerse(null);
                                 }}
                                 className={`text-left px-3 py-2 rounded-lg text-sm ${
                                 selectedBook.id === book.id 
@@ -274,6 +300,7 @@ const Bible = () => {
                                 key={book.id}
                                 onClick={() => {
                                     setSelectedBook(book);
+                                    setSelectedVerse(null);
                                 }}
                                 className={`text-left px-3 py-2 rounded-lg text-sm ${
                                 selectedBook.id === book.id 
@@ -292,37 +319,71 @@ const Bible = () => {
               </SheetContent>
             </Sheet>
 
-            <div className="flex flex-col">
-              <h2 className="text-lg md:text-2xl font-black text-white italic uppercase tracking-tighter">
-                {selectedBook.name} <span className="text-netflix-red">{selectedChapter}</span>
-              </h2>
-            </div>
+          <div className="flex flex-col items-end">
+            <h2 className="text-lg md:text-2xl font-black text-white italic uppercase tracking-tighter text-right">
+              {selectedBook.name} <span className="text-netflix-red">{selectedChapter}{selectedVerse ? `:${selectedVerse}` : ''}</span>
+            </h2>
+          </div>
             
-            <Sheet>
+            <Sheet open={isSelectionOpen} onOpenChange={(open) => {
+              setIsSelectionOpen(open);
+              if (!open) setSelectionStep('chapter');
+            }}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 text-netflix-gray-light hover:text-white hover:bg-white/5 text-[10px] font-bold uppercase tracking-widest ml-2">
-                    Alterar Cap.
+                    {selectionStep === 'chapter' ? 'Alterar Ref.' : 'Alterar Vers.'}
                 </Button>
               </SheetTrigger>
-              <SheetContent side="top" className="h-auto max-h-[70vh] bg-netflix-black border-b border-netflix-white/10 p-6">
+              <SheetContent side="top" className="h-auto max-h-[85vh] bg-netflix-black border-b border-netflix-white/10 p-6">
                 <SheetHeader className="mb-4">
-                  <SheetTitle className="text-xl font-black text-white uppercase tracking-tighter">Capítulos de <span className="text-netflix-red">{selectedBook.name}</span></SheetTitle>
+                  <SheetTitle className="text-xl font-black text-white uppercase tracking-tighter">
+                    {selectionStep === 'chapter' ? (
+                      <>Capítulos de <span className="text-netflix-red">{selectedBook.name}</span></>
+                    ) : (
+                      <>Versículos de <span className="text-netflix-red">{selectedBook.name} {selectedChapter}</span></>
+                    )}
+                  </SheetTitle>
+                  {selectionStep === 'verse' && (
+                    <Button 
+                      variant="link" 
+                      onClick={() => setSelectionStep('chapter')}
+                      className="text-netflix-red p-0 h-auto font-black uppercase text-[10px] tracking-widest"
+                    >
+                      ← Voltar para capítulos
+                    </Button>
+                  )}
                 </SheetHeader>
                 <ScrollArea className="h-full">
-                  <div className="grid grid-cols-5 sm:grid-cols-10 md:grid-cols-15 gap-2 pb-8">
-                    {chaptersCount.map(ch => (
-                      <button
-                        key={ch}
-                        onClick={() => setSelectedChapter(ch)}
-                        className={`h-10 w-10 rounded-lg flex items-center justify-center font-bold text-sm transition-all ${
-                          selectedChapter === ch 
-                            ? 'bg-netflix-red text-white' 
-                            : 'bg-white/5 text-netflix-gray-light hover:bg-white/10 hover:text-white'
-                        }`}
-                      >
-                        {ch}
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-5 sm:grid-cols-10 md:grid-cols-15 gap-2 pb-12">
+                    {selectionStep === 'chapter' ? (
+                      chaptersCount.map(ch => (
+                        <button
+                          key={ch}
+                          onClick={() => handleChapterSelect(ch)}
+                          className={`h-10 w-10 rounded-lg flex items-center justify-center font-bold text-sm transition-all ${
+                            selectedChapter === ch 
+                              ? 'bg-netflix-red text-white' 
+                              : 'bg-white/5 text-netflix-gray-light hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          {ch}
+                        </button>
+                      ))
+                    ) : (
+                      verses.map(v => (
+                        <button
+                          key={v.number}
+                          onClick={() => handleVerseSelect(v.number)}
+                          className={`h-10 w-10 rounded-lg flex items-center justify-center font-bold text-sm transition-all ${
+                            selectedVerse === v.number 
+                              ? 'bg-netflix-red text-white shadow-lg' 
+                              : 'bg-white/5 text-netflix-gray-light hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          {v.number}
+                        </button>
+                      ))
+                    )}
                   </div>
                 </ScrollArea>
               </SheetContent>
@@ -360,13 +421,23 @@ const Bible = () => {
             ) : (
                 <div className="space-y-8 pb-32">
                     {verses.map((v) => (
-                    <div key={v.number} className="relative group/verse">
+                    <div 
+                        key={v.number} 
+                        ref={(el) => (verseRefs.current[v.number] = el)}
+                        className={`relative group/verse transition-all duration-700 rounded-xl ${
+                          selectedVerse === v.number ? 'bg-netflix-red/10 ring-1 ring-netflix-red/30 py-4 -mx-4 px-4' : ''
+                        }`}
+                    >
                         <div className="flex gap-6 items-start">
-                        <span className="text-netflix-red font-black text-sm md:text-base pt-1 min-w-[32px] md:min-w-[40px] tabular-nums transition-transform group-hover/verse:scale-110">
+                        <span className={`font-black text-sm md:text-base pt-1 min-w-[32px] md:min-w-[40px] tabular-nums transition-all ${
+                          selectedVerse === v.number ? 'text-white scale-125' : 'text-netflix-red'
+                        }`}>
                             {v.number}
                         </span>
                         <div className="space-y-3 flex-1">
-                            <p className="text-netflix-white text-lg md:text-xl lg:text-2xl leading-[1.8] font-medium transition-colors hover:text-white">
+                            <p className={`text-netflix-white text-lg md:text-xl lg:text-2xl leading-[1.8] font-medium transition-colors ${
+                              selectedVerse === v.number ? 'text-white' : 'hover:text-white'
+                            }`}>
                             {v.text}
                             </p>
                             <div className="flex items-center gap-4 opacity-0 group-hover/verse:opacity-100 transition-opacity">
