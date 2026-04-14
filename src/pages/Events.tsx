@@ -44,7 +44,8 @@ const Events = () => {
       startTime: event.start_time,
       endDate: event.end_date,
       endTime: event.end_time,
-      allowGuests: (event as any).allow_guests !== false
+      allowGuests: (event as any).allow_guests !== false,
+      categories: event.categories || [],
     };
   });
 
@@ -210,6 +211,15 @@ const Events = () => {
                   <div className="absolute top-2 right-2">
                     {getStatusBadge(event)}
                   </div>
+                  {event.categories && event.categories.length > 0 && (
+                    <div className="absolute top-2 left-2 flex flex-wrap gap-1 max-w-[75%]">
+                      {event.categories.map((cat: string) => (
+                        <Badge key={cat} variant="default" className="bg-netflix-red text-netflix-white border-none text-[10px] px-1.5 py-0 min-h-0">
+                          {cat}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-foreground mb-2 line-clamp-1">
