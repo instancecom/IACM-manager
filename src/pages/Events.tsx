@@ -54,32 +54,53 @@ const Events = () => {
   };
 
   const filteredEvents = useMemo(() => {
-    return allEvents.filter(event => {
-      // Search filter
-      const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           event.organizer.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      // Status filter
-      const matchesStatus = statusFilter === "all" || event.status === statusFilter;
-      
-      // Date filters
-      let matchesDateRange = true;
-      if (startDate && endDate) {
-        const eventDate = event.dateTime;
-        const filterStart = new Date(startDate);
-        const filterEnd = new Date(endDate);
-        matchesDateRange = eventDate >= filterStart && eventDate <= filterEnd;
-      } else if (startDate) {
-        const filterStart = new Date(startDate);
-        matchesDateRange = event.dateTime >= filterStart;
-      } else if (endDate) {
-        const filterEnd = new Date(endDate);
-        matchesDateRange = event.dateTime <= filterEnd;
-      }
-      
-      return matchesSearch && matchesStatus && matchesDateRange;
-    });
+    const statusPriority: Record<string, number> = {
+      active: 1,
+      upcoming: 2,
+      finished: 3
+    };
+
+    return allEvents
+      .filter(event => {
+        // Search filter
+        const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             event.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             event.organizer.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        // Status filter
+        const matchesStatus = statusFilter === "all" || event.status === statusFilter;
+        
+        // Date filters
+        let matchesDateRange = true;
+        if (startDate && endDate) {
+          const eventDate = event.dateTime;
+          const filterStart = new Date(startDate);
+          const filterEnd = new Date(endDate);
+          matchesDateRange = eventDate >= filterStart && eventDate <= filterEnd;
+        } else if (startDate) {
+          const filterStart = new Date(startDate);
+          matchesDateRange = event.dateTime >= filterStart;
+        } else if (endDate) {
+          const filterEnd = new Date(endDate);
+          matchesDateRange = event.dateTime <= filterEnd;
+        }
+        
+        return matchesSearch && matchesStatus && matchesDateRange;
+      })
+      .sort((a, b) => {
+        // First sort by status priority
+        if (statusPriority[a.status] !== statusPriority[b.status]) {
+          return statusPriority[a.status] - statusPriority[b.status];
+        }
+        
+        // Then sort by date
+        if (a.status === 'finished') {
+          // For finished events, show most recent first
+          return b.dateTime.getTime() - a.dateTime.getTime();
+        }
+        // For active and upcoming, show closest first
+        return a.dateTime.getTime() - b.dateTime.getTime();
+      });
   }, [searchTerm, statusFilter, startDate, endDate, allEvents]);
 
   const handleEventClick = (event: any) => {
