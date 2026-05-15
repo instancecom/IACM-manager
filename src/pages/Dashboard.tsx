@@ -89,12 +89,15 @@ const Dashboard = () => {
     })
     .slice(0, 6);
   
-  // Upcoming events (next 7 days) - only active events
-  const upcomingEvents = allEvents.filter(event => 
-    (event.status === 'upcoming' || event.status === 'active') && 
-    isAfter(event.dateTime, now) && 
-    isBefore(event.dateTime, sevenDaysFromNow)
-  );
+  // Ongoing events (occurring now)
+  const ongoingEvents = allEvents
+    .filter(event => event.status === 'active')
+    .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
+  
+  // Upcoming events
+  const upcomingEvents = allEvents
+    .filter(event => event.status === 'upcoming')
+    .sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
   
   // Finished events
   const finishedEvents = allEvents
@@ -142,6 +145,31 @@ const Dashboard = () => {
         {!loading && recentEvents.length > 0 && (
           <ContentShelf title="Eventos Recém-Cadastrados">
             {recentEvents.map((event, index) => (
+              <EventCard
+                key={event.id || index}
+                title={event.title}
+                date={event.date}
+                location={event.location}
+                attendees={event.attendees}
+                image={event.image}
+                time={event.time}
+                description={event.description}
+                organizer={event.organizer}
+                startDate={event.startDate}
+                startTime={event.startTime}
+                endDate={event.endDate}
+                endTime={event.endTime}
+                categories={event.categories}
+                onClick={() => handleEventClick(event)}
+              />
+            ))}
+          </ContentShelf>
+        )}
+
+        {/* Ongoing Events */}
+        {!loading && ongoingEvents.length > 0 && (
+          <ContentShelf title="Acontecendo Agora">
+            {ongoingEvents.map((event, index) => (
               <EventCard
                 key={event.id || index}
                 title={event.title}
