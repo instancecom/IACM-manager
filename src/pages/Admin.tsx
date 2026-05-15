@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Users, Music, UserPlus, Settings, Globe, Shield, UserCog, ShieldCheck } from "lucide-react";
+import { Calendar, Users, Music, UserPlus, Settings, Globe, Shield, UserCog, ShieldCheck, ChevronDown } from "lucide-react";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import EventsListPage from "@/components/admin/EventsListPage";
 import RegisterStudentForm from "@/components/admin/RegisterStudentForm";
 import CreateScheduleForm from "@/components/admin/CreateScheduleForm";
@@ -13,10 +14,13 @@ import { RolesManager } from "@/components/admin/RolesManager";
 import SecurityChecklist from "@/components/admin/SecurityChecklist";
 import { useRoles } from "@/hooks/useRoles";
 import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Admin = () => {
   const { canEdit, isAdmin, loading } = useRoles();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const [activeTab, setActiveTab] = useState("events");
 
   if (loading) {
     return (
@@ -63,10 +67,46 @@ const Admin = () => {
             </div>
           </div>
           
-          <Tabs defaultValue="events" className="w-full animate-scale-in">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full animate-scale-in">
+            {/* Mobile: Select Dropdown */}
+            <div className="lg:hidden mb-6">
+              <Select value={activeTab} onValueChange={setActiveTab}>
+                <SelectTrigger className="w-full h-12 bg-card border-border/50 text-foreground">
+                  <div className="flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-primary" />
+                    <SelectValue placeholder="Selecione uma categoria" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Conteúdo</SelectLabel>
+                    <SelectItem value="events">Eventos</SelectItem>
+                    <SelectItem value="site">Site (Banners)</SelectItem>
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Comunidade</SelectLabel>
+                    <SelectItem value="members">Membros</SelectItem>
+                    <SelectItem value="ministries">Ministérios</SelectItem>
+                    <SelectItem value="students">Alunos</SelectItem>
+                    <SelectItem value="schedule">Escalas</SelectItem>
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Sistema</SelectLabel>
+                    <SelectItem value="manage">Gerenciar Dados</SelectItem>
+                    {isAdmin && (
+                      <>
+                        <SelectItem value="roles">Acessos</SelectItem>
+                        <SelectItem value="security">Segurança</SelectItem>
+                      </>
+                    )}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-              {/* Navigation Sidebar/Menu */}
-              <div className="w-full lg:w-64 flex-shrink-0">
+              {/* Navigation Sidebar - Desktop Only */}
+              <div className="hidden lg:block w-full lg:w-64 flex-shrink-0">
                 <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4 lg:p-6 sticky top-24">
                   <nav className="space-y-6">
                     {/* Conteúdo Group */}
