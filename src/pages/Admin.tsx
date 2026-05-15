@@ -64,151 +64,104 @@ const Admin = () => {
           </div>
           
           <Tabs defaultValue="events" className="w-full animate-scale-in">
-            {/* Mobile: Horizontal scroll */}
-            <div className="md:hidden overflow-x-auto scrollbar-hide -mx-2 px-2">
-              <TabsList className="inline-flex gap-2 p-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg min-w-full w-max h-auto">
-                <TabsTrigger 
-                  value="events" 
-                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <Calendar className="w-4 h-4 shrink-0" />
-                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Eventos</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="site" 
-                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <Globe className="w-4 h-4 shrink-0" />
-                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Site</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="members" 
-                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <UserPlus className="w-4 h-4 shrink-0" />
-                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Membros</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="ministries" 
-                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <Shield className="w-4 h-4 shrink-0" />
-                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Ministérios</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="students" 
-                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <Music className="w-4 h-4 shrink-0" />
-                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Alunos</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="schedule" 
-                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <Users className="w-4 h-4 shrink-0" />
-                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Escalas</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="manage" 
-                  className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <Settings className="w-4 h-4 shrink-0" />
-                  <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Gerenciar</span>
-                </TabsTrigger>
-                {isAdmin && (
-                  <>
-                    <TabsTrigger 
-                      value="roles" 
-                      className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                    >
-                      <UserCog className="w-4 h-4 shrink-0" />
-                      <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Acessos</span>
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="security" 
-                      className="flex flex-col items-center justify-center gap-1 py-2.5 px-3 min-w-[80px] h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                    >
-                      <ShieldCheck className="w-4 h-4 shrink-0" />
-                      <span className="text-[11px] font-medium whitespace-nowrap leading-tight">Segurança</span>
-                    </TabsTrigger>
-                  </>
-                )}
-              </TabsList>
-            </div>
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+              {/* Navigation Sidebar/Menu */}
+              <div className="w-full lg:w-64 flex-shrink-0">
+                <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4 lg:p-6 sticky top-24">
+                  <nav className="space-y-6">
+                    {/* Conteúdo Group */}
+                    <div className="space-y-3">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2">Conteúdo</p>
+                      <TabsList className="flex flex-col h-auto bg-transparent p-0 gap-1 w-full">
+                        <TabsTrigger 
+                          value="events" 
+                          className="w-full justify-start gap-3 px-3 py-2.5 h-auto data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none border border-transparent data-[state=active]:border-primary/20 transition-all duration-200"
+                        >
+                          <Calendar className="w-4 h-4" />
+                          <span className="text-sm font-medium">Eventos</span>
+                        </TabsTrigger>
+                        <TabsTrigger 
+                          value="site" 
+                          className="w-full justify-start gap-3 px-3 py-2.5 h-auto data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none border border-transparent data-[state=active]:border-primary/20 transition-all duration-200"
+                        >
+                          <Globe className="w-4 h-4" />
+                          <span className="text-sm font-medium">Site (Banners)</span>
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
 
-            {/* Desktop: Grid layout */}
-            <div className="hidden md:block">
-              <TabsList className={`grid ${isAdmin ? 'grid-cols-5' : 'grid-cols-4'} h-auto p-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg`}>
-                <TabsTrigger 
-                  value="events" 
-                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <Calendar className="w-5 h-5" />
-                  <span className="text-sm font-medium">Eventos</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="members" 
-                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <UserPlus className="w-5 h-5" />
-                  <span className="text-sm font-medium">Membros</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="ministries" 
-                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <Shield className="w-5 h-5" />
-                  <span className="text-sm font-medium">Ministérios</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="students" 
-                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <Music className="w-5 h-5" />
-                  <span className="text-sm font-medium">Alunos</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="schedule" 
-                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <Users className="w-5 h-5" />
-                  <span className="text-sm font-medium">Escalas</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="site" 
-                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <Globe className="w-5 h-5" />
-                  <span className="text-sm font-medium">Site</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="manage" 
-                  className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                >
-                  <Settings className="w-5 h-5" />
-                  <span className="text-sm font-medium">Gerenciar</span>
-                </TabsTrigger>
-                {isAdmin && (
-                  <>
-                    <TabsTrigger 
-                      value="roles" 
-                      className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                    >
-                      <UserCog className="w-5 h-5" />
-                      <span className="text-sm font-medium">Acessos</span>
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="security" 
-                      className="flex flex-col items-center gap-2 p-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200 hover:bg-secondary/50 rounded-md"
-                    >
-                      <ShieldCheck className="w-5 h-5" />
-                      <span className="text-sm font-medium">Segurança</span>
-                    </TabsTrigger>
-                  </>
-                )}
-              </TabsList>
-            </div>
+                    {/* Comunidade Group */}
+                    <div className="space-y-3">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2">Comunidade</p>
+                      <TabsList className="flex flex-col h-auto bg-transparent p-0 gap-1 w-full">
+                        <TabsTrigger 
+                          value="members" 
+                          className="w-full justify-start gap-3 px-3 py-2.5 h-auto data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none border border-transparent data-[state=active]:border-primary/20 transition-all duration-200"
+                        >
+                          <UserPlus className="w-4 h-4" />
+                          <span className="text-sm font-medium">Membros</span>
+                        </TabsTrigger>
+                        <TabsTrigger 
+                          value="ministries" 
+                          className="w-full justify-start gap-3 px-3 py-2.5 h-auto data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none border border-transparent data-[state=active]:border-primary/20 transition-all duration-200"
+                        >
+                          <Shield className="w-4 h-4" />
+                          <span className="text-sm font-medium">Ministérios</span>
+                        </TabsTrigger>
+                        <TabsTrigger 
+                          value="students" 
+                          className="w-full justify-start gap-3 px-3 py-2.5 h-auto data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none border border-transparent data-[state=active]:border-primary/20 transition-all duration-200"
+                        >
+                          <Music className="w-4 h-4" />
+                          <span className="text-sm font-medium">Alunos</span>
+                        </TabsTrigger>
+                        <TabsTrigger 
+                          value="schedule" 
+                          className="w-full justify-start gap-3 px-3 py-2.5 h-auto data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none border border-transparent data-[state=active]:border-primary/20 transition-all duration-200"
+                        >
+                          <Users className="w-4 h-4" />
+                          <span className="text-sm font-medium">Escalas</span>
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
+
+                    {/* Sistema Group */}
+                    <div className="space-y-3">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2">Sistema</p>
+                      <TabsList className="flex flex-col h-auto bg-transparent p-0 gap-1 w-full">
+                        <TabsTrigger 
+                          value="manage" 
+                          className="w-full justify-start gap-3 px-3 py-2.5 h-auto data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none border border-transparent data-[state=active]:border-primary/20 transition-all duration-200"
+                        >
+                          <Settings className="w-4 h-4" />
+                          <span className="text-sm font-medium">Gerenciar Dados</span>
+                        </TabsTrigger>
+                        {isAdmin && (
+                          <>
+                            <TabsTrigger 
+                              value="roles" 
+                              className="w-full justify-start gap-3 px-3 py-2.5 h-auto data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none border border-transparent data-[state=active]:border-primary/20 transition-all duration-200"
+                            >
+                              <UserCog className="w-4 h-4" />
+                              <span className="text-sm font-medium">Acessos</span>
+                            </TabsTrigger>
+                            <TabsTrigger 
+                              value="security" 
+                              className="w-full justify-start gap-3 px-3 py-2.5 h-auto data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none border border-transparent data-[state=active]:border-primary/20 transition-all duration-200"
+                            >
+                              <ShieldCheck className="w-4 h-4" />
+                              <span className="text-sm font-medium">Segurança</span>
+                            </TabsTrigger>
+                          </>
+                        )}
+                      </TabsList>
+                    </div>
+                  </nav>
+                </div>
+              </div>
+
+              {/* Content Area */}
+              <div className="flex-1 min-w-0">
             
             <TabsContent value="events" className="mt-4 lg:mt-8 animate-fade-in">
               <EventsListPage />
@@ -350,6 +303,8 @@ const Admin = () => {
                 </TabsContent>
               </>
             )}
+              </div>
+            </div>
           </Tabs>
         </div>
       </main>
