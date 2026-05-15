@@ -280,6 +280,19 @@ const EventConfirmationsView = () => {
                           <p className="text-xs sm:text-sm text-muted-foreground truncate">
                             WhatsApp: {confirmation.whatsapp || 'Não informado'}
                           </p>
+                          {confirmation.guests && confirmation.guests.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              <span className="text-[10px] font-medium text-muted-foreground uppercase mr-1 flex items-center">
+                                <Users className="h-2.5 w-2.5 mr-1" />
+                                Convidados:
+                              </span>
+                              {confirmation.guests.map((guest, idx) => (
+                                <Badge key={idx} variant="secondary" className="text-[10px] py-0 px-1.5 h-4 bg-muted/80 text-muted-foreground border-none">
+                                  {guest}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
                           {confirmation.confirmed_at && (
                             <p className="text-xs text-muted-foreground mt-0.5">
                               {format(new Date(confirmation.confirmed_at), "dd/MM/yy HH:mm", { locale: ptBR })}
